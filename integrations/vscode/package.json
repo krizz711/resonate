@@ -1,0 +1,37 @@
+{
+  "name": "resonate-vscode",
+  "displayName": "Resonate — Scripture in the margins",
+  "description": "A quiet verse for the moment you're in, surfaced natively inside your editor.",
+  "version": "0.0.1",
+  "publisher": "resonate",
+  "engines": { "vscode": "^1.75.0" },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "resonate.reflect", "title": "Resonate: A verse for this moment" }
+    ],
+    "configuration": {
+      "title": "Resonate",
+      "properties": {
+        "resonate.engineUrl": {
+          "type": "string", "default": "http://127.0.0.1:8765",
+          "description": "URL of the local Resonate engine server (python scripts/serve.py)."
+        },
+        "resonate.translation": {
+          "type": "string", "default": "KJV",
+          "description": "Bible translation to request from the engine."
+        },
+        "resonate.cadenceMinutes": {
+          "type": "number", "default": 20,
+          "description": "Auto-surface a verse after this many minutes of focused work (0 = manual only)."
+        },
+        "resonate.enabled": {
+          "type": "boolean", "default": true,
+          "description": "Enable automatic surfacing in the status bar."
+        }
+      }
+    }
+  }
+}
