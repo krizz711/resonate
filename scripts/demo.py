@@ -43,8 +43,8 @@ def show(result):
         c, r = d["components"], d["ranks"]
         print("  fit=%.3f  confidence=%.2f%s" % (d["final"], d["confidence"],
                                                  "  [low-confidence]" if d["low_confidence"] else ""))
-        print("    rrf=%s tone=%s recency_pen=%s fatigue=%s narrative=%s | retriever ranks d/s/t = %d/%d/%d"
-              % (c["rrf"], c["tone"], c["recency_pen"], c["fatigue"], c["narrative"],
+        print("    rrf=%s theme=%s tone=%s recency_pen=%s fatigue=%s narrative=%s | retriever ranks d/s/t = %d/%d/%d"
+              % (c["rrf"], c["theme"], c["tone"], c["recency_pen"], c["fatigue"], c["narrative"],
                  r["dense"], r["sparse"], r["tag"]))
         print("    alternatives: " + ", ".join("%s(%.3f)" % (a["reference"], a["final"]) for a in d["alternatives"]))
     print(SUB)

@@ -18,6 +18,14 @@ def _tone_fit(beat, verse) -> float:
     return max(0.0, 1.0 - 2.0 * d)
 
 
+def _theme_cover(beat, verse) -> float:
+    """How much of the beat's themes the verse addresses (recall-oriented, high-precision)."""
+    b = set(beat.themes)
+    if not b:
+        return 0.0
+    return len(b & set(verse.get("themes", []))) / len(b)
+
+
 class Engine:
     def __init__(self, config=None):
         self.config = config or EngineConfig()
@@ -57,22 +65,24 @@ class Engine:
             for c in candidates:
                 v = c["verse"]
                 norm_rrf = c["rrf"] / max_rrf
+                cover = _theme_cover(beat, v)
                 tone = _tone_fit(beat, v)
                 rec = self.memory.recency_penalty(user_id, v["reference"])
                 fat = self.memory.theme_fatigue(user_id, v.get("themes", []))
                 arc = self.memory.narrative_continuity(user_id, v.get("themes", []))
-                final = w.rrf * norm_rrf + w.tone * tone - w.recent * rec - w.repeat * fat + w.arc * arc
+                final = (w.rrf * norm_rrf + w.theme * cover + w.tone * tone
+                         - w.recent * rec - w.repeat * fat + w.arc * arc)
                 scored.append({
                     "verse": v, "final": final, "ranks": c["ranks"],
-                    "components": {"rrf": round(norm_rrf, 3), "tone": round(tone, 3),
-                                   "recency_pen": round(rec, 3), "fatigue": round(fat, 3),
-                                   "narrative": round(arc, 3)},
+                    "components": {"rrf": round(norm_rrf, 3), "theme": round(cover, 3),
+                                   "tone": round(tone, 3), "recency_pen": round(rec, 3),
+                                   "fatigue": round(fat, 3), "narrative": round(arc, 3)},
                 })
             scored.sort(key=lambda x: x["final"], reverse=True)
 
             # stage 7 — confidence / abstention (confidence = top fit vs. the best possible)
             top = scored[0]
-            confidence = round(top["final"] / (w.rrf + w.tone + w.arc), 3)
+            confidence = round(top["final"] / (w.rrf + w.theme + w.tone + w.arc), 3)
             low_conf = confidence < 0.55
 
             # stage 5 — LLM verify/select, constrained to the top candidates

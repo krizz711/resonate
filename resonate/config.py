@@ -11,9 +11,11 @@ DATA_DIR = ROOT / "data"
 
 @dataclass
 class Weights:
-    """Tunable weights for the post-fusion fit score (see ENGINE-DESIGN.md, stage 4)."""
+    """Tunable weights for the post-fusion fit score (see ENGINE-DESIGN.md, stage 4).
+    Tuned against eval/run_eval.py."""
     rrf: float = 1.0     # base hybrid relevance (normalized RRF)
-    tone: float = 0.8    # tone/posture fit for the beat's intensity
+    theme: float = 0.7   # explicit theme-cover bonus (high-precision)
+    tone: float = 0.5    # tone/posture fit for the beat's intensity
     recent: float = 0.9  # PENALTY: verse used recently
     repeat: float = 0.5  # PENALTY: same theme hammered recently
     arc: float = 0.4     # narrative continuity with the person's recurring themes

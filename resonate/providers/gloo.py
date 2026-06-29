@@ -30,8 +30,9 @@ LEXICON = {
     "joy": ["happy", "joy", "joyful", "excited", "thrilled", "glad"],
     "hope": ["hope", "hopeful", "looking forward", "better days"],
     "peace": ["peace", "calm", "peaceful", "at rest"],
-    "perseverance": ["keep going", "persevere", "persist", "push through", "give up", "endure", "grind",
-                     "not give up", "stuck", "can't fix", "debugging", "not working", "keep trying"],
+    "perseverance": ["keep going", "kept going", "persevere", "persist", "push through", "give up",
+                     "giving up", "endure", "grind", "not give up", "stuck", "can't fix",
+                     "debugging", "not working", "keep trying"],
     "purpose": ["purpose", "calling", "meaning", "why am i here", "made for", "matters"],
     "provision": ["money", "bills", "afford", "provide", "provision", "rent", "paycheck"],
     "forgiveness": ["forgive", "forgiven", "forgiveness", "repent"],
@@ -56,7 +57,8 @@ EMOTION = {
 CRISIS = [
     "kill myself", "killing myself", "end my life", "ending my life", "suicide", "suicidal",
     "want to die", "don't want to live", "dont want to live", "no reason to live",
-    "hurt myself", "harm myself", "self harm", "self-harm",
+    "hurt myself", "hurting myself", "harm myself", "harming myself", "self harm", "self-harm",
+    "cut myself", "cutting myself", "end it all", "better off dead", "take my own life",
 ]
 
 _INTENSITY_CUES = ["so ", "really", "completely", "totally", "can't", "cant", "never",
