@@ -1,0 +1,7 @@
+# The engine core + offline demo run on the Python standard library ALONE (no installs).
+#
+# Optional upgrades, by phase:
+#   Phase 1 (real APIs):     httpx>=0.27
+#   Phase 2 (dense embeds):  sentence-transformers>=2.2     # better semantic retriever
+#   Phase 2 (Redis backend): redis>=5.0                     # vector index + semantic cache
+#   Phase 5 (web UI):        fastapi>=0.110  uvicorn>=0.29  jinja2>=3.1
