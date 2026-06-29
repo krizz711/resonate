@@ -25,6 +25,7 @@ from resonate import Engine, EngineConfig  # noqa: E402
 from resonate.delivery import render, TARGETS  # noqa: E402
 
 ENGINE = Engine(EngineConfig())
+WEB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -45,8 +46,24 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.end_headers()
 
+    def _send_html(self, path):
+        try:
+            with open(path, "rb") as f:
+                body = f.read()
+        except OSError:
+            self._send(404, {"error": "not found"})
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self):
-        if self.path.split("?")[0] == "/health":
+        path = self.path.split("?")[0]
+        if path in ("/", "/index.html"):
+            self._send_html(os.path.join(WEB_DIR, "index.html"))
+        elif path == "/health":
             self._send(200, {"ok": True, "mode": ENGINE.config.provider_mode, "targets": list(TARGETS)})
         else:
             self._send(404, {"error": "not found"})
