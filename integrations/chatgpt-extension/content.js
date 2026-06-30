@@ -12,25 +12,33 @@
   let shadow = null;
   let card = null;
 
+  // Parchment / aged-manuscript skin (matches the portfolio: paper #efe9df, ink #211d17,
+  // clay #a65b43). Kept in sync with web/panel-preview.html.
   const PANEL_CSS = `
-    .card{width:300px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;
-      background:linear-gradient(180deg,#161b27,#10141d);color:#ece3d0;border:1px solid #2a3349;
-      border-left:3px solid #caa84e;border-radius:14px;padding:16px 16px 12px;
-      box-shadow:0 12px 40px rgba(0,0,0,.45);position:relative;animation:rin .25s ease}
+    .card{width:370px;box-sizing:border-box;
+      font-family:'Space Grotesk',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;color:#211d17;
+      background:radial-gradient(130% 120% at 100% 0%, rgba(166,91,67,.07), transparent 58%),
+        linear-gradient(177deg,#efe9df 0%,#e9e1d3 58%,#e3d7c4 100%);
+      border:1px solid rgba(33,29,23,.22);border-radius:18px;padding:22px 24px 15px;
+      box-shadow:0 18px 50px rgba(33,29,23,.28), inset 0 1px 0 rgba(255,255,255,.5);
+      position:relative;animation:rin .32s cubic-bezier(.22,.61,.36,1)}
     .card.hidden{display:none}
-    @keyframes rin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-    .x{position:absolute;top:7px;right:10px;background:none;border:none;color:#6b7793;
-      font-size:18px;cursor:pointer;line-height:1}
-    .x:hover{color:#ece3d0}
-    .ref{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#caa84e;
-      margin-bottom:8px;padding-right:18px}
-    .ref .tr{color:#6b7793}
-    .verse{font-family:"Iowan Old Style",Palatino,Georgia,serif;font-size:15.5px;line-height:1.5;color:#f3ecdb}
-    .bridge{margin-top:10px;font-size:13px;font-style:italic;color:#9aa6bd;
-      border-top:1px dashed #2a3349;padding-top:9px}
-    .foot{margin-top:10px;font-size:10.5px;color:#5d6680}
-    .card.help{border-left-color:#e0a35a}
-    .card.help .ref{color:#e0a35a}`;
+    .card::before{content:"";position:absolute;inset:7px;border:1px solid rgba(33,29,23,.13);
+      border-radius:12px;pointer-events:none}
+    @keyframes rin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    .x{position:absolute;top:10px;right:13px;background:none;border:none;color:#9a8f7f;font-size:17px;
+      cursor:pointer;line-height:1;font-family:inherit;z-index:1}
+    .x:hover{color:#a65b43}
+    .ref{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#a65b43;margin:0 0 11px;padding-right:18px}
+    .ref .tr{color:#a89c8a;letter-spacing:.2em}
+    .ref::after{content:"";display:block;width:32px;height:1px;background:#a65b43;opacity:.55;margin-top:9px}
+    .verse{font-family:'Cormorant Garamond','EB Garamond','Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+      font-size:22px;line-height:1.4;color:#211d17;font-weight:500}
+    .bridge{margin-top:13px;font-family:'Cormorant Garamond','EB Garamond',Georgia,serif;font-size:15px;
+      font-style:italic;color:#6b6358;border-top:1px solid rgba(33,29,23,.13);padding-top:11px}
+    .foot{margin-top:13px;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#a89c8a}
+    .card.help .verse{font-size:17.5px}
+    .card.help .ref::after{width:46px}`;
 
   function ensurePanel() {
     if (host) return;

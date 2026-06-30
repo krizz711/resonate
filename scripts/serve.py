@@ -71,6 +71,8 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path in ("/", "/index.html"):
             self._send_html(os.path.join(WEB_DIR, "index.html"))
+        elif path.endswith(".html"):
+            self._send_html(os.path.join(WEB_DIR, os.path.basename(path)))  # basename avoids traversal
         elif path == "/health":
             self._send(200, {"ok": True, "mode": ENGINE.config.provider_mode, "targets": list(TARGETS)})
         else:

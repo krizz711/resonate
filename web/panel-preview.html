@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Resonate panel — parchment preview</title>
+<style>
+  /* light backdrop to mimic the ChatGPT page behind the panel */
+  body{margin:0;background:#f7f7f8;min-height:100vh;display:flex;gap:30px;flex-wrap:wrap;
+       align-items:flex-start;padding:48px;font-family:system-ui}
+  .note{width:100%;color:#8a8f98;font-size:13px;margin:0 0 6px}
+
+  /* ===== this block is the panel skin (kept in sync with content.js PANEL_CSS) ===== */
+  .card{width:370px;box-sizing:border-box;
+    font-family:'Space Grotesk',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;color:#211d17;
+    background:
+      radial-gradient(130% 120% at 100% 0%, rgba(166,91,67,.07), transparent 58%),
+      linear-gradient(177deg,#efe9df 0%,#e9e1d3 58%,#e3d7c4 100%);
+    border:1px solid rgba(33,29,23,.22);border-radius:18px;padding:22px 24px 15px;
+    box-shadow:0 18px 50px rgba(33,29,23,.28), inset 0 1px 0 rgba(255,255,255,.5);position:relative}
+  .card::before{content:"";position:absolute;inset:7px;border:1px solid rgba(33,29,23,.13);
+    border-radius:12px;pointer-events:none}
+  .x{position:absolute;top:10px;right:13px;background:none;border:none;color:#9a8f7f;font-size:17px;
+    cursor:pointer;line-height:1;font-family:inherit;z-index:1}
+  .x:hover{color:#a65b43}
+  .ref{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#a65b43;margin:0 0 11px;padding-right:18px}
+  .ref .tr{color:#a89c8a;letter-spacing:.2em}
+  .ref::after{content:"";display:block;width:32px;height:1px;background:#a65b43;opacity:.55;margin-top:9px}
+  .verse{font-family:'Cormorant Garamond','EB Garamond','Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
+    font-size:22px;line-height:1.4;color:#211d17;font-weight:500}
+  .bridge{margin-top:13px;font-family:'Cormorant Garamond','EB Garamond',Georgia,serif;font-size:15px;
+    font-style:italic;color:#6b6358;border-top:1px solid rgba(33,29,23,.13);padding-top:11px}
+  .foot{margin-top:13px;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#a89c8a}
+  .card.help .verse{font-size:17.5px}
+  .card.help .ref::after{width:46px}
+  /* ===== end panel skin ===== */
+</style>
+</head>
+<body>
+  <p class="note">Resonate side-panel — parchment skin (verse + crisis variants)</p>
+
+  <div class="card verse">
+    <button class="x">×</button>
+    <div class="ref">Romans 8:1 <span class="tr">KJV</span></div>
+    <div class="verse">There is therefore now no condemnation to them which are in Christ Jesus, who walk not after the flesh, but after the Spirit.</div>
+    <div class="bridge">You said “I feel like I’m failing everyone lately.” Hold onto this: Romans 8:1.</div>
+    <div class="foot">Resonate · processed locally · nothing stored</div>
+  </div>
+
+  <div class="card help">
+    <button class="x">×</button>
+    <div class="ref">A pause, not a verse</div>
+    <div class="verse">This sounds heavy, and a verse isn’t the right response here. Please reach out to someone you trust or a crisis line.</div>
+    <div class="foot">Resonate · your wellbeing comes first</div>
+  </div>
+</body>
+</html>
