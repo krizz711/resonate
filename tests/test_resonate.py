@@ -214,6 +214,25 @@ class TestDeliveryPolicy(unittest.TestCase):
         self.assertFalse(p.decide("u", "struggle", confidence=0.9, themes=["anxiety"], now=1)["surface"])
 
 
+class TestResponder(unittest.TestCase):
+    def setUp(self):
+        from resonate.responder import Responder
+        self.r = Responder(target="discord")
+
+    def test_verse_path(self):
+        out = self.r.respond("ru1", "I feel like I'm failing everyone and I can't keep up.")
+        self.assertTrue(out["surface"] and out["kind"] == "verse")
+        self.assertIn("content", out["rendered"])
+
+    def test_silent_on_neutral(self):
+        out = self.r.respond("ru2", "what's the capital of France?")
+        self.assertFalse(out["surface"])
+
+    def test_help_on_crisis(self):
+        out = self.r.respond("ru3", "honestly I do not want to live anymore")
+        self.assertTrue(out["surface"] and out["kind"] == "help")
+
+
 class TestEvalThresholds(unittest.TestCase):
     """Turns the evaluation harness into a regression guard — quality can't silently drop."""
 
