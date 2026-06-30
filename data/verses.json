@@ -1,44 +1,2689 @@
 {
   "schema_version": 1,
   "note": "Curated, theme-tagged verse SHORTLIST — the heart of the matching engine. We deliberately DO NOT store verse text here. The real, licensed text is fetched live from the YouVersion Platform API at runtime. This is both an anti-hallucination guarantee (the model never recites Scripture from memory) and a licensing-compliance choice. 'usfm' is YouVersion's reference format (BOOK.CHAPTER.VERSE); verify exact passage-range syntax against the API during integration.",
-  "tones": ["comfort", "assurance", "hope", "challenge", "celebration", "conviction"],
-  "theme_vocab": ["anxiety","fear","grief","loneliness","doubt","guilt","anger","weariness","gratitude","joy","hope","peace","perseverance","purpose","provision","forgiveness","love","comfort","courage","rest","identity","trust","prayer"],
+  "tones": [
+    "comfort",
+    "assurance",
+    "hope",
+    "challenge",
+    "celebration",
+    "conviction"
+  ],
+  "theme_vocab": [
+    "anxiety",
+    "fear",
+    "grief",
+    "loneliness",
+    "doubt",
+    "guilt",
+    "anger",
+    "weariness",
+    "gratitude",
+    "joy",
+    "hope",
+    "peace",
+    "perseverance",
+    "purpose",
+    "provision",
+    "forgiveness",
+    "love",
+    "comfort",
+    "courage",
+    "rest",
+    "identity",
+    "trust",
+    "prayer"
+  ],
   "verses": [
-    { "reference": "Philippians 4:6-7", "usfm": "PHP.4.6-PHP.4.7", "themes": ["anxiety","peace","prayer"], "tone": "comfort", "intensity_fit": [0.4, 1.0], "keywords": ["worry","anxious","stress","overwhelmed","panic","peace"], "note": "Bring worry to God; his peace guards the heart." },
-    { "reference": "Matthew 6:34", "usfm": "MAT.6.34", "themes": ["anxiety","trust"], "tone": "challenge", "intensity_fit": [0.3, 0.8], "keywords": ["tomorrow","future","worry","uncertain"], "note": "Don't borrow tomorrow's worry; today is enough." },
-    { "reference": "1 Peter 5:7", "usfm": "1PE.5.7", "themes": ["anxiety","comfort"], "tone": "comfort", "intensity_fit": [0.4, 1.0], "keywords": ["cast","cares","anxiety","burden"], "note": "Cast your anxiety on him because he cares for you." },
-    { "reference": "Isaiah 41:10", "usfm": "ISA.41.10", "themes": ["fear","courage","comfort"], "tone": "assurance", "intensity_fit": [0.5, 1.0], "keywords": ["afraid","fear","alone","strength"], "note": "Do not fear; I am with you and will strengthen you." },
-    { "reference": "Joshua 1:9", "usfm": "JOS.1.9", "themes": ["fear","courage"], "tone": "challenge", "intensity_fit": [0.4, 0.9], "keywords": ["courage","brave","afraid","new","start"], "note": "Be strong and courageous; God goes with you." },
-    { "reference": "2 Timothy 1:7", "usfm": "2TI.1.7", "themes": ["fear","courage","identity"], "tone": "assurance", "intensity_fit": [0.3, 0.9], "keywords": ["fear","timid","power","confidence"], "note": "A spirit of power, love and self-control — not fear." },
-    { "reference": "Psalm 23:4", "usfm": "PSA.23.4", "themes": ["fear","grief","comfort"], "tone": "comfort", "intensity_fit": [0.6, 1.0], "keywords": ["valley","darkness","death","fear","alone"], "note": "Even in the darkest valley, you are with me." },
-    { "reference": "Psalm 34:18", "usfm": "PSA.34.18", "themes": ["grief","comfort","loneliness"], "tone": "comfort", "intensity_fit": [0.6, 1.0], "keywords": ["brokenhearted","crushed","grief","sad","pain"], "note": "The Lord is near the brokenhearted." },
-    { "reference": "Matthew 5:4", "usfm": "MAT.5.4", "themes": ["grief","comfort","hope"], "tone": "comfort", "intensity_fit": [0.6, 1.0], "keywords": ["mourn","grief","loss","comfort"], "note": "Blessed are those who mourn — they will be comforted." },
-    { "reference": "Revelation 21:4", "usfm": "REV.21.4", "themes": ["grief","hope","comfort"], "tone": "hope", "intensity_fit": [0.5, 1.0], "keywords": ["tears","death","mourning","pain","end"], "note": "He will wipe every tear; no more pain." },
-    { "reference": "Psalm 147:3", "usfm": "PSA.147.3", "themes": ["grief","comfort"], "tone": "comfort", "intensity_fit": [0.5, 1.0], "keywords": ["heal","broken","wounds","heart"], "note": "He heals the brokenhearted and binds their wounds." },
-    { "reference": "Matthew 11:28-30", "usfm": "MAT.11.28-MAT.11.30", "themes": ["weariness","rest","comfort"], "tone": "comfort", "intensity_fit": [0.4, 1.0], "keywords": ["tired","weary","burden","rest","exhausted"], "note": "Come to me, weary one, and I'll give you rest." },
-    { "reference": "Isaiah 40:31", "usfm": "ISA.40.31", "themes": ["weariness","hope","perseverance"], "tone": "hope", "intensity_fit": [0.3, 0.9], "keywords": ["weary","strength","renew","tired","wait"], "note": "Those who hope in the Lord renew their strength." },
-    { "reference": "Galatians 6:9", "usfm": "GAL.6.9", "themes": ["weariness","perseverance"], "tone": "challenge", "intensity_fit": [0.3, 0.8], "keywords": ["give up","weary","quit","harvest","keep going"], "note": "Don't grow weary in doing good; the harvest comes." },
-    { "reference": "Hebrews 12:1", "usfm": "HEB.12.1", "themes": ["perseverance","purpose"], "tone": "challenge", "intensity_fit": [0.2, 0.8], "keywords": ["run","race","perseverance","endure","finish"], "note": "Run with perseverance the race set before you." },
-    { "reference": "James 1:12", "usfm": "JAS.1.12", "themes": ["perseverance","hope"], "tone": "challenge", "intensity_fit": [0.3, 0.8], "keywords": ["trial","persevere","reward","endure"], "note": "Blessed is the one who perseveres under trial." },
-    { "reference": "Romans 5:3-4", "usfm": "ROM.5.3-ROM.5.4", "themes": ["perseverance","hope"], "tone": "challenge", "intensity_fit": [0.3, 0.8], "keywords": ["suffering","perseverance","character","hope"], "note": "Suffering produces perseverance, character, hope." },
-    { "reference": "Proverbs 3:5-6", "usfm": "PRO.3.5-PRO.3.6", "themes": ["doubt","trust","purpose"], "tone": "assurance", "intensity_fit": [0.2, 0.8], "keywords": ["trust","understanding","direction","decision","path"], "note": "Trust in the Lord; he will direct your paths." },
-    { "reference": "Mark 9:24", "usfm": "MRK.9.24", "themes": ["doubt"], "tone": "comfort", "intensity_fit": [0.4, 0.9], "keywords": ["believe","doubt","unbelief","help"], "note": "I believe; help my unbelief." },
-    { "reference": "1 Thessalonians 5:18", "usfm": "1TH.5.18", "themes": ["gratitude"], "tone": "challenge", "intensity_fit": [0.0, 0.7], "keywords": ["thankful","grateful","thanks","gratitude"], "note": "Give thanks in all circumstances." },
-    { "reference": "Psalm 118:24", "usfm": "PSA.118.24", "themes": ["joy","gratitude","celebration"], "tone": "celebration", "intensity_fit": [0.4, 1.0], "keywords": ["today","rejoice","glad","joy","celebrate"], "note": "This is the day the Lord made; rejoice in it." },
-    { "reference": "Philippians 4:4", "usfm": "PHP.4.4", "themes": ["joy","celebration"], "tone": "celebration", "intensity_fit": [0.4, 1.0], "keywords": ["rejoice","joy","celebrate","glad"], "note": "Rejoice in the Lord always." },
-    { "reference": "Jeremiah 29:11", "usfm": "JER.29.11", "themes": ["hope","purpose","fear"], "tone": "hope", "intensity_fit": [0.2, 0.9], "keywords": ["future","plans","hope","purpose","uncertain"], "note": "Plans to give you a future and a hope." },
-    { "reference": "Romans 8:28", "usfm": "ROM.8.28", "themes": ["hope","trust","purpose"], "tone": "assurance", "intensity_fit": [0.3, 0.9], "keywords": ["good","purpose","trust","everything"], "note": "God works all things together for good." },
-    { "reference": "Romans 15:13", "usfm": "ROM.15.13", "themes": ["hope","joy","peace"], "tone": "hope", "intensity_fit": [0.2, 0.8], "keywords": ["hope","joy","peace","trust"], "note": "May the God of hope fill you with joy and peace." },
-    { "reference": "Deuteronomy 31:6", "usfm": "DEU.31.6", "themes": ["loneliness","fear","courage"], "tone": "assurance", "intensity_fit": [0.4, 1.0], "keywords": ["alone","abandon","leave","fear","strong"], "note": "He will never leave you nor forsake you." },
-    { "reference": "Hebrews 13:5", "usfm": "HEB.13.5", "themes": ["loneliness","provision","trust"], "tone": "assurance", "intensity_fit": [0.3, 0.9], "keywords": ["content","money","alone","provision","never leave"], "note": "Be content; he will never leave you." },
-    { "reference": "1 John 1:9", "usfm": "1JN.1.9", "themes": ["guilt","forgiveness"], "tone": "assurance", "intensity_fit": [0.3, 0.9], "keywords": ["sin","confess","forgive","guilt","clean"], "note": "Confess, and he is faithful to forgive." },
-    { "reference": "Romans 8:1", "usfm": "ROM.8.1", "themes": ["guilt","identity","forgiveness"], "tone": "assurance", "intensity_fit": [0.4, 1.0], "keywords": ["condemnation","guilt","shame","free"], "note": "No condemnation for those in Christ." },
-    { "reference": "Psalm 103:12", "usfm": "PSA.103.12", "themes": ["guilt","forgiveness"], "tone": "comfort", "intensity_fit": [0.3, 0.9], "keywords": ["forgive","sin","removed","far","guilt"], "note": "As far as east is from west, so far he removes our sins." },
-    { "reference": "Ephesians 2:10", "usfm": "EPH.2.10", "themes": ["purpose","identity"], "tone": "hope", "intensity_fit": [0.0, 0.7], "keywords": ["purpose","created","work","calling","made"], "note": "You are God's handiwork, created for good works." },
-    { "reference": "Matthew 6:31-33", "usfm": "MAT.6.31-MAT.6.33", "themes": ["provision","anxiety","trust"], "tone": "assurance", "intensity_fit": [0.3, 0.9], "keywords": ["provision","needs","money","food","seek"], "note": "Seek first his kingdom; your needs are known." },
-    { "reference": "Philippians 4:19", "usfm": "PHP.4.19", "themes": ["provision","trust"], "tone": "assurance", "intensity_fit": [0.3, 0.9], "keywords": ["needs","provision","supply","lack"], "note": "God will supply all your needs." },
-    { "reference": "Romans 8:38-39", "usfm": "ROM.8.38-ROM.8.39", "themes": ["love","identity","comfort"], "tone": "assurance", "intensity_fit": [0.4, 1.0], "keywords": ["love","nothing","separate","identity"], "note": "Nothing can separate you from God's love." },
-    { "reference": "Zephaniah 3:17", "usfm": "ZEP.3.17", "themes": ["love","identity","joy"], "tone": "comfort", "intensity_fit": [0.4, 1.0], "keywords": ["love","delight","rejoice","sing","identity"], "note": "God rejoices over you with singing." },
-    { "reference": "Lamentations 3:22-23", "usfm": "LAM.3.22-LAM.3.23", "themes": ["hope","grief","comfort"], "tone": "hope", "intensity_fit": [0.5, 1.0], "keywords": ["mercy","new","morning","faithful"], "note": "His mercies are new every morning." }
+    {
+      "reference": "Philippians 4:6-7",
+      "usfm": "PHP.4.6-PHP.4.7",
+      "themes": [
+        "anxiety",
+        "peace",
+        "prayer"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "worry",
+        "anxious",
+        "stress",
+        "overwhelmed",
+        "panic",
+        "peace"
+      ],
+      "note": "Bring worry to God; his peace guards the heart."
+    },
+    {
+      "reference": "Matthew 6:34",
+      "usfm": "MAT.6.34",
+      "themes": [
+        "anxiety",
+        "trust"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.3,
+        0.8
+      ],
+      "keywords": [
+        "tomorrow",
+        "future",
+        "worry",
+        "uncertain"
+      ],
+      "note": "Don't borrow tomorrow's worry; today is enough."
+    },
+    {
+      "reference": "1 Peter 5:7",
+      "usfm": "1PE.5.7",
+      "themes": [
+        "anxiety",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "cast",
+        "cares",
+        "anxiety",
+        "burden"
+      ],
+      "note": "Cast your anxiety on him because he cares for you."
+    },
+    {
+      "reference": "Isaiah 41:10",
+      "usfm": "ISA.41.10",
+      "themes": [
+        "fear",
+        "courage",
+        "comfort"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "afraid",
+        "fear",
+        "alone",
+        "strength"
+      ],
+      "note": "Do not fear; I am with you and will strengthen you."
+    },
+    {
+      "reference": "Joshua 1:9",
+      "usfm": "JOS.1.9",
+      "themes": [
+        "fear",
+        "courage"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.4,
+        0.9
+      ],
+      "keywords": [
+        "courage",
+        "brave",
+        "afraid",
+        "new",
+        "start"
+      ],
+      "note": "Be strong and courageous; God goes with you."
+    },
+    {
+      "reference": "2 Timothy 1:7",
+      "usfm": "2TI.1.7",
+      "themes": [
+        "fear",
+        "courage",
+        "identity"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "fear",
+        "timid",
+        "power",
+        "confidence"
+      ],
+      "note": "A spirit of power, love and self-control — not fear."
+    },
+    {
+      "reference": "Psalm 23:4",
+      "usfm": "PSA.23.4",
+      "themes": [
+        "fear",
+        "grief",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.6,
+        1.0
+      ],
+      "keywords": [
+        "valley",
+        "darkness",
+        "death",
+        "fear",
+        "alone"
+      ],
+      "note": "Even in the darkest valley, you are with me."
+    },
+    {
+      "reference": "Psalm 34:18",
+      "usfm": "PSA.34.18",
+      "themes": [
+        "grief",
+        "comfort",
+        "loneliness"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.6,
+        1.0
+      ],
+      "keywords": [
+        "brokenhearted",
+        "crushed",
+        "grief",
+        "sad",
+        "pain"
+      ],
+      "note": "The Lord is near the brokenhearted."
+    },
+    {
+      "reference": "Matthew 5:4",
+      "usfm": "MAT.5.4",
+      "themes": [
+        "grief",
+        "comfort",
+        "hope"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.6,
+        1.0
+      ],
+      "keywords": [
+        "mourn",
+        "grief",
+        "loss",
+        "comfort"
+      ],
+      "note": "Blessed are those who mourn — they will be comforted."
+    },
+    {
+      "reference": "Revelation 21:4",
+      "usfm": "REV.21.4",
+      "themes": [
+        "grief",
+        "hope",
+        "comfort"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "tears",
+        "death",
+        "mourning",
+        "pain",
+        "end"
+      ],
+      "note": "He will wipe every tear; no more pain."
+    },
+    {
+      "reference": "Psalm 147:3",
+      "usfm": "PSA.147.3",
+      "themes": [
+        "grief",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "heal",
+        "broken",
+        "wounds",
+        "heart"
+      ],
+      "note": "He heals the brokenhearted and binds their wounds."
+    },
+    {
+      "reference": "Matthew 11:28-30",
+      "usfm": "MAT.11.28-MAT.11.30",
+      "themes": [
+        "weariness",
+        "rest",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "tired",
+        "weary",
+        "burden",
+        "rest",
+        "exhausted"
+      ],
+      "note": "Come to me, weary one, and I'll give you rest."
+    },
+    {
+      "reference": "Isaiah 40:31",
+      "usfm": "ISA.40.31",
+      "themes": [
+        "weariness",
+        "hope",
+        "perseverance"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "weary",
+        "strength",
+        "renew",
+        "tired",
+        "wait"
+      ],
+      "note": "Those who hope in the Lord renew their strength."
+    },
+    {
+      "reference": "Galatians 6:9",
+      "usfm": "GAL.6.9",
+      "themes": [
+        "weariness",
+        "perseverance"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.3,
+        0.8
+      ],
+      "keywords": [
+        "give up",
+        "weary",
+        "quit",
+        "harvest",
+        "keep going"
+      ],
+      "note": "Don't grow weary in doing good; the harvest comes."
+    },
+    {
+      "reference": "Hebrews 12:1",
+      "usfm": "HEB.12.1",
+      "themes": [
+        "perseverance",
+        "purpose"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "run",
+        "race",
+        "perseverance",
+        "endure",
+        "finish"
+      ],
+      "note": "Run with perseverance the race set before you."
+    },
+    {
+      "reference": "James 1:12",
+      "usfm": "JAS.1.12",
+      "themes": [
+        "perseverance",
+        "hope"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.3,
+        0.8
+      ],
+      "keywords": [
+        "trial",
+        "persevere",
+        "reward",
+        "endure"
+      ],
+      "note": "Blessed is the one who perseveres under trial."
+    },
+    {
+      "reference": "Romans 5:3-4",
+      "usfm": "ROM.5.3-ROM.5.4",
+      "themes": [
+        "perseverance",
+        "hope"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.3,
+        0.8
+      ],
+      "keywords": [
+        "suffering",
+        "perseverance",
+        "character",
+        "hope"
+      ],
+      "note": "Suffering produces perseverance, character, hope."
+    },
+    {
+      "reference": "Proverbs 3:5-6",
+      "usfm": "PRO.3.5-PRO.3.6",
+      "themes": [
+        "doubt",
+        "trust",
+        "purpose"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "trust",
+        "understanding",
+        "direction",
+        "decision",
+        "path"
+      ],
+      "note": "Trust in the Lord; he will direct your paths."
+    },
+    {
+      "reference": "Mark 9:24",
+      "usfm": "MRK.9.24",
+      "themes": [
+        "doubt"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        0.9
+      ],
+      "keywords": [
+        "believe",
+        "doubt",
+        "unbelief",
+        "help"
+      ],
+      "note": "I believe; help my unbelief."
+    },
+    {
+      "reference": "1 Thessalonians 5:18",
+      "usfm": "1TH.5.18",
+      "themes": [
+        "gratitude"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.0,
+        0.7
+      ],
+      "keywords": [
+        "thankful",
+        "grateful",
+        "thanks",
+        "gratitude"
+      ],
+      "note": "Give thanks in all circumstances."
+    },
+    {
+      "reference": "Psalm 118:24",
+      "usfm": "PSA.118.24",
+      "themes": [
+        "joy",
+        "gratitude",
+        "celebration"
+      ],
+      "tone": "celebration",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "today",
+        "rejoice",
+        "glad",
+        "joy",
+        "celebrate"
+      ],
+      "note": "This is the day the Lord made; rejoice in it."
+    },
+    {
+      "reference": "Philippians 4:4",
+      "usfm": "PHP.4.4",
+      "themes": [
+        "joy",
+        "celebration"
+      ],
+      "tone": "celebration",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "rejoice",
+        "joy",
+        "celebrate",
+        "glad"
+      ],
+      "note": "Rejoice in the Lord always."
+    },
+    {
+      "reference": "Jeremiah 29:11",
+      "usfm": "JER.29.11",
+      "themes": [
+        "hope",
+        "purpose",
+        "fear"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.2,
+        0.9
+      ],
+      "keywords": [
+        "future",
+        "plans",
+        "hope",
+        "purpose",
+        "uncertain"
+      ],
+      "note": "Plans to give you a future and a hope."
+    },
+    {
+      "reference": "Romans 8:28",
+      "usfm": "ROM.8.28",
+      "themes": [
+        "hope",
+        "trust",
+        "purpose"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "good",
+        "purpose",
+        "trust",
+        "everything"
+      ],
+      "note": "God works all things together for good."
+    },
+    {
+      "reference": "Romans 15:13",
+      "usfm": "ROM.15.13",
+      "themes": [
+        "hope",
+        "joy",
+        "peace"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "hope",
+        "joy",
+        "peace",
+        "trust"
+      ],
+      "note": "May the God of hope fill you with joy and peace."
+    },
+    {
+      "reference": "Deuteronomy 31:6",
+      "usfm": "DEU.31.6",
+      "themes": [
+        "loneliness",
+        "fear",
+        "courage"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "alone",
+        "abandon",
+        "leave",
+        "fear",
+        "strong"
+      ],
+      "note": "He will never leave you nor forsake you."
+    },
+    {
+      "reference": "Hebrews 13:5",
+      "usfm": "HEB.13.5",
+      "themes": [
+        "loneliness",
+        "provision",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "content",
+        "money",
+        "alone",
+        "provision",
+        "never leave"
+      ],
+      "note": "Be content; he will never leave you."
+    },
+    {
+      "reference": "1 John 1:9",
+      "usfm": "1JN.1.9",
+      "themes": [
+        "guilt",
+        "forgiveness"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "sin",
+        "confess",
+        "forgive",
+        "guilt",
+        "clean"
+      ],
+      "note": "Confess, and he is faithful to forgive."
+    },
+    {
+      "reference": "Romans 8:1",
+      "usfm": "ROM.8.1",
+      "themes": [
+        "guilt",
+        "identity",
+        "forgiveness"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "condemnation",
+        "guilt",
+        "shame",
+        "free"
+      ],
+      "note": "No condemnation for those in Christ."
+    },
+    {
+      "reference": "Psalm 103:12",
+      "usfm": "PSA.103.12",
+      "themes": [
+        "guilt",
+        "forgiveness"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "forgive",
+        "sin",
+        "removed",
+        "far",
+        "guilt"
+      ],
+      "note": "As far as east is from west, so far he removes our sins."
+    },
+    {
+      "reference": "Ephesians 2:10",
+      "usfm": "EPH.2.10",
+      "themes": [
+        "purpose",
+        "identity"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.0,
+        0.7
+      ],
+      "keywords": [
+        "purpose",
+        "created",
+        "work",
+        "calling",
+        "made"
+      ],
+      "note": "You are God's handiwork, created for good works."
+    },
+    {
+      "reference": "Matthew 6:31-33",
+      "usfm": "MAT.6.31-MAT.6.33",
+      "themes": [
+        "provision",
+        "anxiety",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "provision",
+        "needs",
+        "money",
+        "food",
+        "seek"
+      ],
+      "note": "Seek first his kingdom; your needs are known."
+    },
+    {
+      "reference": "Philippians 4:19",
+      "usfm": "PHP.4.19",
+      "themes": [
+        "provision",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "needs",
+        "provision",
+        "supply",
+        "lack"
+      ],
+      "note": "God will supply all your needs."
+    },
+    {
+      "reference": "Romans 8:38-39",
+      "usfm": "ROM.8.38-ROM.8.39",
+      "themes": [
+        "love",
+        "identity",
+        "comfort"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "love",
+        "nothing",
+        "separate",
+        "identity"
+      ],
+      "note": "Nothing can separate you from God's love."
+    },
+    {
+      "reference": "Zephaniah 3:17",
+      "usfm": "ZEP.3.17",
+      "themes": [
+        "love",
+        "identity",
+        "joy"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "love",
+        "delight",
+        "rejoice",
+        "sing",
+        "identity"
+      ],
+      "note": "God rejoices over you with singing."
+    },
+    {
+      "reference": "Lamentations 3:22-23",
+      "usfm": "LAM.3.22-LAM.3.23",
+      "themes": [
+        "hope",
+        "grief",
+        "comfort"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "mercy",
+        "new",
+        "morning",
+        "faithful"
+      ],
+      "note": "His mercies are new every morning."
+    },
+    {
+      "reference": "John 14:27",
+      "usfm": "JHN.14.27",
+      "themes": [
+        "anxiety",
+        "peace",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "peace",
+        "afraid",
+        "troubled",
+        "heart"
+      ],
+      "note": "My peace I give you; let not your heart be troubled."
+    },
+    {
+      "reference": "Isaiah 26:3",
+      "usfm": "ISA.26.3",
+      "themes": [
+        "anxiety",
+        "peace",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "perfect peace",
+        "mind",
+        "trust",
+        "stayed"
+      ],
+      "note": "Perfect peace for the mind that is stayed on God."
+    },
+    {
+      "reference": "Psalm 55:22",
+      "usfm": "PSA.55.22",
+      "themes": [
+        "anxiety",
+        "trust",
+        "weariness"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "cast",
+        "burden",
+        "sustain"
+      ],
+      "note": "Cast your burden on the Lord; he will sustain you."
+    },
+    {
+      "reference": "Psalm 94:19",
+      "usfm": "PSA.94.19",
+      "themes": [
+        "anxiety",
+        "comfort",
+        "joy"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "anxiety",
+        "cares",
+        "consolation",
+        "soul"
+      ],
+      "note": "When anxieties were many, your consolations cheered my soul."
+    },
+    {
+      "reference": "Colossians 3:15",
+      "usfm": "COL.3.15",
+      "themes": [
+        "peace",
+        "gratitude"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.0,
+        0.7
+      ],
+      "keywords": [
+        "peace",
+        "rule",
+        "heart",
+        "thankful"
+      ],
+      "note": "Let the peace of Christ rule in your hearts."
+    },
+    {
+      "reference": "2 Thessalonians 3:16",
+      "usfm": "2TH.3.16",
+      "themes": [
+        "peace"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "peace",
+        "always",
+        "Lord of peace"
+      ],
+      "note": "The Lord of peace give you peace at all times."
+    },
+    {
+      "reference": "Psalm 27:1",
+      "usfm": "PSA.27.1",
+      "themes": [
+        "fear",
+        "courage",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "light",
+        "salvation",
+        "afraid",
+        "fear",
+        "strength"
+      ],
+      "note": "The Lord is my light and salvation; whom shall I fear?"
+    },
+    {
+      "reference": "Psalm 56:3",
+      "usfm": "PSA.56.3",
+      "themes": [
+        "fear",
+        "trust"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "afraid",
+        "trust"
+      ],
+      "note": "When I am afraid, I put my trust in you."
+    },
+    {
+      "reference": "Isaiah 41:13",
+      "usfm": "ISA.41.13",
+      "themes": [
+        "fear",
+        "comfort"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "fear",
+        "hold",
+        "right hand",
+        "help"
+      ],
+      "note": "I hold your right hand and say, do not fear."
+    },
+    {
+      "reference": "1 John 4:18",
+      "usfm": "1JN.4.18",
+      "themes": [
+        "fear",
+        "love"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "fear",
+        "love",
+        "perfect",
+        "casts out"
+      ],
+      "note": "Perfect love casts out fear."
+    },
+    {
+      "reference": "Deuteronomy 31:8",
+      "usfm": "DEU.31.8",
+      "themes": [
+        "fear",
+        "courage",
+        "loneliness"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "go before",
+        "never leave",
+        "fear",
+        "dismayed"
+      ],
+      "note": "He goes before you; do not fear or be dismayed."
+    },
+    {
+      "reference": "Isaiah 43:1",
+      "usfm": "ISA.43.1",
+      "themes": [
+        "fear",
+        "identity",
+        "comfort"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "redeemed",
+        "called",
+        "name",
+        "mine"
+      ],
+      "note": "I have called you by name; you are mine."
+    },
+    {
+      "reference": "Matthew 10:31",
+      "usfm": "MAT.10.31",
+      "themes": [
+        "fear",
+        "identity",
+        "provision"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "fear",
+        "value",
+        "sparrows"
+      ],
+      "note": "Fear not; you are worth more than many sparrows."
+    },
+    {
+      "reference": "2 Chronicles 20:15",
+      "usfm": "2CH.20.15",
+      "themes": [
+        "fear",
+        "courage",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "battle",
+        "not yours",
+        "God"
+      ],
+      "note": "The battle is not yours, but God's."
+    },
+    {
+      "reference": "Psalm 30:5",
+      "usfm": "PSA.30.5",
+      "themes": [
+        "grief",
+        "hope",
+        "comfort"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "weeping",
+        "night",
+        "joy",
+        "morning"
+      ],
+      "note": "Weeping may last the night, but joy comes in the morning."
+    },
+    {
+      "reference": "2 Corinthians 1:3-4",
+      "usfm": "2CO.1.3-2CO.1.4",
+      "themes": [
+        "grief",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "comfort",
+        "affliction",
+        "mercies"
+      ],
+      "note": "The God of all comfort, who comforts us in affliction."
+    },
+    {
+      "reference": "John 11:35",
+      "usfm": "JHN.11.35",
+      "themes": [
+        "grief",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.6,
+        1.0
+      ],
+      "keywords": [
+        "wept",
+        "Jesus",
+        "grief",
+        "tears"
+      ],
+      "note": "Jesus wept — he enters our grief."
+    },
+    {
+      "reference": "Psalm 73:26",
+      "usfm": "PSA.73.26",
+      "themes": [
+        "grief",
+        "weariness",
+        "trust"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "flesh",
+        "heart",
+        "fail",
+        "strength",
+        "portion"
+      ],
+      "note": "My heart may fail, but God is the strength of my heart."
+    },
+    {
+      "reference": "Isaiah 61:3",
+      "usfm": "ISA.61.3",
+      "themes": [
+        "grief",
+        "hope",
+        "comfort"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "beauty",
+        "ashes",
+        "mourning",
+        "joy"
+      ],
+      "note": "Beauty for ashes, the oil of joy for mourning."
+    },
+    {
+      "reference": "1 Thessalonians 4:13",
+      "usfm": "1TH.4.13",
+      "themes": [
+        "grief",
+        "hope"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "grieve",
+        "hope",
+        "asleep"
+      ],
+      "note": "Do not grieve as those who have no hope."
+    },
+    {
+      "reference": "Psalm 126:5",
+      "usfm": "PSA.126.5",
+      "themes": [
+        "grief",
+        "hope",
+        "joy"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "sow",
+        "tears",
+        "reap",
+        "joy"
+      ],
+      "note": "Those who sow in tears shall reap with joy."
+    },
+    {
+      "reference": "Psalm 68:6",
+      "usfm": "PSA.68.6",
+      "themes": [
+        "loneliness",
+        "provision"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "solitary",
+        "family",
+        "lonely",
+        "alone"
+      ],
+      "note": "God sets the lonely in families."
+    },
+    {
+      "reference": "Matthew 28:20",
+      "usfm": "MAT.28.20",
+      "themes": [
+        "loneliness",
+        "courage",
+        "comfort"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "with you",
+        "always",
+        "end"
+      ],
+      "note": "I am with you always, to the very end."
+    },
+    {
+      "reference": "Psalm 139:7-10",
+      "usfm": "PSA.139.7-PSA.139.10",
+      "themes": [
+        "loneliness",
+        "comfort",
+        "identity"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "presence",
+        "everywhere",
+        "hand",
+        "lead"
+      ],
+      "note": "Wherever I go, your hand will lead me."
+    },
+    {
+      "reference": "John 14:18",
+      "usfm": "JHN.14.18",
+      "themes": [
+        "loneliness",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.5,
+        1.0
+      ],
+      "keywords": [
+        "not leave",
+        "orphans",
+        "come to you"
+      ],
+      "note": "I will not leave you as orphans; I will come to you."
+    },
+    {
+      "reference": "Psalm 145:18",
+      "usfm": "PSA.145.18",
+      "themes": [
+        "loneliness",
+        "prayer",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "near",
+        "call",
+        "truth"
+      ],
+      "note": "The Lord is near to all who call on him."
+    },
+    {
+      "reference": "Isaiah 55:8-9",
+      "usfm": "ISA.55.8-ISA.55.9",
+      "themes": [
+        "doubt",
+        "trust",
+        "purpose"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "thoughts",
+        "ways",
+        "higher"
+      ],
+      "note": "My ways are higher than your ways, says the Lord."
+    },
+    {
+      "reference": "Hebrews 11:1",
+      "usfm": "HEB.11.1",
+      "themes": [
+        "doubt",
+        "hope",
+        "trust"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "faith",
+        "hope",
+        "assurance",
+        "unseen"
+      ],
+      "note": "Faith is the assurance of things hoped for."
+    },
+    {
+      "reference": "James 1:5-6",
+      "usfm": "JAS.1.5-JAS.1.6",
+      "themes": [
+        "doubt",
+        "prayer",
+        "purpose"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "wisdom",
+        "ask",
+        "doubt"
+      ],
+      "note": "If any of you lacks wisdom, ask God."
+    },
+    {
+      "reference": "Psalm 46:10",
+      "usfm": "PSA.46.10",
+      "themes": [
+        "doubt",
+        "peace",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "be still",
+        "know",
+        "God"
+      ],
+      "note": "Be still, and know that I am God."
+    },
+    {
+      "reference": "2 Corinthians 5:7",
+      "usfm": "2CO.5.7",
+      "themes": [
+        "doubt",
+        "trust"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "walk",
+        "faith",
+        "not sight"
+      ],
+      "note": "We walk by faith, not by sight."
+    },
+    {
+      "reference": "Proverbs 3:5",
+      "usfm": "PRO.3.5",
+      "themes": [
+        "doubt",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.9
+      ],
+      "keywords": [
+        "trust",
+        "heart",
+        "lean",
+        "understanding"
+      ],
+      "note": "Trust in the Lord with all your heart."
+    },
+    {
+      "reference": "Psalm 51:10",
+      "usfm": "PSA.51.10",
+      "themes": [
+        "guilt",
+        "forgiveness",
+        "identity"
+      ],
+      "tone": "conviction",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "create",
+        "clean heart",
+        "renew"
+      ],
+      "note": "Create in me a clean heart, O God."
+    },
+    {
+      "reference": "Isaiah 1:18",
+      "usfm": "ISA.1.18",
+      "themes": [
+        "guilt",
+        "forgiveness"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "sins",
+        "scarlet",
+        "white",
+        "snow"
+      ],
+      "note": "Though your sins are scarlet, they shall be white as snow."
+    },
+    {
+      "reference": "Micah 7:19",
+      "usfm": "MIC.7.19",
+      "themes": [
+        "guilt",
+        "forgiveness"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "cast",
+        "sins",
+        "depths",
+        "sea"
+      ],
+      "note": "He will cast all our sins into the depths of the sea."
+    },
+    {
+      "reference": "Ephesians 1:7",
+      "usfm": "EPH.1.7",
+      "themes": [
+        "guilt",
+        "forgiveness",
+        "identity"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "redemption",
+        "forgiveness",
+        "grace"
+      ],
+      "note": "In him we have redemption, the forgiveness of sins."
+    },
+    {
+      "reference": "2 Corinthians 5:17",
+      "usfm": "2CO.5.17",
+      "themes": [
+        "guilt",
+        "identity",
+        "hope"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.2,
+        0.9
+      ],
+      "keywords": [
+        "new creation",
+        "old",
+        "passed"
+      ],
+      "note": "If anyone is in Christ, he is a new creation."
+    },
+    {
+      "reference": "Romans 5:8",
+      "usfm": "ROM.5.8",
+      "themes": [
+        "love",
+        "guilt",
+        "identity"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.9
+      ],
+      "keywords": [
+        "sinners",
+        "Christ died",
+        "love"
+      ],
+      "note": "While we were still sinners, Christ died for us."
+    },
+    {
+      "reference": "James 1:19-20",
+      "usfm": "JAS.1.19-JAS.1.20",
+      "themes": [
+        "anger"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "slow",
+        "anger",
+        "quick",
+        "listen",
+        "angry"
+      ],
+      "note": "Be quick to listen, slow to anger."
+    },
+    {
+      "reference": "Proverbs 15:1",
+      "usfm": "PRO.15.1",
+      "themes": [
+        "anger",
+        "peace"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.3,
+        0.8
+      ],
+      "keywords": [
+        "soft answer",
+        "wrath",
+        "angry"
+      ],
+      "note": "A soft answer turns away wrath."
+    },
+    {
+      "reference": "Ephesians 4:26",
+      "usfm": "EPH.4.26",
+      "themes": [
+        "anger",
+        "forgiveness"
+      ],
+      "tone": "conviction",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "angry",
+        "sin",
+        "sun down",
+        "wrath"
+      ],
+      "note": "Be angry and do not sin; do not let the sun set on your anger."
+    },
+    {
+      "reference": "Proverbs 14:29",
+      "usfm": "PRO.14.29",
+      "themes": [
+        "anger",
+        "perseverance"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.3,
+        0.8
+      ],
+      "keywords": [
+        "slow",
+        "anger",
+        "understanding",
+        "patience"
+      ],
+      "note": "Whoever is slow to anger has great understanding."
+    },
+    {
+      "reference": "Psalm 37:8",
+      "usfm": "PSA.37.8",
+      "themes": [
+        "anger",
+        "peace",
+        "trust"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "cease",
+        "anger",
+        "fret",
+        "wrath"
+      ],
+      "note": "Cease from anger and forsake wrath; do not fret."
+    },
+    {
+      "reference": "Colossians 3:8",
+      "usfm": "COL.3.8",
+      "themes": [
+        "anger",
+        "forgiveness"
+      ],
+      "tone": "conviction",
+      "intensity_fit": [
+        0.3,
+        0.8
+      ],
+      "keywords": [
+        "put away",
+        "anger",
+        "wrath",
+        "malice"
+      ],
+      "note": "Put away anger, wrath, and malice."
+    },
+    {
+      "reference": "Isaiah 40:29",
+      "usfm": "ISA.40.29",
+      "themes": [
+        "weariness",
+        "perseverance"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "power",
+        "faint",
+        "weak",
+        "strength"
+      ],
+      "note": "He gives power to the faint and strength to the weak."
+    },
+    {
+      "reference": "2 Corinthians 12:9",
+      "usfm": "2CO.12.9",
+      "themes": [
+        "weariness",
+        "identity",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "grace",
+        "sufficient",
+        "weakness",
+        "strength"
+      ],
+      "note": "My grace is sufficient; my power is perfected in weakness."
+    },
+    {
+      "reference": "Psalm 23:1-3",
+      "usfm": "PSA.23.1-PSA.23.3",
+      "themes": [
+        "weariness",
+        "rest",
+        "provision"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "shepherd",
+        "want",
+        "green pastures",
+        "restore",
+        "soul"
+      ],
+      "note": "He restores my soul; I shall not want."
+    },
+    {
+      "reference": "Psalm 62:1",
+      "usfm": "PSA.62.1",
+      "themes": [
+        "weariness",
+        "rest",
+        "trust"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "soul",
+        "rest",
+        "salvation",
+        "silence"
+      ],
+      "note": "For God alone my soul waits in silence."
+    },
+    {
+      "reference": "Exodus 33:14",
+      "usfm": "EXO.33.14",
+      "themes": [
+        "rest",
+        "comfort",
+        "courage"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "presence",
+        "go",
+        "rest"
+      ],
+      "note": "My presence will go with you, and I will give you rest."
+    },
+    {
+      "reference": "Psalm 4:8",
+      "usfm": "PSA.4.8",
+      "themes": [
+        "rest",
+        "peace",
+        "trust"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.3,
+        1.0
+      ],
+      "keywords": [
+        "peace",
+        "sleep",
+        "safety",
+        "lie down"
+      ],
+      "note": "In peace I will lie down and sleep."
+    },
+    {
+      "reference": "Mark 6:31",
+      "usfm": "MRK.6.31",
+      "themes": [
+        "rest",
+        "weariness"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "come away",
+        "rest",
+        "while"
+      ],
+      "note": "Come away by yourselves and rest a while."
+    },
+    {
+      "reference": "Psalm 127:2",
+      "usfm": "PSA.127.2",
+      "themes": [
+        "rest",
+        "weariness",
+        "trust"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "toil",
+        "sleep",
+        "beloved"
+      ],
+      "note": "He gives sleep to those he loves."
+    },
+    {
+      "reference": "Philippians 3:14",
+      "usfm": "PHP.3.14",
+      "themes": [
+        "perseverance",
+        "purpose"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "press",
+        "goal",
+        "prize",
+        "forward"
+      ],
+      "note": "I press on toward the goal for the prize."
+    },
+    {
+      "reference": "1 Corinthians 15:58",
+      "usfm": "1CO.15.58",
+      "themes": [
+        "perseverance",
+        "purpose"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "steadfast",
+        "labor",
+        "not in vain"
+      ],
+      "note": "Be steadfast; your labor is not in vain."
+    },
+    {
+      "reference": "2 Timothy 4:7",
+      "usfm": "2TI.4.7",
+      "themes": [
+        "perseverance",
+        "purpose",
+        "hope"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "fought",
+        "fight",
+        "finished",
+        "race",
+        "kept faith"
+      ],
+      "note": "I have fought the good fight; I have finished the race."
+    },
+    {
+      "reference": "Romans 12:12",
+      "usfm": "ROM.12.12",
+      "themes": [
+        "perseverance",
+        "hope",
+        "prayer"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "rejoice",
+        "hope",
+        "patient",
+        "tribulation"
+      ],
+      "note": "Rejoice in hope, be patient in tribulation."
+    },
+    {
+      "reference": "2 Corinthians 4:16-18",
+      "usfm": "2CO.4.16-2CO.4.18",
+      "themes": [
+        "perseverance",
+        "hope",
+        "weariness"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "not lose heart",
+        "renewed",
+        "affliction"
+      ],
+      "note": "Though the outer self wastes away, the inner self is renewed."
+    },
+    {
+      "reference": "Hebrews 10:23",
+      "usfm": "HEB.10.23",
+      "themes": [
+        "perseverance",
+        "hope",
+        "trust"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "hold fast",
+        "hope",
+        "faithful"
+      ],
+      "note": "Hold fast to hope; he who promised is faithful."
+    },
+    {
+      "reference": "1 Corinthians 16:13",
+      "usfm": "1CO.16.13",
+      "themes": [
+        "courage",
+        "perseverance"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "watchful",
+        "firm",
+        "strong",
+        "stand"
+      ],
+      "note": "Be watchful, stand firm, be strong."
+    },
+    {
+      "reference": "Psalm 100:4",
+      "usfm": "PSA.100.4",
+      "themes": [
+        "gratitude",
+        "joy"
+      ],
+      "tone": "celebration",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "thanksgiving",
+        "praise",
+        "gates"
+      ],
+      "note": "Enter his gates with thanksgiving."
+    },
+    {
+      "reference": "Colossians 3:17",
+      "usfm": "COL.3.17",
+      "themes": [
+        "gratitude",
+        "purpose"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.0,
+        0.7
+      ],
+      "keywords": [
+        "whatever",
+        "do",
+        "thanks"
+      ],
+      "note": "Whatever you do, do it all giving thanks."
+    },
+    {
+      "reference": "Psalm 107:1",
+      "usfm": "PSA.107.1",
+      "themes": [
+        "gratitude"
+      ],
+      "tone": "celebration",
+      "intensity_fit": [
+        0.2,
+        0.9
+      ],
+      "keywords": [
+        "thanks",
+        "good",
+        "mercy"
+      ],
+      "note": "Give thanks to the Lord, for he is good."
+    },
+    {
+      "reference": "James 1:17",
+      "usfm": "JAS.1.17",
+      "themes": [
+        "gratitude",
+        "provision"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.0,
+        0.7
+      ],
+      "keywords": [
+        "good gift",
+        "perfect",
+        "above"
+      ],
+      "note": "Every good and perfect gift is from above."
+    },
+    {
+      "reference": "Nehemiah 8:10",
+      "usfm": "NEH.8.10",
+      "themes": [
+        "joy",
+        "weariness",
+        "hope"
+      ],
+      "tone": "celebration",
+      "intensity_fit": [
+        0.3,
+        1.0
+      ],
+      "keywords": [
+        "joy",
+        "Lord",
+        "strength"
+      ],
+      "note": "The joy of the Lord is your strength."
+    },
+    {
+      "reference": "John 15:11",
+      "usfm": "JHN.15.11",
+      "themes": [
+        "joy"
+      ],
+      "tone": "celebration",
+      "intensity_fit": [
+        0.3,
+        1.0
+      ],
+      "keywords": [
+        "joy",
+        "full",
+        "complete"
+      ],
+      "note": "That my joy may be in you and your joy be full."
+    },
+    {
+      "reference": "Psalm 16:11",
+      "usfm": "PSA.16.11",
+      "themes": [
+        "joy",
+        "purpose",
+        "hope"
+      ],
+      "tone": "celebration",
+      "intensity_fit": [
+        0.3,
+        1.0
+      ],
+      "keywords": [
+        "path",
+        "life",
+        "fullness",
+        "joy",
+        "presence"
+      ],
+      "note": "In your presence is fullness of joy."
+    },
+    {
+      "reference": "Psalm 42:11",
+      "usfm": "PSA.42.11",
+      "themes": [
+        "hope",
+        "grief",
+        "doubt"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "hope in God",
+        "cast down",
+        "soul"
+      ],
+      "note": "Why so downcast, my soul? Put your hope in God."
+    },
+    {
+      "reference": "Romans 5:5",
+      "usfm": "ROM.5.5",
+      "themes": [
+        "hope",
+        "love"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "hope",
+        "shame",
+        "love poured"
+      ],
+      "note": "Hope does not put us to shame."
+    },
+    {
+      "reference": "Hebrews 6:19",
+      "usfm": "HEB.6.19",
+      "themes": [
+        "hope",
+        "trust",
+        "peace"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "hope",
+        "anchor",
+        "soul"
+      ],
+      "note": "We have this hope as an anchor for the soul."
+    },
+    {
+      "reference": "Psalm 31:24",
+      "usfm": "PSA.31.24",
+      "themes": [
+        "hope",
+        "courage",
+        "perseverance"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "strong",
+        "courage",
+        "hope"
+      ],
+      "note": "Be strong and take heart, all who hope in the Lord."
+    },
+    {
+      "reference": "Isaiah 43:2",
+      "usfm": "ISA.43.2",
+      "themes": [
+        "comfort",
+        "fear",
+        "perseverance"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "waters",
+        "rivers",
+        "fire",
+        "not overwhelm"
+      ],
+      "note": "When you pass through the waters, I will be with you."
+    },
+    {
+      "reference": "Psalm 46:1",
+      "usfm": "PSA.46.1",
+      "themes": [
+        "comfort",
+        "fear",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "refuge",
+        "strength",
+        "help",
+        "trouble"
+      ],
+      "note": "God is our refuge and strength, an ever-present help."
+    },
+    {
+      "reference": "Psalm 91:1-2",
+      "usfm": "PSA.91.1-PSA.91.2",
+      "themes": [
+        "comfort",
+        "fear",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "shelter",
+        "shadow",
+        "refuge",
+        "fortress"
+      ],
+      "note": "He who dwells in the shelter of the Most High."
+    },
+    {
+      "reference": "Deuteronomy 33:27",
+      "usfm": "DEU.33.27",
+      "themes": [
+        "comfort",
+        "rest",
+        "trust"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "eternal",
+        "refuge",
+        "everlasting arms"
+      ],
+      "note": "Underneath are the everlasting arms."
+    },
+    {
+      "reference": "Nahum 1:7",
+      "usfm": "NAM.1.7",
+      "themes": [
+        "trust",
+        "comfort",
+        "provision"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        1.0
+      ],
+      "keywords": [
+        "good",
+        "stronghold",
+        "trouble"
+      ],
+      "note": "The Lord is good, a stronghold in trouble."
+    },
+    {
+      "reference": "Jeremiah 1:5",
+      "usfm": "JER.1.5",
+      "themes": [
+        "purpose",
+        "identity"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.9
+      ],
+      "keywords": [
+        "knew",
+        "formed",
+        "appointed"
+      ],
+      "note": "Before I formed you in the womb I knew you."
+    },
+    {
+      "reference": "Proverbs 16:9",
+      "usfm": "PRO.16.9",
+      "themes": [
+        "purpose",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "heart plans",
+        "Lord",
+        "directs",
+        "steps"
+      ],
+      "note": "The heart plans the way, but the Lord directs the steps."
+    },
+    {
+      "reference": "Romans 12:2",
+      "usfm": "ROM.12.2",
+      "themes": [
+        "purpose",
+        "identity"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.1,
+        0.7
+      ],
+      "keywords": [
+        "renew",
+        "mind",
+        "will of God",
+        "transform"
+      ],
+      "note": "Be transformed by the renewing of your mind."
+    },
+    {
+      "reference": "Colossians 3:23",
+      "usfm": "COL.3.23",
+      "themes": [
+        "purpose",
+        "perseverance"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.1,
+        0.7
+      ],
+      "keywords": [
+        "work",
+        "heartily",
+        "for the Lord"
+      ],
+      "note": "Whatever you do, work at it with all your heart, for the Lord."
+    },
+    {
+      "reference": "Esther 4:14",
+      "usfm": "EST.4.14",
+      "themes": [
+        "purpose",
+        "courage"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "such a time",
+        "as this"
+      ],
+      "note": "For such a time as this."
+    },
+    {
+      "reference": "2 Corinthians 9:8",
+      "usfm": "2CO.9.8",
+      "themes": [
+        "provision",
+        "gratitude"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "grace",
+        "abound",
+        "sufficiency"
+      ],
+      "note": "God is able to make all grace abound to you."
+    },
+    {
+      "reference": "Psalm 37:25",
+      "usfm": "PSA.37.25",
+      "themes": [
+        "provision",
+        "trust"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.9
+      ],
+      "keywords": [
+        "never",
+        "forsaken",
+        "bread"
+      ],
+      "note": "I have not seen the righteous forsaken."
+    },
+    {
+      "reference": "Matthew 7:11",
+      "usfm": "MAT.7.11",
+      "themes": [
+        "provision",
+        "prayer",
+        "love"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "good gifts",
+        "Father",
+        "give"
+      ],
+      "note": "How much more will your Father give good gifts."
+    },
+    {
+      "reference": "John 3:16",
+      "usfm": "JHN.3.16",
+      "themes": [
+        "love",
+        "hope",
+        "identity"
+      ],
+      "tone": "hope",
+      "intensity_fit": [
+        0.0,
+        0.9
+      ],
+      "keywords": [
+        "God so loved",
+        "gave",
+        "eternal"
+      ],
+      "note": "For God so loved the world that he gave his only Son."
+    },
+    {
+      "reference": "1 John 3:1",
+      "usfm": "1JN.3.1",
+      "themes": [
+        "love",
+        "identity"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.9
+      ],
+      "keywords": [
+        "love",
+        "children of God"
+      ],
+      "note": "See what great love — that we are called children of God."
+    },
+    {
+      "reference": "Jeremiah 31:3",
+      "usfm": "JER.31.3",
+      "themes": [
+        "love",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.3,
+        1.0
+      ],
+      "keywords": [
+        "everlasting love",
+        "drawn"
+      ],
+      "note": "I have loved you with an everlasting love."
+    },
+    {
+      "reference": "Psalm 139:14",
+      "usfm": "PSA.139.14",
+      "themes": [
+        "identity",
+        "gratitude"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.9
+      ],
+      "keywords": [
+        "fearfully",
+        "wonderfully",
+        "made"
+      ],
+      "note": "I am fearfully and wonderfully made."
+    },
+    {
+      "reference": "Galatians 2:20",
+      "usfm": "GAL.2.20",
+      "themes": [
+        "identity",
+        "love"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "crucified",
+        "Christ lives",
+        "loved me"
+      ],
+      "note": "Christ lives in me; he loved me and gave himself for me."
+    },
+    {
+      "reference": "1 Peter 2:9",
+      "usfm": "1PE.2.9",
+      "themes": [
+        "identity",
+        "purpose"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.1,
+        0.8
+      ],
+      "keywords": [
+        "chosen",
+        "royal",
+        "light",
+        "darkness"
+      ],
+      "note": "You are a chosen people, called out of darkness into light."
+    },
+    {
+      "reference": "Psalm 9:10",
+      "usfm": "PSA.9.10",
+      "themes": [
+        "trust",
+        "loneliness"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "know name",
+        "trust",
+        "not forsaken"
+      ],
+      "note": "Those who know your name trust in you."
+    },
+    {
+      "reference": "Psalm 37:5",
+      "usfm": "PSA.37.5",
+      "themes": [
+        "trust",
+        "purpose"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "commit",
+        "way",
+        "trust"
+      ],
+      "note": "Commit your way to the Lord; trust him."
+    },
+    {
+      "reference": "Isaiah 12:2",
+      "usfm": "ISA.12.2",
+      "themes": [
+        "trust",
+        "fear",
+        "joy"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "salvation",
+        "trust",
+        "not afraid"
+      ],
+      "note": "God is my salvation; I will trust and not be afraid."
+    },
+    {
+      "reference": "1 Thessalonians 5:17",
+      "usfm": "1TH.5.17",
+      "themes": [
+        "prayer"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.0,
+        0.7
+      ],
+      "keywords": [
+        "pray",
+        "without ceasing"
+      ],
+      "note": "Pray without ceasing."
+    },
+    {
+      "reference": "Matthew 7:7",
+      "usfm": "MAT.7.7",
+      "themes": [
+        "prayer",
+        "hope",
+        "provision"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "ask",
+        "seek",
+        "knock"
+      ],
+      "note": "Ask and it will be given; seek and you will find."
+    },
+    {
+      "reference": "James 5:16",
+      "usfm": "JAS.5.16",
+      "themes": [
+        "prayer",
+        "forgiveness"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "confess",
+        "pray",
+        "healed"
+      ],
+      "note": "Pray for one another, that you may be healed."
+    }
   ]
 }
