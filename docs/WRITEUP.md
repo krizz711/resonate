@@ -1,0 +1,25 @@
+# Resonate — Scripture, where you already are
+
+**Subtitle:** A privacy-first companion that weaves *verified* Scripture into the AI conversations people already have — quietly, safely, only when it fits.
+
+> Draft for the Kaggle writeup (well under the 500-word limit). Live-API specifics finalize
+> once keys open 2026-07-06; the architecture and adapters are already in place.
+
+---
+
+**The problem.** Billions now type their most honest words — grief, burnout, doubt — into AI chatbots, not a Bible app. Scripture has never been present there. Resonate is the bridge: a browser extension beside ChatGPT that surfaces the verse your own words were already echoing, as a small dismissible parchment panel — processed locally, storing nothing.
+
+**A context engine between the two APIs.**
+- **Gloo AI Studio** tags the message's emotional *beats* (grief, perseverance, anxiety…) as structured output, writes the one-line *bridge* to the verse, and runs safety classification — never reciting Scripture itself.
+- **The engine** (our contribution) matches each beat with **hybrid retrieval** — dense embeddings + BM25 + theme tags fused via **Reciprocal Rank Fusion** — then re-ranks by tone-fit and a per-user **temporal memory graph** (recency, theme-fatigue, narrative continuity).
+- **YouVersion Platform API** returns the verified, licensed text in the chosen translation. The model proposes a reference from a vetted shortlist; YouVersion confirms the words, so nothing is hallucinated.
+
+**Native, not a pop-up.** A **Delivery Policy** decides whether to speak at all: silent on ordinary messages, firing only on a real, high-confidence beat, rate-limited, learning from dismissals. Crisis messages are caught on the raw text by a phrasing-robust classifier and routed to a **human-help card — never a verse** (100% recall on our tests). Over weeks it notices recurring themes — *"you've returned to this 4× lately"* — personalization across conversations, not one sentence.
+
+**Built for trust.** Only the user's own message is read, locally, opt-in per site; an optional warm voice can read the verse aloud.
+
+**Engineering & verification.** The engine ships with a **28-case unit suite** and a **32-scenario evaluation harness** — theme recall 100%, verse hit@3 100%, **safety recall 100%, false-positives 0%** — wired in as a regression guard. Every external call sits behind a **mock/live adapter**, so it runs fully offline in development and flips to live APIs with one config change. The *same engine* already powers a second surface — a VS Code companion — proving a *"you choose where Scripture meets you"* architecture that extends to wearables, Discord, or an MCP tool.
+
+**Challenges.** The hard parts weren't fetching a verse; they were **restraint** (most "verse generators" annoy — ours measures and enforces silence), **safety robustness** (a crisis must never be missed or answered with a verse), and **anti-hallucination** (constraining the model to a vetted set plus verified retrieval).
+
+Resonate makes Scripture present where life actually happens — on the user's terms, never intruding.
