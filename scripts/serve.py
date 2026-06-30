@@ -23,8 +23,16 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer  # noqa: E40
 
 from resonate import Engine, EngineConfig  # noqa: E402
 from resonate.delivery import render, TARGETS  # noqa: E402
+from resonate.policy import DeliveryPolicy, PolicyConfig  # noqa: E402
 
 ENGINE = Engine(EngineConfig())
+# Chat-tuned restraint: each message is a candidate "seam". The real restraint comes from the
+# engine staying silent on non-resonant text + the safety gate + confidence; the short cooldown
+# only de-dupes rapid-fire. (See resonate/policy.py.)
+POLICY = DeliveryPolicy(PolicyConfig(
+    seams={"message", "reflect", "lesson_complete", "struggle", "streak", "session_end", "pause"},
+    cooldown_seconds=3, max_per_session=50, min_confidence=0.5,
+))
 WEB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web")
 
 
@@ -78,8 +86,21 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as e:
             self._send(400, {"error": "bad json: %s" % e})
             return
-        result = ENGINE.resonate(data.get("text", ""), data.get("user_id", "default"))
+        user = data.get("user_id", "default")
+        result = ENGINE.resonate(data.get("text", ""), user)
         result["rendered"] = render(result, data.get("targets") or ["vscode"])
+        # Delivery Policy: decide whether to actually surface (when the caller passes an 'event').
+        event = data.get("event")
+        if event:
+            held = any(d["status"] == "safety_hold" for d in result["deliveries"])
+            delivered = [d for d in result["deliveries"] if d["status"] == "delivered"]
+            if held:
+                result["policy"] = {"surface": True, "safety": True, "reason": "crisis — show help, never a verse"}
+            elif delivered:
+                result["policy"] = POLICY.decide(user, event, confidence=delivered[0]["confidence"],
+                                                 themes=delivered[0]["beat"]["themes"])
+            else:
+                result["policy"] = {"surface": False, "reason": "no resonant beat — stay silent"}
         self._send(200, result)
 
     def log_message(self, *args):

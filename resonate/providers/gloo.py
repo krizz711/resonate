@@ -23,9 +23,12 @@ LEXICON = {
     "grief": ["grief", "grieving", "loss", "passed away", "died", "death", "mourning", "heartbroken"],
     "loneliness": ["lonely", "alone", "isolated", "nobody", "by myself", "no one"],
     "doubt": ["doubt", "unsure", "questioning", "confused", "even matters", "pointless", "what's the point", "shouting into the void"],
-    "guilt": ["guilt", "guilty", "ashamed", "shame", "regret", "i failed", "messed up", "my fault"],
+    "guilt": ["guilt", "guilty", "ashamed", "shame", "regret", "i failed", "messed up", "my fault",
+              "failing everyone", "let everyone down", "letting everyone down", "let them down"],
     "anger": ["angry", "anger", "furious", "resentful", "bitter", "frustrated"],
-    "weariness": ["tired", "tiredness", "exhausted", "weary", "burnout", "burned out", "drained", "worn out", "can't keep going"],
+    "weariness": ["tired", "tiredness", "exhausted", "weary", "burnout", "burned out", "drained",
+                  "worn out", "can't keep going", "can't keep up", "cant keep up", "cannot keep up",
+                  "falling behind", "overwhelmed", "too much"],
     "gratitude": ["grateful", "thankful", "blessed", "appreciate"],
     "joy": ["happy", "joy", "joyful", "excited", "thrilled", "glad"],
     "hope": ["hope", "hopeful", "looking forward", "better days"],
@@ -54,12 +57,21 @@ EMOTION = {
     "rest": "restless", "identity": "unsure of your worth", "trust": "holding on", "prayer": "reaching out",
 }
 
-CRISIS = [
-    "kill myself", "killing myself", "end my life", "ending my life", "suicide", "suicidal",
-    "want to die", "don't want to live", "dont want to live", "no reason to live",
-    "hurt myself", "hurting myself", "harm myself", "harming myself", "self harm", "self-harm",
-    "cut myself", "cutting myself", "end it all", "better off dead", "take my own life",
-]
+# Crisis detection as a robust regex (handles "don't"/"do not" variants, -ing forms, etc.).
+# Checked on the RAW text independently of theme segmentation, so a crisis is never missed.
+_CRISIS_RE = re.compile(
+    r"(?:\b(?:do\s*n[o']?t|never|no\s+longer|stop)\s+want(?:ing)?\s+to\s+(?:live|be\s+here|exist|wake\s+up)\b)"
+    r"|(?:\b(?:want|wanna|going|plan(?:ning)?)\s+to\s+(?:die|kill\s+myself|end\s+(?:it\s+all|it|my\s+life|things))\b)"
+    r"|(?:\b(?:kill|hurt|harm|cut)(?:ing)?\s+myself\b)"
+    r"|(?:\b(?:end|ending|take|taking)\s+my(?:\s+own)?\s+life\b)"
+    r"|(?:\bself[\s-]?harm\b)"
+    r"|(?:\b(?:better\s+off\s+dead|no\s+reason\s+to\s+live|suicidal|suicide)\b)",
+    re.IGNORECASE,
+)
+
+
+def is_crisis(text):
+    return bool(_CRISIS_RE.search(text or ""))
 
 _INTENSITY_CUES = ["so ", "really", "completely", "totally", "can't", "cant", "never",
                    "always", "everyone", "no one", "nobody", "every", "nothing", "honestly"]
@@ -89,7 +101,7 @@ class MockGloo:
                 hits = sum(1 for p in phrases if p in low)
                 if hits:
                     scores[theme] = hits
-            crisis = any(p in low for p in CRISIS)
+            crisis = is_crisis(s)
             if not scores and not crisis:
                 continue
             if scores:
@@ -99,8 +111,8 @@ class MockGloo:
                 themes, emotion, inten = ["comfort"], "in distress", 0.95
             beats.append(Beat(index=idx, text=s, themes=themes, emotion=emotion, intensity=inten))
             idx += 1
-        if not beats and text.strip():
-            beats.append(Beat(index=0, text=text.strip(), themes=["hope"], emotion="reflective", intensity=0.5))
+        # No emotional/thematic beat -> return nothing. The engine stays silent rather than
+        # manufacturing a verse for non-resonant text ("only speaks when it hears a story").
         return beats
 
     def verify(self, beat, candidates):
@@ -130,8 +142,10 @@ class MockGloo:
         return templates.get(verse.get("tone", "hope"), templates["hope"])
 
     def safety(self, beat):
-        s = beat.text.lower()
-        return any(p in s for p in CRISIS)
+        return is_crisis(beat.text)
+
+    def safety_text(self, text):
+        return is_crisis(text)
 
 
 class LiveGloo:
@@ -179,5 +193,8 @@ class LiveGloo:
         return self._chat(sys_p, 'Their words: "%s"\nVerse %s: "%s"' % (beat.text, verse["reference"], verse_text)).strip()
 
     def safety(self, beat):
-        # keyword backstop + (optionally) a Gloo guardrail classification call
-        return any(p in beat.text.lower() for p in CRISIS)
+        # regex backstop + (optionally) a Gloo guardrail classification call
+        return is_crisis(beat.text)
+
+    def safety_text(self, text):
+        return is_crisis(text)

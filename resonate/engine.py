@@ -7,6 +7,12 @@ from .retrieval import HybridRetriever
 from .memory import make_memory
 from .providers import make_gloo, make_youversion
 
+SAFETY_MESSAGE = (
+    "This sounds heavy, and a verse isn't the right response here. Please reach out to someone "
+    "you trust or a crisis line — e.g. India: AASRA +91-98204 66726, iCall +91-91529 87821; "
+    "US: call or text 988. You matter, and you don't have to carry this alone."
+)
+
 
 def _tone_fit(beat, verse) -> float:
     """Reward verses whose intensity_fit range contains the beat's intensity (1.0), with a
@@ -37,18 +43,23 @@ class Engine:
 
     def resonate(self, text, user_id: str = "demo") -> dict:
         episode = self.memory.start_episode(user_id)
+
+        # stage 6 — safety gate FIRST, on the raw text, independent of segmentation, so a crisis
+        # is never missed (and never answered with a verse) even if no theme was detected.
+        if self.gloo.safety_text(text):
+            return {"user_id": user_id, "episode": episode,
+                    "deliveries": [{"status": "safety_hold",
+                                    "beat": {"text": text, "themes": [], "emotion": "in distress", "intensity": 0.95},
+                                    "message": SAFETY_MESSAGE}],
+                    "series_memory": self.memory.patterns(user_id)}
+
         beats = self.gloo.segment(text)
         deliveries = []
 
         for beat in beats:
-            # stage 6 — safety gate (runs before any verse is chosen)
+            # per-beat backstop (a transcript could carry a crisis sentence mid-way)
             if self.gloo.safety(beat):
-                deliveries.append({
-                    "status": "safety_hold", "beat": vars(beat),
-                    "message": ("This sounds heavy, and a verse isn't the right response here. Please reach "
-                                "out to someone you trust or a crisis line (e.g. India: AASRA +91-98204 66726, "
-                                "iCall +91-91529 87821)."),
-                })
+                deliveries.append({"status": "safety_hold", "beat": vars(beat), "message": SAFETY_MESSAGE})
                 continue
 
             # stage 3 — hybrid retrieve + RRF
