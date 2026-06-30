@@ -12,6 +12,35 @@
   let shadow = null;
   let card = null;
 
+  // --- voice (opt-in, click-to-play; auto-read is OFF by default and remembered) ---
+  let autoSpeak = false;
+  try { window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged = () => {}; } catch (e) {}
+  try {
+    if (chrome.storage && chrome.storage.sync)
+      chrome.storage.sync.get({ autoSpeak: false }, (r) => { autoSpeak = !!r.autoSpeak; });
+  } catch (e) {}
+
+  function pickVoice() {
+    let vs = [];
+    try { vs = window.speechSynthesis.getVoices() || []; } catch (e) {}
+    const prefer = ["Google UK English Female", "Microsoft Aria", "Microsoft Sonia", "Microsoft Jenny",
+                    "Samantha", "Microsoft Zira", "Google US English", "Daniel"];
+    for (const name of prefer) { const m = vs.find((v) => v.name && v.name.includes(name)); if (m) return m; }
+    return vs.find((v) => /^en/i.test(v.lang || "")) || vs[0] || null;
+  }
+  function speak(text) {
+    try {
+      const synth = window.speechSynthesis; if (!synth) return;
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      const v = pickVoice(); if (v) u.voice = v;
+      u.rate = 0.92; u.pitch = 0.96; u.volume = 1;  // warm, unhurried, reverent
+      u.onend = () => { const b = card && card.querySelector(".listen"); if (b) b.textContent = "▸ Listen"; };
+      synth.speak(u);
+    } catch (e) {}
+  }
+  function stopSpeak() { try { window.speechSynthesis.cancel(); } catch (e) {} }
+
   // Parchment / aged-manuscript skin (matches the portfolio: paper #efe9df, ink #211d17,
   // clay #a65b43). Kept in sync with web/panel-preview.html.
   const PANEL_CSS = `
@@ -38,7 +67,13 @@
       font-style:italic;color:#6b6358;border-top:1px solid rgba(33,29,23,.13);padding-top:11px}
     .foot{margin-top:13px;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#a89c8a}
     .card.help .verse{font-size:17.5px}
-    .card.help .ref::after{width:46px}`;
+    .card.help .ref::after{width:46px}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+    .listen{font-family:inherit;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#a65b43;
+      background:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:5px 13px;cursor:pointer}
+    .listen:hover{background:rgba(166,91,67,.10)}
+    .auto{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#a89c8a;cursor:pointer;user-select:none}
+    .auto b{color:#6b6358}`;
 
   function ensurePanel() {
     if (host) return;
@@ -59,25 +94,45 @@
 
   function showVerse(d) {
     ensurePanel();
+    stopSpeak();
     card.className = "card verse";
     card.innerHTML =
       '<button class="x" title="Dismiss">×</button>' +
       '<div class="ref">' + esc(d.reference) + ' <span class="tr">' + esc(d.translation) + "</span></div>" +
       '<div class="verse">' + esc(d.verse_text) + "</div>" +
       '<div class="bridge">' + esc(d.bridge) + "</div>" +
+      '<div class="row">' +
+        '<button class="listen">▸ Listen</button>' +
+        '<span class="auto" title="Read every verse aloud automatically">auto-read: <b>' + (autoSpeak ? "on" : "off") + "</b></span>" +
+      "</div>" +
       '<div class="foot">Resonate · processed locally · nothing stored</div>';
-    card.querySelector(".x").onclick = () => card.classList.add("hidden");
+
+    const listenBtn = card.querySelector(".listen");
+    listenBtn.onclick = () => {
+      if (window.speechSynthesis && window.speechSynthesis.speaking) { stopSpeak(); listenBtn.textContent = "▸ Listen"; }
+      else { speak(d.verse_text); listenBtn.textContent = "■ Stop"; }
+    };
+    card.querySelector(".auto").onclick = (e) => {
+      autoSpeak = !autoSpeak;
+      e.currentTarget.querySelector("b").textContent = autoSpeak ? "on" : "off";
+      try { if (chrome.storage && chrome.storage.sync) chrome.storage.sync.set({ autoSpeak }); } catch (err) {}
+      if (autoSpeak) { speak(d.verse_text); listenBtn.textContent = "■ Stop"; }
+    };
+    card.querySelector(".x").onclick = () => { stopSpeak(); card.classList.add("hidden"); };
+
+    if (autoSpeak) { speak(d.verse_text); listenBtn.textContent = "■ Stop"; }
   }
 
   function showHelp(message) {
     ensurePanel();
+    stopSpeak();  // never read crisis content aloud
     card.className = "card help";
     card.innerHTML =
       '<button class="x" title="Dismiss">×</button>' +
       '<div class="ref">A pause, not a verse</div>' +
       '<div class="verse">' + esc(message) + "</div>" +
       '<div class="foot">Resonate · your wellbeing comes first</div>';
-    card.querySelector(".x").onclick = () => card.classList.add("hidden");
+    card.querySelector(".x").onclick = () => { stopSpeak(); card.classList.add("hidden"); };
   }
 
   function handle(text) {

@@ -33,6 +33,12 @@
   .foot{margin-top:13px;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#a89c8a}
   .card.help .verse{font-size:17.5px}
   .card.help .ref::after{width:46px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+  .listen{font-family:inherit;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#a65b43;
+    background:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:5px 13px;cursor:pointer}
+  .listen:hover{background:rgba(166,91,67,.10)}
+  .auto{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#a89c8a;cursor:pointer;user-select:none}
+  .auto b{color:#6b6358}
   /* ===== end panel skin ===== */
 </style>
 </head>
@@ -44,6 +50,10 @@
     <div class="ref">Romans 8:1 <span class="tr">KJV</span></div>
     <div class="verse">There is therefore now no condemnation to them which are in Christ Jesus, who walk not after the flesh, but after the Spirit.</div>
     <div class="bridge">You said “I feel like I’m failing everyone lately.” Hold onto this: Romans 8:1.</div>
+    <div class="row">
+      <button class="listen">▸ Listen</button>
+      <span class="auto">auto-read: <b>off</b></span>
+    </div>
     <div class="foot">Resonate · processed locally · nothing stored</div>
   </div>
 
