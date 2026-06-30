@@ -20,6 +20,7 @@ from resonate.verses import VerseStore                          # noqa: E402
 from resonate.engine import _tone_fit                           # noqa: E402
 from resonate.delivery import TARGETS, render                   # noqa: E402
 from resonate.providers.gloo import MockGloo                    # noqa: E402
+from resonate.policy import DeliveryPolicy, PolicyConfig         # noqa: E402
 
 
 class TestRRF(unittest.TestCase):
@@ -156,6 +157,42 @@ class TestEngineEndToEnd(unittest.TestCase):
         r2 = [d["reference"] for d in second["deliveries"] if d["status"] == "delivered"]
         if r1 and r2:  # same input twice should not yield the identical verse back-to-back
             self.assertNotEqual(r1[0], r2[0])
+
+
+class TestDeliveryPolicy(unittest.TestCase):
+    def test_suppresses_mid_flow(self):
+        p = DeliveryPolicy(PolicyConfig())
+        self.assertFalse(p.decide("u", "typing", confidence=0.9, now=0.0)["surface"])
+
+    def test_surfaces_at_seam(self):
+        p = DeliveryPolicy(PolicyConfig())
+        self.assertTrue(p.decide("u", "struggle", confidence=0.9, now=0.0)["surface"])
+
+    def test_cooldown_blocks_rapid_repeat(self):
+        p = DeliveryPolicy(PolicyConfig(cooldown_seconds=90, max_per_session=9, min_confidence=0))
+        self.assertTrue(p.decide("u", "struggle", confidence=0.9, now=0.0)["surface"])
+        self.assertFalse(p.decide("u", "streak", confidence=0.9, now=10.0)["surface"])
+        self.assertTrue(p.decide("u", "streak", confidence=0.9, now=100.0)["surface"])
+
+    def test_session_cap(self):
+        p = DeliveryPolicy(PolicyConfig(cooldown_seconds=0, max_per_session=2, min_confidence=0))
+        self.assertTrue(p.decide("u", "struggle", confidence=0.9, now=0)["surface"])
+        self.assertTrue(p.decide("u", "struggle", confidence=0.9, now=1)["surface"])
+        self.assertFalse(p.decide("u", "struggle", confidence=0.9, now=2)["surface"])
+
+    def test_low_confidence_silent(self):
+        p = DeliveryPolicy(PolicyConfig())
+        self.assertFalse(p.decide("u", "struggle", confidence=0.2, now=0)["surface"])
+
+    def test_manual_always(self):
+        p = DeliveryPolicy(PolicyConfig())
+        self.assertTrue(p.decide("u", "typing", manual=True, now=0)["surface"])
+
+    def test_dismiss_backoff(self):
+        p = DeliveryPolicy(PolicyConfig(cooldown_seconds=0, min_confidence=0, dismiss_backoff=5))
+        self.assertTrue(p.decide("u", "struggle", confidence=0.9, themes=["anxiety"], now=0)["surface"])
+        p.record_dismiss("u", ["anxiety"])
+        self.assertFalse(p.decide("u", "struggle", confidence=0.9, themes=["anxiety"], now=1)["surface"])
 
 
 class TestEvalThresholds(unittest.TestCase):

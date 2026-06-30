@@ -130,6 +130,23 @@ What the graph buys us:
   insight panel, and the data to auto-cut a compilation devotional from the user's own
   footage. This is the most memorable demo beat and the clearest differentiator.
 
+## Delivery Policy — the "non-annoying" brain  *(`resonate/policy.py`)*
+The brief's core demand is *"not a pop-up, not an afterthought."* Matching the right verse is
+only half of that; the other half is **restraint** — knowing *when and whether* to surface at
+all. The Delivery Policy is a layer between the engine (which verse) and the surface (where),
+separate and independently testable. It enforces:
+- **Seam-timed** — only fires on natural boundary events (a finished lesson, a real struggle,
+  a milestone, a deliberate pause), never mid-flow. Mid-activity → silence.
+- **Confident** — stays silent unless the match clears a confidence bar.
+- **Rare = precious** — a cooldown between surfaces + a hard per-session cap.
+- **Learns** — a dismissal backs that theme off for a while.
+- **Manual always honoured** — if the person explicitly asks, it answers.
+
+`scripts/policy_demo.py` simulates a study session and shows Scripture staying silent during
+"typing," surfacing at the struggle, *holding one back at a valid seam because of cooldown*,
+then speaking at the pause and the streak. This turns "non-annoying" from a vibe into a
+measured, tested property — the moat when everyone else can also fetch a verse.
+
 ## Storage & caching layer  *(Redis-backed, with local fallback)*
 The memory + retrieval layer sits behind one interface with two backends, chosen by config:
 - **Local (default for dev / offline):** in-memory + JSON/SQLite persistence. Zero services,
