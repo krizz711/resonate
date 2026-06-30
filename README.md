@@ -1,65 +1,93 @@
-# Resonate
+# Resonate — Scripture, where you already are
 
-**Scripture for the stories people are already telling.**
+![Resonate cover](docs/cover.svg)
 
-Resonate is a *living context engine* that sits between two APIs — **Gloo AI Studio**
-(understanding) and the **YouVersion Platform API** (verified Scripture) — and delivers the
-single best-fit verse for a moment, with memory of what came before so it never repeats and
-reflects the person's ongoing journey.
+Billions now type their most honest words — grief, burnout, doubt — into **AI chatbots**, not a
+Bible app. Scripture has never been present there. **Resonate** is the bridge: it weaves
+*verified* Scripture into the conversations people already have — quietly, safely, and only when
+it truly fits.
 
-Built for the Kaggle hackathon **Scripture in New Frontiers** (frontier: *creator tools*).
-Submission due **2026-08-01**.
+Built for the Kaggle hackathon **Scripture in New Frontiers** (frontier: *AI & digital
+assistants*). Uses the **YouVersion Platform API** + **Gloo AI Studio API**. Submission due
+**2026-08-01**.
 
-## How it works
-The engine reads text (a transcript, a journal entry, a sentence), finds the emotional
-"beats", matches each to a verse using semantic + thematic + tonal + memory signals, fetches
-the **real** verse text live from YouVersion, and writes a one-line "bridge" connecting the
-person's own words to the verse.
+> **Not another Bible app.** You never open anything. The verse appears inside the tool you're
+> already in — as a small, dismissible parchment panel — processed locally, storing nothing.
 
-Full logic: see [ENGINE-DESIGN.md](ENGINE-DESIGN.md).
+## The surfaces — *you choose where Scripture meets you*
+One engine, many native delivery surfaces (this is the architecture, not a slogan):
 
-## Key design principles
-1. **The LLM never quotes Scripture.** Gloo proposes a reference; YouVersion supplies the
-   text. No hallucinated verses.
-2. **Constrained, not freelancing.** Verses come from a vetted, theme-tagged shortlist
-   (`data/verses.json`), ranked by a transparent fit score.
-3. **Living, not reactive.** A per-user memory makes delivery aware of history and patterns.
-4. **Safety first.** Crisis/self-harm beats are flagged to a human-help card, never
-   auto-answered with a verse.
+| Surface | What it is | Where |
+|---|---|---|
+| **ChatGPT extension** *(flagship)* | a quiet verse beside your AI chat | [`integrations/chatgpt-extension`](integrations/chatgpt-extension) |
+| **VS Code companion** | Scripture in the margins where builders think | [`integrations/vscode`](integrations/vscode) |
+| **Discord bot** | Scripture as conversation, not broadcast | [`integrations/discord`](integrations/discord) |
+
+## How it works — a context engine between the two APIs
+- **Gloo AI Studio** reads the message → emotional *beats*, writes the one-line *bridge*, runs
+  safety. *Never recites Scripture.*
+- **The engine** matches each beat with **hybrid retrieval** (dense + BM25 + theme tags fused via
+  **Reciprocal Rank Fusion**), re-ranks by tone-fit + a per-user **temporal memory graph**, and a
+  **Delivery Policy** decides whether to speak at all.
+- **YouVersion Platform API** returns the verified, licensed verse text. The model proposes a
+  reference from a vetted shortlist; YouVersion confirms the words — nothing is hallucinated.
+
+Full design: [ENGINE-DESIGN.md](ENGINE-DESIGN.md).
+
+## What makes it native, not a pop-up
+1. **Restraint.** Silent on ordinary messages; speaks only on a real, high-confidence beat;
+   rate-limited; learns from dismissals. (`resonate/policy.py`)
+2. **Safety first.** Crisis text is caught on the raw input and routed to a **human-help card —
+   never a verse** (100% recall on the eval set).
+3. **Memory over time.** It notices recurring themes — *"you've returned to this 4× lately"* —
+   personalization across conversations, not one sentence.
+4. **Privacy.** Reads only the user's own message, locally; stores nothing; opt-in per site. An
+   optional warm voice can read the verse aloud.
 
 ## Quickstart (offline — no keys, no installs)
-The engine core runs on the Python standard library alone, with mock providers + local memory:
-
+The engine runs on the Python standard library alone (mock providers + local memory):
 ```bash
-python scripts/demo.py
+python scripts/demo.py                         # end-to-end engine demo (creator transcript)
+python scripts/policy_demo.py                  # the Delivery Policy staying quiet at the right times
+python integrations/discord/bot.py --selftest  # the Discord surface, offline
 ```
+Run the local engine server (the browser/editor connectors talk to it):
+```bash
+python scripts/serve.py     # http://127.0.0.1:8765
+```
+Then load `integrations/chatgpt-extension` as an unpacked Chrome extension, or open
+`integrations/vscode` in VS Code and press F5. To go live later: `cp .env.example .env`, add
+keys, set `RESONATE_MODE=live`.
 
-This runs the full pipeline end to end: it segments two "episodes" of a creator's transcript,
-retrieves and ranks verses (hybrid dense + BM25 + tag, fused with RRF), re-ranks with the
-per-user context graph (watch it avoid repeats and reflect the journey in episode 2), fetches
-real verse text, writes a bridge line, and demonstrates the safety hold on a crisis input.
+## Verification — *proof it works*
+```bash
+python -m unittest discover -s tests    # 31 tests
+python eval/run_eval.py                 # 32-scenario evaluation harness
+```
+Current metrics: **theme recall 100% · verse hit@1 96% · hit@3 100% · safety recall 100% ·
+false-positive 0%** (enforced as a regression guard in the test suite).
 
-To use the real APIs later: `cp .env.example .env`, fill the keys, set `RESONATE_MODE=live`.
-
-## Status
-**Phase 0 complete** — offline engine core working (see [Resonate-Build-Plan.pdf](Resonate-Build-Plan.pdf)).
-Next: wire in the live Gloo + YouVersion APIs (Phase 1, after the keys open on 2026-07-06).
+## Submission assets
+- 🎬 Video script — [docs/VIDEO-SCRIPT.md](docs/VIDEO-SCRIPT.md)
+- 📄 Writeup (≤500 words) — [docs/WRITEUP.md](docs/WRITEUP.md)
+- 📓 Public notebook — [notebook/resonate_demo.ipynb](notebook/resonate_demo.ipynb)
+- 🖼 Cover image — [docs/cover.svg](docs/cover.svg)
+- 🧭 Competitiveness review — [docs/COMPETITIVENESS.md](docs/COMPETITIVENESS.md)
 
 ## Layout
 ```
-resonate/                 engine package
-  config.py               settings, weights, mock/live + memory backend switches
-  models.py               Beat dataclass
-  embeddings.py           TF-IDF embedder (v0 dense retriever; swappable for sentence-transformers)
-  verses.py               loads the curated shortlist + builds the index
-  retrieval.py            hybrid retrieval: dense + BM25 + tags, fused with RRF
-  memory.py               per-user context graph (local backend; Redis later)
-  engine.py               the orchestrator (10 stages)
-  providers/
-    gloo.py               mock + live Gloo (segment, verify, bridge, safety)
-    youversion.py         mock + live YouVersion (verified verse fetch)
-data/
-  verses.json             curated, theme-tagged verse shortlist (references + tags only)
-  sample_texts.json       public-domain (KJV) text for the offline demo
-scripts/demo.py           end-to-end offline demo
+resonate/        engine package — config, models, embeddings, verses, retrieval,
+                 memory, policy, engine (orchestrator), responder, providers/(gloo, youversion)
+integrations/    chatgpt-extension/ · vscode/ · discord/   (delivery surfaces)
+data/            verses.json (131 refs+tags, no text) · sample_texts.json (KJV demo text)
+scripts/         demo.py · policy_demo.py · serve.py (local engine server)
+web/             control-panel playground served by the engine
+eval/            dataset.json + run_eval.py (metrics)
+tests/           test_resonate.py (31 cases incl. the eval guard)
+docs/            video script · writeup · cover · competitiveness review
 ```
+
+## Status
+Engine, all three surfaces, restraint, safety, memory, tests + eval — **built and green in mock
+mode** (runs anywhere offline). The live Gloo + YouVersion integration flips on with one config
+change once challenge keys open (**2026-07-06**).
