@@ -108,8 +108,16 @@ class Engine:
             # stage 10 — remember
             self.memory.add(user_id, beat.themes, beat.intensity, v["reference"], episode=episode)
 
+            # series memory: surface a recurring-theme note (the "you've returned to this" moment)
+            primary = beat.themes[0] if beat.themes else None
+            mem_note = None
+            if primary:
+                n = self.memory.theme_count(user_id, primary)
+                if n >= 3:
+                    mem_note = "You've returned to %s — %d× lately." % (primary, n)
+
             deliveries.append({
-                "status": "delivered", "beat": vars(beat),
+                "status": "delivered", "beat": vars(beat), "memory_note": mem_note,
                 "reference": v["reference"], "usfm": v["usfm"], "tone": v.get("tone"),
                 "translation": fetched["translation"], "verse_text": fetched["text"],
                 "text_source": fetched["source"], "bridge": bridge, "rationale": rationale,

@@ -18,3 +18,8 @@ dist/
 out/
 *.log
 .DS_Store
+
+# persisted runtime memory (per-user recurring themes)
+.memory.json
+data/.memory.json
+*.memory.json*

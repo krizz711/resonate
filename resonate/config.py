@@ -38,6 +38,10 @@ class EngineConfig:
     # memory/storage backend: "local" (default) or "redis"; redis auto-falls-back to local.
     memory_backend: str = field(default_factory=lambda: os.getenv("RESONATE_MEMORY", "local"))
     redis_url: str = field(default_factory=lambda: os.getenv("REDIS_URL", ""))
+    # persist memory to disk so recurring themes accumulate across sessions ("returned N times").
+    # OFF by default so tests/eval/demo stay deterministic; the server turns it on.
+    memory_persist: bool = field(default_factory=lambda: os.getenv("RESONATE_PERSIST", "0") == "1")
+    memory_path: str = field(default_factory=lambda: os.getenv("RESONATE_MEMORY_PATH", str(DATA_DIR / ".memory.json")))
 
     # --- live API config (only used when provider_mode == "live") -------------
     # NOTE: base URLs / model id are placeholders to confirm during integration (keys open 2026-07-06).

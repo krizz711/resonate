@@ -7,6 +7,8 @@ this local store if Redis is unavailable.
 """
 from __future__ import annotations
 
+import json
+import os
 import time
 from collections import Counter
 
@@ -14,10 +16,13 @@ from collections import Counter
 class LocalMemory:
     backend = "local"
 
-    def __init__(self, recency_window: int = 8):
+    def __init__(self, recency_window: int = 8, persist_path: str = None):
         self.recency_window = recency_window
+        self.persist_path = persist_path
         self.events = {}      # user_id -> list[event dict]
         self._episode = {}    # user_id -> running episode counter
+        if persist_path:
+            self._load()
 
     def start_episode(self, user_id: str) -> int:
         self._episode[user_id] = self._episode.get(user_id, 0) + 1
@@ -31,6 +36,30 @@ class LocalMemory:
             "reference": reference,
             "episode": episode or self._episode.get(user_id, 1),
         })
+        if self.persist_path:
+            self._save()
+
+    def theme_count(self, user_id, theme) -> int:
+        """Total times this user has expressed a theme (drives 'returned N times')."""
+        return sum(1 for e in self.events.get(user_id, []) if theme in e["themes"])
+
+    def _load(self):
+        try:
+            with open(self.persist_path, encoding="utf-8") as f:
+                data = json.load(f)
+            self.events = data.get("events", {})
+            self._episode = data.get("episode", {})
+        except (OSError, ValueError):
+            pass
+
+    def _save(self):
+        try:
+            tmp = self.persist_path + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump({"events": self.events, "episode": self._episode}, f)
+            os.replace(tmp, self.persist_path)
+        except OSError:
+            pass
 
     def recent(self, user_id) -> list:
         return self.events.get(user_id, [])[-self.recency_window:]
@@ -73,6 +102,8 @@ class LocalMemory:
 
 
 def make_memory(config):
-    """Factory. Phase 2/3 adds: if config.memory_backend == 'redis', try RedisMemory and fall
-    back to LocalMemory on any connection error."""
-    return LocalMemory(recency_window=config.recency_window)
+    """Factory. (Phase 2/3: if config.memory_backend == 'redis', try RedisMemory and fall back
+    to LocalMemory on any connection error.) Persists to disk only when config.memory_persist is
+    set, so recurring themes accumulate across sessions without making tests non-deterministic."""
+    path = config.memory_path if getattr(config, "memory_persist", False) else None
+    return LocalMemory(recency_window=config.recency_window, persist_path=path)

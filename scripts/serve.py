@@ -25,7 +25,9 @@ from resonate import Engine, EngineConfig  # noqa: E402
 from resonate.delivery import render, TARGETS  # noqa: E402
 from resonate.policy import DeliveryPolicy, PolicyConfig  # noqa: E402
 
-ENGINE = Engine(EngineConfig())
+_CFG = EngineConfig()
+_CFG.memory_persist = True  # the live server remembers recurring themes across sessions
+ENGINE = Engine(_CFG)
 # Chat-tuned restraint: each message is a candidate "seam". The real restraint comes from the
 # engine staying silent on non-resonant text + the safety gate + confidence; the short cooldown
 # only de-dupes rapid-fire. (See resonate/policy.py.)

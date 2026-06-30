@@ -142,6 +142,25 @@ class TestEngineEndToEnd(unittest.TestCase):
             self.assertTrue(d["verse_text"])
             self.assertIn("bridge", d)
 
+    def test_series_memory_note_after_recurrence(self):
+        eng = Engine(EngineConfig())  # memory_persist defaults off -> deterministic
+        u = "t_series"
+        note = None
+        for _ in range(4):
+            res = eng.resonate("I'm so anxious I can't stop worrying about everything.", u)
+            d = [x for x in res["deliveries"] if x["status"] == "delivered"]
+            if d:
+                note = d[0].get("memory_note")
+        self.assertTrue(note and "anxiety" in note)
+
+    def test_theme_count(self):
+        from resonate.memory import LocalMemory
+        m = LocalMemory()
+        m.add("u", ["anxiety"], 0.5, "X")
+        m.add("u", ["anxiety", "fear"], 0.5, "Y")
+        self.assertEqual(m.theme_count("u", "anxiety"), 2)
+        self.assertEqual(m.theme_count("u", "joy"), 0)
+
     def test_safety_hold_path(self):
         res = self.eng.resonate("I don't want to live anymore.", "t_safety")
         self.assertTrue(any(d["status"] == "safety_hold" for d in res["deliveries"]))

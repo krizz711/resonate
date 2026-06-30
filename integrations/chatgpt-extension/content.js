@@ -5,7 +5,16 @@
 // touches or breaks the chat UI.
 
 (function () {
-  const USER_ID = "chat_" + Math.random().toString(36).slice(2, 10); // per-tab session, not stored
+  // Stable per-user id (persisted) so recurring themes accumulate across sessions/days.
+  let USER_ID = "chat_" + Math.random().toString(36).slice(2, 10);
+  try {
+    if (chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.get({ userId: "" }, (r) => {
+        if (r.userId) USER_ID = r.userId;
+        else chrome.storage.sync.set({ userId: USER_ID });
+      });
+    }
+  } catch (e) {}
   let lastText = "";
   let debounce = null;
   let host = null;
@@ -65,6 +74,7 @@
       font-size:22px;line-height:1.4;color:#211d17;font-weight:500}
     .bridge{margin-top:13px;font-family:'Cormorant Garamond','EB Garamond',Georgia,serif;font-size:15px;
       font-style:italic;color:#6b6358;border-top:1px solid rgba(33,29,23,.13);padding-top:11px}
+    .mem{margin-top:11px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#a65b43;opacity:.92}
     .foot{margin-top:13px;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#a89c8a}
     .card.help .verse{font-size:17.5px}
     .card.help .ref::after{width:46px}
@@ -101,6 +111,7 @@
       '<div class="ref">' + esc(d.reference) + ' <span class="tr">' + esc(d.translation) + "</span></div>" +
       '<div class="verse">' + esc(d.verse_text) + "</div>" +
       '<div class="bridge">' + esc(d.bridge) + "</div>" +
+      (d.memory_note ? '<div class="mem">' + esc(d.memory_note) + "</div>" : "") +
       '<div class="row">' +
         '<button class="listen">▸ Listen</button>' +
         '<span class="auto" title="Read every verse aloud automatically">auto-read: <b>' + (autoSpeak ? "on" : "off") + "</b></span>" +
