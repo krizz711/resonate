@@ -12,8 +12,9 @@ import json
 
 from .config import DATA_DIR
 
-# bible.com version ids for the translations we ship offline samples for.
-_BIBLE_COM_VERSION = {"KJV": 1, "ASV": 12, "WEB": 206}
+# bible.com version ids for the "read more" fallback link (distinct from the
+# Platform API's numeric bible_id, which live_check.py resolves separately).
+_BIBLE_COM_VERSION = {"KJV": 1, "NIV": 111, "NIRV": 110, "ASV": 12, "WEB": 206}
 
 
 def _first_usfm(usfm: str) -> str:
