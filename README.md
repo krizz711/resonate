@@ -53,7 +53,7 @@ standard library alone (mock providers + local memory) — clone and run:
 git clone https://github.com/krizz711/resonate && cd resonate
 python scripts/demo.py                         # 1. end-to-end engine demo (creator transcript)
 python scripts/policy_demo.py                  # 2. the Delivery Policy staying quiet at the right times
-python -m unittest discover -s tests           # 3. 49 tests (incl. the eval regression guard)
+python -m unittest discover -s tests           # 3. 64 tests (incl. the eval regression guard)
 python eval/run_eval.py                        # 4. 32-scenario evaluation harness
 python scripts/serve.py                        # 5. local engine  ->  http://127.0.0.1:8765
 python integrations/mcp/smoke_client.py        # 6. MCP surface: real stdio session, all 3 tools
@@ -78,6 +78,11 @@ python scripts/live_check.py # validates: Gloo OAuth -> completion -> YouVersion
 Then set `RESONATE_MODE=live` in `.env` and restart `scripts/serve.py`. Accept your Bible's
 license agreement under **Licensing** on platform.youversion.com first, or passage calls 4xx.
 
+## Free cloud deploy
+Render free web services can host the mock demo publicly. This repo includes `render.yaml`;
+push to GitHub, create a Render Blueprint, and use the generated URL for the Kaggle project link.
+See [docs/CLOUD-DEPLOY.md](docs/CLOUD-DEPLOY.md).
+
 ## Verification — *proof it works*
 Current metrics (enforced as a regression guard in the test suite): **theme recall 100% ·
 verse hit@1 96% · hit@3 100% · safety recall 100% · false-positive 0%**.
@@ -88,6 +93,7 @@ verse hit@1 96% · hit@3 100% · safety recall 100% · false-positive 0%**.
 - 📓 Public notebook — [notebook/resonate_demo.ipynb](notebook/resonate_demo.ipynb)
 - 🖼 Cover image — [docs/cover.svg](docs/cover.svg)
 - 🧭 Competitiveness review — [docs/COMPETITIVENESS.md](docs/COMPETITIVENESS.md)
+- Cloud deploy guide — [docs/CLOUD-DEPLOY.md](docs/CLOUD-DEPLOY.md)
 
 ## Layout
 ```
@@ -98,7 +104,7 @@ data/            verses.json (131 refs+tags, no text) · sample_texts.json (KJV 
 scripts/         demo.py · policy_demo.py · serve.py (local engine server)
 web/             control-panel playground served by the engine
 eval/            dataset.json + run_eval.py (metrics)
-tests/           test_resonate.py (49 cases incl. the eval guard)
+tests/           test_resonate.py (64 cases incl. the eval guard)
 docs/            video script · writeup · cover · competitiveness review
 ```
 

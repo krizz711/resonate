@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: resonate
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/serve.py
+    healthCheckPath: /health
+    envVars:
+      - key: RESONATE_MODE
+        value: mock
+      - key: RESONATE_HOST
+        value: 0.0.0.0

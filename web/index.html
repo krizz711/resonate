@@ -7,261 +7,316 @@
 <meta name="description" content="A quiet companion that weaves verified Scripture into the AI conversations people already have — only when it truly fits.">
 <style>
   :root{
-    --paper:#efe9df; --paper2:#e9e1d3; --paper3:#e3d7c4;
+    --paper:#efe9df; --paper2:#e9e1d3; --paper3:#e3d7c4; --paper4:#dccfb8;
     --ink:#211d17; --ink-soft:#6b6358; --faded:#a89c8a;
     --clay:#a65b43; --clay-deep:#8a4a35; --gold:#b98f35;
+    --night:#241f18; --night2:#2c261d; --bone:#e9e1d3;
     --serif:'Cormorant Garamond','EB Garamond','Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
     --sans:'Space Grotesk',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;
   }
   *{box-sizing:border-box;margin:0}
   html{scroll-behavior:smooth}
-  body{background:
-      radial-gradient(120% 90% at 85% -10%, rgba(185,143,53,.10), transparent 55%),
-      radial-gradient(130% 120% at 0% 100%, rgba(166,91,67,.08), transparent 50%),
-      linear-gradient(177deg,var(--paper) 0%,var(--paper2) 58%,var(--paper3) 100%);
-    color:var(--ink);font-family:var(--sans);line-height:1.6;overflow-x:hidden}
+  body{background:var(--paper4);color:var(--ink);font-family:var(--sans);line-height:1.6;overflow-x:hidden}
   ::selection{background:rgba(166,91,67,.25)}
 
-  .frame{position:fixed;inset:10px;border:1px solid rgba(33,29,23,.16);border-radius:14px;
-    pointer-events:none;z-index:50}
-  .frame::before{content:"";position:absolute;inset:6px;border:1px solid rgba(33,29,23,.08);border-radius:9px}
-
-  header.site{position:fixed;top:24px;left:0;right:0;display:flex;justify-content:space-between;
-    align-items:center;padding:0 44px;z-index:40;mix-blend-mode:multiply}
-  .brand{font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:var(--clay);font-weight:600}
+  header.site{position:fixed;top:22px;left:0;right:0;display:flex;justify-content:space-between;
+    align-items:center;padding:0 42px;z-index:60;mix-blend-mode:multiply;pointer-events:none}
+  header.site a,header.site .brand{pointer-events:auto}
+  .brand{font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:var(--clay);font-weight:600;text-decoration:none}
   nav a{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);
     text-decoration:none;margin-left:22px}
   nav a:hover{color:var(--clay)}
-  @media(max-width:720px){nav{display:none}}
+  @media(max-width:760px){nav{display:none}}
+
+  /* ============ stacked pages: each sheet slides up OVER the last ============ */
+  .deck{position:relative}
+  .page{position:sticky;top:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:96px 28px 72px;overflow:hidden}
+  .page .inner{max-width:960px;width:100%}
+  .page + .page{border-radius:30px 30px 0 0;
+    box-shadow:0 -26px 60px rgba(33,29,23,.35), 0 -2px 0 rgba(255,255,255,.35) inset}
+  .page::before{content:"";position:absolute;inset:12px;border:1px solid rgba(33,29,23,.14);
+    border-radius:18px;pointer-events:none}
+  .page + .page::before{border-radius:22px 22px 12px 12px}
+  .folio{position:absolute;top:30px;right:40px;font-family:var(--serif);font-size:14px;
+    letter-spacing:.3em;color:var(--faded)}
+  /* sheet tints — so each laid page reads against the one beneath */
+  .p-hero{background:
+      radial-gradient(120% 90% at 85% -10%, rgba(185,143,53,.12), transparent 55%),
+      linear-gradient(177deg,var(--paper) 0%,var(--paper2) 70%,var(--paper3) 100%)}
+  .p-problem{background:linear-gradient(180deg,var(--paper2),var(--paper3))}
+  .p-pillars{background:
+      radial-gradient(130% 120% at 100% 0%, rgba(166,91,67,.08), transparent 58%),
+      linear-gradient(177deg,var(--paper) 0%,var(--paper2) 100%)}
+  .p-how{background:linear-gradient(180deg,var(--paper3),var(--paper2))}
+  .p-voices{background:
+      radial-gradient(120% 100% at 0% 0%, rgba(185,143,53,.10), transparent 55%),
+      linear-gradient(180deg,var(--paper2),var(--paper))}
+  .p-night{background:
+      radial-gradient(120% 90% at 80% 0%, rgba(185,143,53,.10), transparent 55%),
+      linear-gradient(180deg,var(--night),var(--night2));color:var(--bone)}
+  .p-night::before{border-color:rgba(233,225,211,.14)}
+  .p-night .folio{color:rgba(233,225,211,.4)}
+  .p-try{background:linear-gradient(180deg,var(--paper2),var(--paper3))}
+
+  /* scroll-driven settle: the sheet beneath eases back as the next covers it */
+  @supports (animation-timeline: view()) {
+    .page{animation:settle linear both;animation-timeline:view();animation-range:exit 0% exit 100%}
+    @keyframes settle{to{transform:scale(.965);filter:brightness(.92)}}
+    .page:last-child{animation:none}
+  }
 
   /* ---------------- hero ---------------- */
-  .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:110px 24px 70px;position:relative}
-  .niche{width:min(320px,72vw);aspect-ratio:3/4.2;border-radius:999px 999px 18px 18px;overflow:hidden;
+  .p-hero .inner{display:flex;flex-direction:column;align-items:center;text-align:center}
+  .niche{width:min(300px,66vw);aspect-ratio:3/4.1;border-radius:999px 999px 18px 18px;overflow:hidden;
     position:relative;border:1px solid rgba(33,29,23,.3);
     box-shadow:0 30px 70px rgba(33,29,23,.30), inset 0 0 0 6px var(--paper), inset 0 0 0 7px rgba(33,29,23,.18);
-    animation:rise 1.2s cubic-bezier(.2,.65,.3,1) both}
+    animation:hrise 1.2s cubic-bezier(.2,.65,.3,1) both}
   .niche img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;
     filter:sepia(.14) saturate(.92) brightness(1.02) contrast(.98)}
   .niche::after{content:"";position:absolute;inset:0;border-radius:inherit;
     background:radial-gradient(120% 90% at 50% 20%, transparent 55%, rgba(33,29,23,.28) 100%),
                linear-gradient(to top, rgba(239,233,223,.42), transparent 26%)}
-  .halo{position:absolute;width:min(520px,96vw);aspect-ratio:1;border-radius:50%;z-index:-1;
-    top:calc(50% - 160px);left:50%;transform:translate(-50%,-50%);
+  .halo{position:absolute;width:min(560px,96vw);aspect-ratio:1;border-radius:50%;
+    top:38%;left:50%;transform:translate(-50%,-50%);pointer-events:none;
     background:radial-gradient(circle, rgba(185,143,53,.20) 0%, rgba(185,143,53,.07) 45%, transparent 70%)}
   h1.word{font-family:var(--serif);font-weight:600;letter-spacing:.34em;text-indent:.34em;
-    font-size:clamp(34px,6vw,58px);margin-top:38px;animation:rise 1.2s .15s cubic-bezier(.2,.65,.3,1) both}
-  .rule{width:44px;height:1px;background:var(--clay);opacity:.6;margin:20px auto}
-  .tagline{height:2.3em;position:relative;width:100%;max-width:640px;margin:0 auto}
+    font-size:clamp(32px,5.6vw,54px);margin-top:34px;animation:hrise 1.2s .15s cubic-bezier(.2,.65,.3,1) both}
+  .rule{width:44px;height:1px;background:var(--clay);opacity:.6;margin:18px auto}
+  .tagline{height:2.4em;position:relative;width:100%;max-width:640px}
   .tagline span{position:absolute;inset:0;font-family:var(--serif);font-style:italic;
-    font-size:clamp(18px,3vw,24px);color:var(--ink-soft);opacity:0;transform:translateY(14px);
+    font-size:clamp(17px,2.8vw,23px);color:var(--ink-soft);opacity:0;transform:translateY(14px);
     transition:opacity .8s ease, transform .8s ease}
   .tagline span.in{opacity:1;transform:none}
   .tagline span.out{opacity:0;transform:translateY(-14px)}
-  .kicker{margin-top:26px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--faded);
-    animation:rise 1.2s .3s both}
-  .scrollcue{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  .kicker{margin-top:22px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--faded);
+    animation:hrise 1.2s .3s both}
+  .scrollcue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
     font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--faded)}
-  .scrollcue::after{content:"";display:block;width:1px;height:34px;background:var(--faded);
+  .scrollcue::after{content:"";display:block;width:1px;height:30px;background:var(--faded);
     margin:8px auto 0;animation:drip 2.2s ease-in-out infinite}
-  @keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+  @keyframes hrise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
   @keyframes drip{0%,100%{transform:scaleY(.35);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}}
 
-  /* ---------------- sections ---------------- */
-  section{max-width:960px;margin:0 auto;padding:90px 28px}
+  /* ---------------- shared section type ---------------- */
   .eyebrow{font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--clay);margin-bottom:14px}
   .eyebrow::after{content:"";display:block;width:32px;height:1px;background:var(--clay);opacity:.55;margin-top:10px}
-  h2{font-family:var(--serif);font-weight:600;font-size:clamp(26px,4vw,38px);line-height:1.2;margin-bottom:18px}
-  p.lede{font-family:var(--serif);font-size:clamp(17px,2.4vw,21px);color:var(--ink-soft);max-width:60ch}
-  p.lede.dropcap::first-letter{font-size:3.1em;float:left;line-height:.82;padding:6px 10px 0 0;color:var(--clay);
-    font-family:var(--serif)}
-  .rev{opacity:0;transform:translateY(26px);transition:opacity .9s ease, transform .9s ease}
+  .p-night .eyebrow{color:var(--gold)}
+  .p-night .eyebrow::after{background:var(--gold)}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(25px,3.8vw,36px);line-height:1.2;margin-bottom:16px}
+  p.lede{font-family:var(--serif);font-size:clamp(16px,2.2vw,20px);color:var(--ink-soft);max-width:62ch}
+  .p-night p.lede{color:rgba(233,225,211,.75)}
+  p.lede.dropcap::first-letter{font-size:3.1em;float:left;line-height:.82;padding:6px 10px 0 0;color:var(--clay)}
+  .rev{opacity:0;transform:translateY(24px);transition:opacity .9s ease, transform .9s ease}
   .rev.on{opacity:1;transform:none}
 
-  .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:38px}
-  .pillar{border:1px solid rgba(33,29,23,.2);border-radius:16px;padding:26px 24px;position:relative;
+  .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:30px}
+  .pillar{border:1px solid rgba(33,29,23,.2);border-radius:16px;padding:22px 22px;position:relative;
     background:linear-gradient(175deg,rgba(255,255,255,.35),transparent 60%)}
   .pillar::before{content:"";position:absolute;inset:6px;border:1px solid rgba(33,29,23,.1);border-radius:11px;pointer-events:none}
   .pillar .num{font-family:var(--serif);font-size:13px;color:var(--gold);letter-spacing:.2em}
-  .pillar h3{font-family:var(--serif);font-size:22px;margin:8px 0 8px}
-  .pillar p{font-size:13.5px;color:var(--ink-soft)}
-  .seal{width:38px;height:38px;border-radius:50%;margin-top:16px;
+  .pillar h3{font-family:var(--serif);font-size:21px;margin:7px 0 7px}
+  .pillar p{font-size:13px;color:var(--ink-soft)}
+  .seal{width:34px;height:34px;border-radius:50%;margin-top:14px;
     background:radial-gradient(circle at 34% 30%, #c07a5e 0%, var(--clay) 42%, #7d3f2c 100%);
     box-shadow:inset 0 2px 4px rgba(255,255,255,.28), inset 0 -3px 6px rgba(60,25,14,.5), 0 4px 10px rgba(33,29,23,.25);
-    color:#f3e4d5;font-family:var(--serif);font-size:19px;font-weight:600;display:flex;align-items:center;justify-content:center}
+    color:#f3e4d5;font-family:var(--serif);font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center}
 
-  .pipe{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px;align-items:center}
-  .pipe .step{border:1px solid rgba(33,29,23,.22);border-radius:999px;padding:9px 16px;font-size:11px;
+  .pipe{display:flex;flex-wrap:wrap;gap:9px;margin-top:28px;align-items:center}
+  .pipe .step{border:1px solid rgba(33,29,23,.22);border-radius:999px;padding:8px 15px;font-size:11px;
     letter-spacing:.08em;background:rgba(255,255,255,.25)}
   .pipe .step b{color:var(--clay)}
   .pipe .arrow{color:var(--faded)}
-  .safetyline{margin-top:26px;border-left:2px solid var(--clay);padding:6px 0 6px 18px;
-    font-family:var(--serif);font-style:italic;font-size:17px;color:var(--ink-soft)}
+  .safetyline{margin-top:24px;border-left:2px solid var(--clay);padding:6px 0 6px 18px;
+    font-family:var(--serif);font-style:italic;font-size:16.5px;color:var(--ink-soft)}
 
-  .voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:36px}
-  .voice{border:1px solid rgba(33,29,23,.2);border-radius:16px;padding:24px;text-align:center;
+  .voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:30px}
+  .voice{border:1px solid rgba(33,29,23,.2);border-radius:16px;padding:22px;text-align:center;
     background:linear-gradient(175deg,rgba(255,255,255,.35),transparent 60%)}
-  .voice h3{font-family:var(--serif);font-size:24px}
-  .voice .vd{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faded);margin:6px 0 16px}
+  .voice h3{font-family:var(--serif);font-size:23px}
+  .voice .vd{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faded);margin:5px 0 14px}
   .play{font-family:var(--sans);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--clay);
     background:none;border:1px solid rgba(166,91,67,.5);border-radius:999px;padding:8px 18px;cursor:pointer}
   .play:hover{background:rgba(166,91,67,.1)}
   .play[disabled]{opacity:.55;cursor:wait}
-  .voicenote{margin-top:16px;font-size:10.5px;color:var(--faded);letter-spacing:.06em}
+  .voicenote{margin-top:14px;font-size:10.5px;color:var(--faded);letter-spacing:.06em;font-style:italic}
 
-  .mcp{margin-top:34px}
-  .codebox{position:relative;background:#241f18;color:#e9e1d3;border-radius:12px;padding:18px 18px 16px;
-    font:12.5px/1.55 ui-monospace,Consolas,monospace;overflow-x:auto;border:1px solid rgba(33,29,23,.35);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
-  .codebox + .codebox{margin-top:12px}
-  .codebox .cm{color:#a89c8a}
-  .copy{position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;
-    color:#e9e1d3;background:rgba(166,91,67,.85);border:none;border-radius:999px;padding:5px 11px;cursor:pointer}
-  .tools{margin-top:18px;width:100%;border-collapse:collapse;font-size:13px}
-  .tools td{border-top:1px solid rgba(33,29,23,.14);padding:10px 8px;vertical-align:top}
-  .tools td:first-child{font-family:ui-monospace,Consolas,monospace;color:var(--clay);white-space:nowrap;font-size:12px}
+  .codebox{position:relative;background:rgba(0,0,0,.32);color:var(--bone);border-radius:12px;padding:16px 16px 14px;
+    font:12px/1.55 ui-monospace,Consolas,monospace;overflow-x:auto;border:1px solid rgba(233,225,211,.16)}
+  .codebox + .codebox{margin-top:10px}
+  .codebox .cm{color:rgba(233,225,211,.45)}
+  .copy{position:absolute;top:9px;right:9px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--bone);background:rgba(166,91,67,.85);border:none;border-radius:999px;padding:5px 11px;cursor:pointer}
+  .tools{margin-top:14px;width:100%;border-collapse:collapse;font-size:12.5px}
+  .tools td{border-top:1px solid rgba(233,225,211,.14);padding:9px 8px;vertical-align:top;color:rgba(233,225,211,.8)}
+  .tools td:first-child{font-family:ui-monospace,Consolas,monospace;color:var(--gold);white-space:nowrap;font-size:12px}
 
-  .try{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
+  .try{display:flex;flex-wrap:wrap;gap:13px;margin-top:28px}
   .btn{font-size:11px;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;border-radius:999px;
-    padding:13px 26px;transition:filter .2s}
+    padding:12px 24px;transition:filter .2s}
   .btn.primary{color:#efe9df;background:linear-gradient(160deg,var(--clay),var(--clay-deep));
     box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 4px 14px rgba(138,74,53,.35)}
   .btn.ghost{color:var(--clay);border:1px solid rgba(166,91,67,.5)}
   .btn:hover{filter:brightness(1.07)}
+  .credits{margin-top:44px;padding-top:22px;border-top:1px solid rgba(33,29,23,.16);
+    font-size:10.5px;color:var(--faded);letter-spacing:.06em;line-height:2}
+  .credits b{color:var(--ink-soft);font-weight:600}
 
-  footer{max-width:960px;margin:0 auto;padding:60px 28px 80px;border-top:1px solid rgba(33,29,23,.16);
-    font-size:11px;color:var(--faded);letter-spacing:.06em;line-height:2}
-  footer b{color:var(--ink-soft);font-weight:600}
-
+  /* mobile: sheets flow normally (stacking needs room) */
+  @media (max-width:760px){
+    .page{position:static;min-height:auto;padding:72px 20px}
+    .page + .page{border-radius:0;box-shadow:none}
+    .page{animation:none !important}
+  }
   @media (prefers-reduced-motion: reduce){
     *{animation:none !important;transition:none !important;scroll-behavior:auto}
     .rev{opacity:1;transform:none}
     .tagline span{opacity:0}
     .tagline span.in{opacity:1;transform:none}
+    .page{animation:none !important}
   }
 </style>
 </head>
 <body>
-<div class="frame" aria-hidden="true"></div>
 <header class="site">
-  <div class="brand">Resonate</div>
+  <a class="brand" href="#top">Resonate</a>
   <nav>
     <a href="#pillars">What it is</a><a href="#how">How it hears</a><a href="#voices">Voices</a>
     <a href="#mcp">MCP</a><a href="#try">Try it</a>
   </nav>
 </header>
 
-<!-- ================= HERO ================= -->
-<div class="hero">
-  <div class="halo" aria-hidden="true"></div>
-  <div class="niche">
-    <img src="/assets/hero-jesus.jpg" alt="Thorvaldsen's Christus — white marble, arms open. The pedestal reads: Come unto me.">
-  </div>
-  <h1 class="word">RESONATE</h1>
-  <div class="rule"></div>
-  <div class="tagline" id="taglines" aria-live="polite">
-    <span class="in">Scripture, where you already are.</span>
-    <span>It only speaks when it hears a story.</span>
-    <span>A voice from an old chapel.</span>
-    <span>Your story, woven from a real one.</span>
-    <span>And when it hears darkness — it sends people, not verses.</span>
-  </div>
-  <div class="kicker">A companion for the AI conversations people already have</div>
-  <div class="scrollcue">read on</div>
-</div>
+<div class="deck" id="top">
 
-<!-- ================= PROBLEM ================= -->
-<section id="problem">
-  <div class="rev">
-    <div class="eyebrow">The problem</div>
-    <h2>The most honest words of our time are typed to an AI.</h2>
-    <p class="lede dropcap">Grief at 2 a.m. Exam panic. "I feel like I'm failing everyone." Billions of these
-    sentences are poured into chatbots every day — not into a Bible app, not to a pastor. Scripture has never
-    been present in that room. Not because it doesn't belong there — because no one built the bridge.</p>
+  <!-- ============ PAGE I — HERO (a dedicated page; the next slides over it) ============ -->
+  <div class="page p-hero">
+    <div class="halo" aria-hidden="true"></div>
+    <div class="inner">
+      <div class="niche">
+        <img src="/assets/hero-jesus.jpg" alt="Thorvaldsen's Christus — white marble, arms open. The pedestal reads: Come unto me.">
+      </div>
+      <h1 class="word">RESONATE</h1>
+      <div class="rule"></div>
+      <div class="tagline" id="taglines" aria-live="polite">
+        <span class="in">Scripture, where you already are.</span>
+        <span>It only speaks when it hears a story.</span>
+        <span>A voice from an old chapel.</span>
+        <span>Your story, woven from a real one.</span>
+        <span>And when it hears darkness — it sends people, not verses.</span>
+      </div>
+      <div class="kicker">A companion for the AI conversations people already have</div>
+    </div>
+    <div class="scrollcue">read on</div>
   </div>
-</section>
 
-<!-- ================= PILLARS ================= -->
-<section id="pillars">
-  <div class="rev">
-    <div class="eyebrow">What it is</div>
-    <h2>Three quiet answers, one engine.</h2>
-  </div>
-  <div class="pillars">
-    <div class="pillar rev">
-      <div class="num">I</div>
-      <h3>A quiet verse</h3>
-      <p>A parchment card slips in beside your chat when your words echo a verse — verified text, never a
-      model's memory. Ask something ordinary and it stays silent. Ignore it, and it folds itself into a
-      small wax seal. It waits better than we do.</p>
-      <div class="seal" aria-hidden="true">R</div>
-    </div>
-    <div class="pillar rev">
-      <div class="num">II</div>
-      <h3>Your story</h3>
-      <p>One tap weaves your moment into a real biblical narrative — Elijah under the broom tree for the
-      burned-out, Peter on the water for the afraid — clearly labeled a reflection, never invented
-      Scripture, always ending on the verse, verbatim.</p>
-    </div>
-    <div class="pillar rev">
-      <div class="num">III</div>
-      <h3>Story reels</h3>
-      <p>Every verse carries a doorway — a short vertical story film of that passage, the format we pitch
-      for YouVersion and partners to host. The moment moves from a popup… to something you carry.</p>
+  <!-- ============ PAGE II — THE PROBLEM ============ -->
+  <div class="page p-problem" id="problem">
+    <div class="folio">· II ·</div>
+    <div class="inner">
+      <div class="rev">
+        <div class="eyebrow">The problem</div>
+        <h2>The most honest words of our time are typed to an AI.</h2>
+        <p class="lede dropcap">Grief at 2 a.m. Exam panic. "I feel like I'm failing everyone." Billions of
+        these sentences are poured into chatbots every day — not into a Bible app, not to a pastor.
+        Scripture has never been present in that room. Not because it doesn't belong there — because no
+        one built the bridge.</p>
+      </div>
     </div>
   </div>
-</section>
 
-<!-- ================= HOW ================= -->
-<section id="how">
-  <div class="rev">
-    <div class="eyebrow">How it hears</div>
-    <h2>A context engine between two APIs.</h2>
-    <p class="lede">Gloo AI reads the emotional beats. Our engine matches them against a curated,
-    theme-tagged shortlist — hybrid retrieval fused by reciprocal rank, re-ranked by tone and by a memory
-    of the themes you keep returning to. YouVersion supplies the words. Nothing is ever hallucinated.</p>
+  <!-- ============ PAGE III — PILLARS ============ -->
+  <div class="page p-pillars" id="pillars">
+    <div class="folio">· III ·</div>
+    <div class="inner">
+      <div class="rev">
+        <div class="eyebrow">What it is</div>
+        <h2>Three quiet answers, one engine.</h2>
+      </div>
+      <div class="pillars">
+        <div class="pillar rev">
+          <div class="num">I</div>
+          <h3>A quiet verse</h3>
+          <p>A parchment card slips in beside your chat when your words echo a verse — verified text, never
+          a model's memory. Ask something ordinary and it stays silent. Ignore it, and it folds itself into
+          a small wax seal. It waits better than we do.</p>
+          <div class="seal" aria-hidden="true">R</div>
+        </div>
+        <div class="pillar rev">
+          <div class="num">II</div>
+          <h3>Your story</h3>
+          <p>One tap weaves your moment into a real biblical narrative — Elijah under the broom tree for the
+          burned-out, Peter on the water for the afraid — clearly labeled a reflection, never invented
+          Scripture, always ending on the verse, verbatim.</p>
+        </div>
+        <div class="pillar rev">
+          <div class="num">III</div>
+          <h3>Story reels</h3>
+          <p>Every verse carries a doorway — a short vertical story film of that passage, the format we
+          pitch for YouVersion and partners to host. The moment moves from a popup… to something you carry.</p>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="pipe rev" aria-label="pipeline">
-    <span class="step"><b>Gloo</b> · emotional beats</span><span class="arrow">→</span>
-    <span class="step"><b>engine</b> · hybrid retrieval + RRF</span><span class="arrow">→</span>
-    <span class="step"><b>memory</b> · your recurring themes</span><span class="arrow">→</span>
-    <span class="step"><b>policy</b> · speak or stay silent</span><span class="arrow">→</span>
-    <span class="step"><b>YouVersion</b> · the verbatim verse</span>
-  </div>
-  <div class="safetyline rev">And one rule above all of it: when someone is in real darkness, Resonate never
-  answers with a verse. It goes quiet, and points to people who can help.</div>
-</section>
 
-<!-- ================= VOICES ================= -->
-<section id="voices">
-  <div class="rev">
-    <div class="eyebrow">The voices</div>
-    <h2>Read aloud, like a voice from an old chapel.</h2>
-    <p class="lede">Three voices, synthesized locally, tuned unhurried and reverent. Play by default, or
-    only when you ask.</p>
+  <!-- ============ PAGE IV — HOW ============ -->
+  <div class="page p-how" id="how">
+    <div class="folio">· IV ·</div>
+    <div class="inner">
+      <div class="rev">
+        <div class="eyebrow">How it hears</div>
+        <h2>A context engine between two APIs.</h2>
+        <p class="lede">Gloo AI reads the emotional beats. Our engine matches them against a curated,
+        theme-tagged shortlist — hybrid retrieval fused by reciprocal rank, re-ranked by tone and by a
+        memory of the themes you keep returning to. YouVersion supplies the words. Nothing is ever
+        hallucinated.</p>
+      </div>
+      <div class="pipe rev" aria-label="pipeline">
+        <span class="step"><b>Gloo</b> · emotional beats</span><span class="arrow">→</span>
+        <span class="step"><b>engine</b> · hybrid retrieval + RRF</span><span class="arrow">→</span>
+        <span class="step"><b>memory</b> · your recurring themes</span><span class="arrow">→</span>
+        <span class="step"><b>policy</b> · speak or stay silent</span><span class="arrow">→</span>
+        <span class="step"><b>YouVersion</b> · the verbatim verse</span>
+      </div>
+      <div class="safetyline rev">And one rule above all of it: when someone is in real darkness, Resonate
+      never answers with a verse. It goes quiet, and points to people who can help.</div>
+    </div>
   </div>
-  <div class="voices rev">
-    <div class="voice"><h3>Bella</h3><div class="vd">warm · close</div>
-      <button class="play" data-voice="bella">▸ Hear Bella</button></div>
-    <div class="voice"><h3>Isabella</h3><div class="vd">luminous · formal</div>
-      <button class="play" data-voice="isabella">▸ Hear Isabella</button></div>
-    <div class="voice"><h3>George</h3><div class="vd">natural · fuller</div>
-      <button class="play" data-voice="george">▸ Hear George</button></div>
-  </div>
-  <div class="voicenote rev" id="voicenote">“Come to me, all you who are weary and burdened, and I will give you rest.”</div>
-</section>
 
-<!-- ================= MCP ================= -->
-<section id="mcp">
-  <div class="rev">
-    <div class="eyebrow">Beyond the extension</div>
-    <h2>Scripture as a capability — for any AI assistant.</h2>
-    <p class="lede">Resonate ships as an MCP server. Claude, ChatGPT, Gemini — any assistant that speaks the
-    Model Context Protocol can call the same engine natively, with every guarantee enforced on the server:
-    safety first, verbatim verses only, stories labeled, memory that spans surfaces.</p>
+  <!-- ============ PAGE V — VOICES ============ -->
+  <div class="page p-voices" id="voices">
+    <div class="folio">· V ·</div>
+    <div class="inner">
+      <div class="rev">
+        <div class="eyebrow">The voices</div>
+        <h2>Read aloud, like a voice from an old chapel.</h2>
+        <p class="lede">Three voices, synthesized locally, tuned unhurried and reverent. Play by default,
+        or only when you ask.</p>
+      </div>
+      <div class="voices rev">
+        <div class="voice"><h3>Bella</h3><div class="vd">warm · close</div>
+          <button class="play" data-voice="bella">▸ Hear Bella</button></div>
+        <div class="voice"><h3>Isabella</h3><div class="vd">luminous · formal</div>
+          <button class="play" data-voice="isabella">▸ Hear Isabella</button></div>
+        <div class="voice"><h3>George</h3><div class="vd">natural · fuller</div>
+          <button class="play" data-voice="george">▸ Hear George</button></div>
+      </div>
+      <div class="voicenote rev" id="voicenote">“Come to me, all you who are weary and burdened, and I will give you rest.”</div>
+    </div>
   </div>
-  <div class="mcp rev">
-    <div class="codebox"><button class="copy" data-copy="cfg">copy</button><span class="cm">// Claude Desktop — claude_desktop_config.json</span>
+
+  <!-- ============ PAGE VI — MCP (the night chapter) ============ -->
+  <div class="page p-night" id="mcp">
+    <div class="folio">· VI ·</div>
+    <div class="inner">
+      <div class="rev">
+        <div class="eyebrow">Beyond the extension</div>
+        <h2>Scripture as a capability — for any AI assistant.</h2>
+        <p class="lede">Resonate ships as an MCP server. Claude, ChatGPT, Gemini — any assistant that speaks
+        the Model Context Protocol can call the same engine natively, with every guarantee enforced on the
+        server: safety first, verbatim verses only, stories labeled, memory that spans surfaces.</p>
+      </div>
+      <div class="rev" style="margin-top:26px">
+        <div class="codebox"><button class="copy" data-copy="cfg">copy</button><span class="cm">// Claude Desktop — claude_desktop_config.json</span>
 <pre id="cfg">{
   "mcpServers": {
     "resonate": {
@@ -270,38 +325,43 @@
     }
   }
 }</pre></div>
-    <div class="codebox"><button class="copy" data-copy="cli">copy</button><span class="cm"># Claude Code</span>
+        <div class="codebox"><button class="copy" data-copy="cli">copy</button><span class="cm"># Claude Code</span>
 <pre id="cli">claude mcp add resonate -- python integrations/mcp/resonate_mcp.py</pre></div>
-    <table class="tools">
-      <tr><td>resonate_verse</td><td>a verified verse echoing the moment — or an honest "stay silent"; crisis input returns help, never a verse</td></tr>
-      <tr><td>generate_story</td><td>the person's moment woven into one vetted biblical narrative, labeled, ending on the verbatim verse</td></tr>
-      <tr><td>fetch_passage</td><td>licensed passage text by reference — quoted exactly, never paraphrased</td></tr>
-    </table>
+        <table class="tools">
+          <tr><td>resonate_verse</td><td>a verified verse echoing the moment — or an honest "stay silent"; crisis input returns help, never a verse</td></tr>
+          <tr><td>generate_story</td><td>the person's moment woven into one vetted biblical narrative, labeled, ending on the verbatim verse</td></tr>
+          <tr><td>fetch_passage</td><td>licensed passage text by reference — quoted exactly, never paraphrased</td></tr>
+        </table>
+      </div>
+    </div>
   </div>
-</section>
 
-<!-- ================= TRY ================= -->
-<section id="try">
-  <div class="rev">
-    <div class="eyebrow">See it move</div>
-    <h2>Try it, right now, offline.</h2>
-    <p class="lede">The engine runs on the Python standard library alone. Start the local server and walk
-    into the demo chat — the same script that runs on chatgpt.com runs there.</p>
+  <!-- ============ PAGE VII — TRY + CREDITS ============ -->
+  <div class="page p-try" id="try">
+    <div class="folio">· VII ·</div>
+    <div class="inner">
+      <div class="rev">
+        <div class="eyebrow">See it move</div>
+        <h2>Try it, right now, offline.</h2>
+        <p class="lede">The engine runs on the Python standard library alone. Start the local server and
+        walk into the demo chat — the same script that runs on chatgpt.com runs there.</p>
+      </div>
+      <div class="try rev">
+        <a class="btn primary" href="/mock-chat.html">Open the demo chat</a>
+        <a class="btn ghost" href="/panel-preview.html">Panel preview</a>
+        <a class="btn ghost" href="/playground.html">Engine playground</a>
+        <a class="btn ghost" href="https://github.com/krizz711/resonate" target="_blank" rel="noopener">Source · GitHub</a>
+      </div>
+      <div class="credits rev">
+        <b>Resonate</b> · Scripture, where you already are · built for the Kaggle challenge “Scripture in New Frontiers”<br>
+        Powered by the <b>YouVersion Platform API</b> (every verse verbatim &amp; licensed) and <b>Gloo AI Studio</b> (values-aligned reasoning) · MIT licensed<br>
+        Privacy: reads only your own message, processes locally, stores nothing · Crisis input is answered with human help, never verses<br>
+        Hero: Bertel Thorvaldsen, <i>Christus</i> (1833), Church of Our Lady, Copenhagen — photo IbRasmussen, public domain · its pedestal reads <i>“Come unto me”</i>
+      </div>
+    </div>
   </div>
-  <div class="try rev">
-    <a class="btn primary" href="/mock-chat.html">Open the demo chat</a>
-    <a class="btn ghost" href="/panel-preview.html">Panel preview</a>
-    <a class="btn ghost" href="/playground.html">Engine playground</a>
-    <a class="btn ghost" href="https://github.com/krizz711/resonate" target="_blank" rel="noopener">Source · GitHub</a>
-  </div>
-</section>
 
-<footer>
-  <b>Resonate</b> · Scripture, where you already are · built for the Kaggle challenge “Scripture in New Frontiers”<br>
-  Powered by the <b>YouVersion Platform API</b> (every verse verbatim &amp; licensed) and <b>Gloo AI Studio</b> (values-aligned reasoning) · MIT licensed<br>
-  Privacy: reads only your own message, processes locally, stores nothing · Crisis input is answered with human help, never verses<br>
-  Hero: Bertel Thorvaldsen, <i>Christus</i> (1833), Church of Our Lady, Copenhagen — photo IbRasmussen, public domain · its pedestal reads <i>“Come unto me”</i>
-</footer>
+</div><!-- /deck -->
 
 <script>
   // ---- rotating taglines (in/out) ----
@@ -321,11 +381,11 @@
   (function () {
     const obs = new IntersectionObserver((es) => {
       es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("on"); obs.unobserve(e.target); } });
-    }, { threshold: 0.18 });
+    }, { threshold: 0.15 });
     document.querySelectorAll(".rev").forEach(el => obs.observe(el));
   })();
 
-  // ---- live voice demo (graceful: hidden if the engine/TTS is offline) ----
+  // ---- live voice demo (graceful: disabled if the engine/TTS is offline) ----
   (function () {
     const LINE = "Come to me, all you who are weary and burdened, and I will give you rest.";
     const btns = Array.from(document.querySelectorAll(".play"));

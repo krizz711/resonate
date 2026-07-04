@@ -201,7 +201,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     host = os.getenv("RESONATE_HOST", "127.0.0.1")
-    port = int(os.getenv("RESONATE_PORT", "8765"))
+    port = int(os.getenv("RESONATE_PORT") or os.getenv("PORT") or "8765")
     print("Resonate engine running on http://%s:%d  (mode=%s)" % (host, port, ENGINE.config.provider_mode))
     print("Press Ctrl+C to stop.")
     ThreadingHTTPServer((host, port), Handler).serve_forever()
