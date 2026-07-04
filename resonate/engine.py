@@ -41,7 +41,25 @@ class Engine:
         self.yv = make_youversion(self.config)
         self.memory = make_memory(self.config)
 
-    def resonate(self, text, user_id: str = "demo") -> dict:
+    def _history_themes(self, history) -> list:
+        """Themes heard in the last few prior messages, most recent counted twice.
+        Compact, high-signal conversation context — raw history text never joins the
+        query (a long old message would drown the present moment)."""
+        themes = []
+        if not history:
+            return themes
+        recent = [h for h in history if isinstance(h, str) and h.strip()]
+        recent = recent[-self.config.history_max:]
+        for age, h in enumerate(reversed(recent)):  # age 0 = the message just before this one
+            for b in self.gloo.segment(h):
+                for t in b.themes:
+                    themes.extend([t, t] if age == 0 else [t])
+        return themes
+
+    def resonate(self, text, user_id: str = "demo", history=None) -> dict:
+        """history: prior user messages (oldest -> newest), OPTIONAL. They never trigger a
+        verse by themselves and never enter the safety decision (each was safety-checked
+        when it arrived); they only sharpen WHICH verse fits the conversation."""
         episode = self.memory.start_episode(user_id)
 
         # stage 6 — safety gate FIRST, on the raw text, independent of segmentation, so a crisis
@@ -53,6 +71,7 @@ class Engine:
                                     "message": SAFETY_MESSAGE}],
                     "series_memory": self.memory.patterns(user_id)}
 
+        ctx_themes = self._history_themes(history)
         beats = self.gloo.segment(text)
         deliveries = []
 
@@ -62,8 +81,9 @@ class Engine:
                 deliveries.append({"status": "safety_hold", "beat": vars(beat), "message": SAFETY_MESSAGE})
                 continue
 
-            # stage 3 — hybrid retrieve + RRF
-            candidates = self.retriever.retrieve(beat, topk=self.config.topk)
+            # stage 3 — hybrid retrieve + RRF (conversation context echoes into the query)
+            candidates = self.retriever.retrieve(beat, topk=self.config.topk,
+                                                 context_themes=ctx_themes)
             if not candidates:
                 deliveries.append({"status": "abstain", "beat": vars(beat),
                                    "message": "No confident verse match for this beat."})
@@ -128,4 +148,6 @@ class Engine:
             })
 
         return {"user_id": user_id, "episode": episode, "deliveries": deliveries,
-                "series_memory": self.memory.patterns(user_id)}
+                "series_memory": self.memory.patterns(user_id),
+                "context": {"history_messages": len(history or []),
+                            "themes": sorted(set(ctx_themes))}}

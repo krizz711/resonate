@@ -24,13 +24,14 @@ class Responder:
         self.policy = policy or default_policy()
         self.target = target
 
-    def respond(self, user_id, text, event="message") -> dict:
+    def respond(self, user_id, text, event="message", history=None) -> dict:
         """Return a small decision dict:
           {surface: False, kind: 'silent', reason}                       — say nothing
           {surface: True,  kind: 'help', text}                           — crisis: point to help
           {surface: True,  kind: 'verse', delivery, rendered, memory_note}
+        history: optional prior user messages — sharpens verse choice (see Engine.resonate).
         """
-        result = self.engine.resonate(text, user_id)
+        result = self.engine.resonate(text, user_id, history=history)
         deliveries = result["deliveries"]
 
         held = next((d for d in deliveries if d["status"] == "safety_hold"), None)

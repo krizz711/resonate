@@ -23,3 +23,7 @@ out/
 .memory.json
 data/.memory.json
 *.memory.json*
+
+# generated audio (voice cache + tuning lab renders)
+data/.tts-cache/
+data/voice-lab/

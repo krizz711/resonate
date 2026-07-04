@@ -1,60 +1,76 @@
-# Resonate — 3-Minute Demo Video Script
+# Resonate — 3-Minute Demo Video Script (v2 — two-scenario cut)
 
 **Title:** *Resonate — Scripture, where you already are*
-**Runtime target:** 2:55 (hard ceiling 3:00) · **VO budget:** ~410 words (≈140 wpm, unhurried)
+**Runtime target:** 2:55 (hard ceiling 3:00) · **VO budget:** ~400 words (≈140 wpm, unhurried)
 **Tone:** calm, intimate, reverent — never preachy. Let silence breathe.
-**Music:** soft ambient piano/strings, low; swell once at the memory beat (≈1:55).
+**Music:** soft ambient piano/strings, low; swell once at the reel beat (≈2:05).
+**Structure (user's cut):** two real-life scenarios — an emotional conversation, then study
+pressure — each ends with the person *hearing* the verse and one of them tapping **Watch this
+verse's story** into a reel that lifts them. Realistic people, inner-voice narration ("mind
+sounds"), HD.
 
-> Honesty rule (judges review code): everything shown is really built. Items marked **[BUILD]**
-> are small things to finish before filming so the shot is truthful, not faked.
-
----
-
-## ACT 1 — The problem (0:00–0:32)
-| Time | Visual | Voiceover | On-screen text |
-|---|---|---|---|
-| 0:00 | Dark room, late night. Screen glow on a tired face. A cursor blinking in ChatGPT. | *(silence, 2s)* "Every day, millions of people type the most honest words of their lives —" | |
-| 0:10 | Hands type into ChatGPT: **"I feel like I'm failing everyone lately."** | "— not to a friend. Not to a pastor. To an AI." | |
-| 0:20 | Slow push-in on the sentence. | "Studies, breakups, 2 a.m. doubts. We pour our hearts into these chats. And in those moments, Scripture has never been there." | |
-| 0:30 | Hold. | "Not because it doesn't belong. Because no one built the bridge." | **Until now.** |
-
-## ACT 2 — The product, in action (0:32–1:35)
-| Time | Visual | Voiceover | On-screen text |
-|---|---|---|---|
-| 0:32 | ChatGPT's reply types out normally. Then, quietly, bottom-right: the **parchment panel fades in** — `ROMANS 8:1` + verse + bridge. | "This is Resonate. It sits quietly in the corner of the tools you already use." | |
-| 0:47 | Close-up of the card: *"There is therefore now no condemnation…"* / bridge: *"You said 'I feel like I'm failing everyone.' Hold onto this."* | "It reads only your words. Processes them on your own machine. Stores nothing." | processed locally · nothing stored |
-| 0:58 | Cursor clicks **▸ Listen**. We *hear* the verse in a warm voice (dub with Kokoro `af_bella`). | "And it only speaks when it hears a story that echoes a verse." | |
-| 1:10 | Cut: user types **"what's the capital of France?"** → panel stays empty. | "Ask something ordinary… and it stays silent. No pop-ups. No noise." | |
-| 1:20 | Cut (handle with care; blur/short): a message hinting at crisis → the panel shows the **help card**, *not* a verse. | *(softer)* "And when it senses someone is in crisis, it never offers a verse. It points to a person — and to help." | A pause, not a verse |
-
-## ACT 3 — The magic: memory over time (1:35–2:20)
-| Time | Visual | Voiceover | On-screen text |
-|---|---|---|---|
-| 1:35 | Quick montage — same person, different days (caption: *Mon · Wed · Sat*), different chats, the theme of "not being enough" recurring. Different verses each time (never repeats). | "But Resonate remembers." | |
-| 1:55 | *(music swells)* The panel shows a gentle line: **"You've returned to this — being enough — four times this month."** A short reflection/compilation. | "Over weeks and months, it notices the themes you keep returning to — and meets you in your story, not just your sentence." | |
-| 2:12 | Hold on the reflection. Let it land. | *(beat)* "That's the difference between a search result… and being known." | |
-
-## ACT 4 — Scale & vision (2:20–2:55)
-| Time | Visual | Voiceover | On-screen text |
-|---|---|---|---|
-| 2:20 | Fast cuts: the same verse-in-the-margin inside **VS Code** (a dev stuck at 2 a.m.); a glance on a phone. | "The same engine meets you wherever you already are — your chat, your editor, your wrist. You choose where." | |
-| 2:34 | Pull back from the glowing screen to the quiet room. | "Two billion people live in these digital spaces every day. Resonate is the bridge — Scripture, present where life actually happens." | |
-| 2:46 | End card: **RESONATE** wordmark on parchment. | *(quiet)* "On your terms. Never intruding. Always there." | Powered by YouVersion Platform + Gloo AI Studio · github.com/krizz711/resonate |
+> Honesty rule (judges review code): everything shown is really built. The panel, the fold-away
+> wax seal, the three voices, the reel button, memory, restraint and the crisis card all work
+> today (offline mock). Film against live keys after 2026-07-06 so verse text is real YouVersion.
+> The story-reels themselves are produced FOR the film (AI video, e.g. Higgsfield/Runway/Veo) and
+> presented as the format "hosted on YouVersion or a related platform" — say it exactly that way.
 
 ---
 
-## Shot list / capture checklist
-- [ ] Screen-capture: ChatGPT + the live extension surfacing `ROMANS 8:1` (real, already works).
-- [ ] Screen-capture: neutral message → no panel (the restraint beat).
-- [ ] Screen-capture: crisis message → help card (rehearse tastefully; can use a milder phrasing).
-- [ ] Audio: dub the verse with Kokoro `af_bella` (premium) for the Listen moment.
-- [ ] Screen-capture: the **series-memory line** in the panel — **[BUILD]** task #2 (surface "returned N times").
-- [ ] Screen-capture: VS Code connector surfacing a verse (already works via `python scripts/serve.py`).
-- [ ] B-roll: hands typing, night room, phone glance. Keep faces ambiguous/relatable.
-- [ ] Wordmark/end card in the parchment palette (paper #efe9df, ink #211d17, clay #a65b43).
+## COLD OPEN — the honest problem (0:00–0:25)
+| Time | Visual | Audio | On-screen text |
+|---|---|---|---|
+| 0:00 | Dark room, late night. A tired face lit by a screen. ChatGPT cursor blinking. | *(2s silence)* VO: "Every day, millions of people type the most honest words of their lives — not to a friend. To an AI." | |
+| 0:12 | Slow push on the empty input. | VO: "And in that moment, Scripture has never been there. Not because it doesn't belong — because no one built the bridge." | **Until now.** |
+
+## SCENARIO 1 — the heavy evening (0:25–1:25)
+*Realistic person A (choose a relatable adult; face allowed, warm grade). Their inner voice is
+the narration — mic'd close, like thought.*
+
+| Time | Visual | Audio | Notes |
+|---|---|---|---|
+| 0:25 | A types to ChatGPT: **"I feel like I'm failing everyone lately. I can't keep up."** | Inner voice: "You don't say this out loud. You type it." | real extension, live |
+| 0:37 | ChatGPT replies normally… then, bottom-right, the **parchment card slides in from the side** — GALATIANS 6:9 + bridge line. | *(soft paper sound)* Inner voice: "…what is that?" | the slide-in is the beat — hold it |
+| 0:48 | Close-up of the card. Cursor taps **▸ Listen**. | **George's voice** (deep, unhurried, chapel-quiet): *"And let us not be weary in well doing: for in due season we shall reap, if we faint not."* | Kokoro `bm_george` godly preset — record from /tts |
+| 1:02 | A sits back. The card quietly **folds itself into a small wax seal** in the corner. | Inner voice: "It didn't shout. It didn't stay. It just… waited." | the fold is the restraint beat |
+| 1:10 | A taps the seal → card unfolds → taps **▷ Watch this verse's story**. | *(music lifts gently)* | |
+| 1:14 | **REEL 1 (vertical, HD):** ~10s excerpt — a farmer in bad weather keeps sowing; season turns; harvest. Cut to A's face, lit. | Reel VO (Isabella): "…in due season, we shall reap." Inner voice: "Okay. One more day." | produce with AI video; caption: *Story reels — a format for YouVersion & partners* |
+
+## SCENARIO 2 — the exam week (1:25–2:20)
+*Realistic person B (student). Faster cutting — study pressure energy.*
+
+| Time | Visual | Audio | Notes |
+|---|---|---|---|
+| 1:25 | Montage: books, tabs, energy drink. B types: **"I'm studying with you all night, I'm so anxious about tomorrow, I can't stop worrying."** | Inner voice: "Third all-nighter. My chest is tight." | |
+| 1:37 | The card slides in: MATTHEW 6:34. **auto-read is ON** — it speaks as it arrives. | **Bella's voice**: *"Take therefore no thought for the morrow…"* | "play by default" beat |
+| 1:48 | B keeps studying; the card folds to the seal on its own; B glances, half-smiles, keeps working. | Inner voice: "It waits better than I do." | restraint again — never blocks study |
+| 1:55 | Quick honesty beats, rapid cuts: **"what's the capital of France?" → silence.** A crisis-adjacent phrase → the **help card** (blur/soft). | VO: "Ask something ordinary — silence. And if it ever hears real darkness, it never answers with a verse. It points to help." | the safety beat — protect it in any cut |
+| 2:05 | *(music swell)* B returns after days; panel shows **"You've returned to anxiety — 4× lately."** B taps the reel. **REEL 2:** ~8s — birds over a field at dawn. | Reel VO: "…your heavenly Father feedeth them." Inner voice: "It remembers my story." | series memory — real feature |
+
+## CLOSE — the bridge (2:20–2:55)
+| Time | Visual | Audio | On-screen text |
+|---|---|---|---|
+| 2:20 | Fast cuts: same engine in **VS Code** margins; the mock-chat panel on a phone-width window; the three voice names cycling on the card. | VO: "One engine. Your chat, your editor, your voice — Bella, Isabella, or George. You choose where Scripture meets you." | |
+| 2:36 | Pull back from the glowing screen; the wax seal glows softly in the corner. | VO: "Two billion people live in these spaces. Resonate is the bridge — present, reverent, never intruding." | |
+| 2:46 | End card: **RESONATE** wordmark on parchment. | *(quiet)* "Scripture, where you already are." | Powered by YouVersion Platform + Gloo AI Studio · github.com/krizz711/resonate |
+
+---
+
+## Capture checklist
+- [ ] Live extension on chatgpt.com (after keys: `RESONATE_MODE=live`) — slide-in, fold-to-seal,
+      unfold, dismiss. Backup backdrop: `http://127.0.0.1:8765/mock-chat.html` (same pixels, no flake).
+- [ ] Voice takes from the engine itself: `http://127.0.0.1:8765/tts?voice=george&text=...`
+      (repeat for bella/isabella) — save WAVs for the edit. Pick winners in `data/voice-lab/index.html`.
+- [ ] Restraint beat (neutral msg → silence), safety beat (help card — mild phrasing, blur).
+- [ ] Series-memory line ("returned N× lately") — real, appears after recurring themes.
+- [ ] **Reels ×2 (the big lift):** vertical 1080×1920, ~10s each, realistic people, no on-screen
+      text errors. AI video (Higgsfield / Runway / Veo — pick by trial). Drop files/links into
+      `data/reels.json` so the button opens YOUR reel in the film.
+- [ ] B-roll: hands, night room, books, dawn. Faces warm and relatable.
+- [ ] End card in the parchment palette (paper #efe9df, ink #211d17, clay #a65b43).
 
 ## Editing notes
-- **Pacing:** Acts 1–2 unhurried; Act 3 is the emotional peak (music swell, hold the memory line); Act 4 brisk and hopeful.
-- **Captions:** keep on-screen text in the parchment/clay palette; small-caps tracked labels like the panel.
-- **The hook is the memory beat (≈1:55).** If you cut for time, protect that and the crisis-safety beat — they're what separate this from "a verse generator."
-- **Do NOT fake.** If task #2 isn't done by film day, show series-memory in the web playground (it computes recurring themes) rather than mocking it in the panel.
+- The **fold-to-seal** and the **reel tap** are the two moments judges will remember — hold each
+  a extra half-second. The safety beat is what separates this from "a verse generator."
+- Inner-voice narration: record dry and close; duck music under it.
+- **Do NOT fake anything.** Everything above exists; if a shot isn't ready, cut it rather than mock it.

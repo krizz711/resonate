@@ -5,6 +5,21 @@ your ChatGPT window. It **reads only your message text, processes it locally, st
 and **only speaks when it hears a story that echoes a verse** — appearing as a small, dismissible
 side panel. When it detects a crisis, it **stays silent on Scripture and points to help instead.**
 
+## Panel v2 — what it does now
+- **Slips in from the right** (0.5 s, eased; honors `prefers-reduced-motion`), compact 340 px,
+  floating above the composer so it never covers the conversation or the input.
+- **Folds itself away**: after ~14 s without your attention the card folds into a small **wax
+  seal** in the corner — the verse waits without taking your space. Click the seal to unfold.
+- **A voice from an old chapel**: ▸ Listen speaks the verse with a Kokoro voice served by the
+  local engine — cycle **Bella / Isabella / George** (each tuned: unhurried tempo, lowered
+  pitch, warm bass, a quiet chapel reverb). `auto: on` reads every verse as it arrives
+  ("play by default"). If the voice engine is offline it falls back to the browser's voice.
+- **Watch the story**: each verse carries a reel link — a curated story-reel when one exists
+  (`data/reels.json`), otherwise the verse's own YouVersion page.
+- **Conversation-aware**: the last few messages travel with the newest one, so a "money worry"
+  conversation gets *"my God shall supply all your need"* (Philippians 4:19), not a generic
+  anxiety verse. History sharpens WHICH verse — it never decides WHETHER to speak.
+
 ## How it works
 ```
 ChatGPT page ──[data-message-author-role="user"]──► content.js (MutationObserver)
@@ -28,6 +43,13 @@ local server, which runs the matching engine + safety gate + Delivery Policy.
 3. Open **https://chatgpt.com**, send a message like *"I feel like I'm failing everyone."*
    A quiet verse panel appears bottom-right. Try *"what's the capital of France?"* → silence.
    Try a crisis phrase → a gentle help card, never a verse.
+
+**No ChatGPT handy?** Open `http://127.0.0.1:8765/mock-chat.html` — a faithful stand-in for
+chatgpt.com's DOM that runs this very content script. Used for automated tests and as a
+controlled backdrop for filming.
+
+**Tune the voices:** `python scripts/voice_lab.py` renders a matrix of speed/pitch variants per
+voice into `data/voice-lab/index.html` — pick the godliest by ear, adjust `resonate/tts.py`.
 
 ## Privacy
 - Only your **own message text** is read (via the standard message selector), only on chatgpt.com.

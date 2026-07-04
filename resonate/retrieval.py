@@ -69,15 +69,25 @@ class HybridRetriever:
         self.verses = verse_store.verses
         self.bm25 = BM25([tokenize(v["_profile"]) for v in self.verses])
 
-    def retrieve(self, beat, topk: int = 12) -> list:
+    def retrieve(self, beat, topk: int = 12, context_themes=None) -> list:
+        """context_themes: themes heard earlier in the conversation (recency-weighted by
+        repetition). They join the query as extra tokens and echo into the tag retriever
+        at half weight, so the verse choice follows the conversation, not one message —
+        while the beat itself still decides WHETHER we speak at all."""
+        ctx = list(context_themes or [])
         qtext = beat.text + " " + " ".join(beat.themes)
+        if ctx:
+            qtext = qtext + " " + " ".join(ctx)
         qtokens = tokenize(qtext)
         qvec = self.vs.embed_query(qtext)
         bthemes = set(beat.themes)
+        ctxset = set(ctx)
 
         dense = [cosine(qvec, v["_vec"]) for v in self.verses]
         sparse = self.bm25.scores(qtokens)
-        tag = [_jaccard(bthemes, set(v.get("themes", []))) for v in self.verses]
+        tag = [_jaccard(bthemes, set(v.get("themes", []))) +
+               (0.5 * _jaccard(ctxset, set(v.get("themes", []))) if ctxset else 0.0)
+               for v in self.verses]
 
         rankings = [rank_indices(dense), rank_indices(sparse), rank_indices(tag)]
         fused = rrf_fuse(rankings, self.rrf_k)

@@ -32,6 +32,7 @@ class EngineConfig:
     rrf_k: int = 60             # RRF constant
     recency_window: int = 8     # last N delivered verses count as "recent"
     abstain_margin: float = 0.08  # if top two are within this, flag low confidence
+    history_max: int = 3        # prior user messages blended into retrieval context
 
     weights: Weights = field(default_factory=Weights)
 

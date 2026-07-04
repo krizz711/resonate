@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Resonate — Scripture in the conversation",
-  "version": "0.0.1",
-  "description": "A quiet, dismissible verse when your AI conversation echoes one. Privacy-first: processed locally, nothing stored.",
+  "version": "0.2.0",
+  "description": "A quiet, dismissible verse when your AI conversation echoes one — with a voice from an old chapel. Privacy-first: processed locally, nothing stored.",
   "permissions": ["storage"],
   "host_permissions": ["http://127.0.0.1:8765/*", "http://localhost:8765/*"],
   "background": { "service_worker": "background.js" },

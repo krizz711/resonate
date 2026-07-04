@@ -1,8 +1,13 @@
 // Resonate content script for chatgpt.com.
 // Watches for new USER messages (the stable [data-message-author-role="user"] selector),
-// sends the text to the background worker -> local engine, and renders a quiet, dismissible
-// side panel. If the selector ever fails or the engine is offline, it does nothing — it never
-// touches or breaks the chat UI.
+// sends the text + a short rolling history to the background worker -> local engine, and
+// renders a quiet, dismissible parchment panel. If the selector ever fails or the engine
+// is offline, it does nothing — it never touches or breaks the chat UI.
+//
+// Panel v2: slides in from the right edge; after a while it folds itself into a small
+// wax seal so it never squats on the conversation — click the seal to unfold it again.
+// Voice v2: Kokoro voices (Bella / Isabella / George) served by the local engine with a
+// reverent "godly" treatment; falls back to the browser's Web Speech if offline.
 
 (function () {
   // Stable per-user id (persisted) so recurring themes accumulate across sessions/days.
@@ -15,21 +20,41 @@
       });
     }
   } catch (e) {}
+
   let lastText = "";
   let debounce = null;
   let host = null;
   let shadow = null;
   let card = null;
+  let seal = null;
+  let foldTimer = null;
+  let hovering = false;
+  let current = null; // last delivered verse payload
 
-  // --- voice (opt-in, click-to-play; auto-read is OFF by default and remembered) ---
-  let autoSpeak = false;
-  try { window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged = () => {}; } catch (e) {}
+  // --- voice state (persisted) ---
+  const VOICES = ["bella", "isabella", "george", "browser"];
+  const VOICE_LABEL = { bella: "Bella", isabella: "Isabella", george: "George", browser: "Browser" };
+  let voiceId = "bella";
+  let autoSpeak = false; // "play by default" — an option, off until chosen
+  let audioEl = null;
+  let speaking = false;
   try {
     if (chrome.storage && chrome.storage.sync)
-      chrome.storage.sync.get({ autoSpeak: false }, (r) => { autoSpeak = !!r.autoSpeak; });
+      chrome.storage.sync.get({ autoSpeak: false, voiceId: "bella" }, (r) => {
+        autoSpeak = !!r.autoSpeak;
+        if (VOICES.includes(r.voiceId)) voiceId = r.voiceId;
+      });
   } catch (e) {}
+  try { window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged = () => {}; } catch (e) {}
 
-  function pickVoice() {
+  function persistVoice() {
+    try {
+      if (chrome.storage && chrome.storage.sync) chrome.storage.sync.set({ autoSpeak, voiceId });
+    } catch (e) {}
+  }
+
+  // ---------- speech ----------
+  function pickBrowserVoice() {
     let vs = [];
     try { vs = window.speechSynthesis.getVoices() || []; } catch (e) {}
     const prefer = ["Google UK English Female", "Microsoft Aria", "Microsoft Sonia", "Microsoft Jenny",
@@ -37,75 +62,215 @@
     for (const name of prefer) { const m = vs.find((v) => v.name && v.name.includes(name)); if (m) return m; }
     return vs.find((v) => /^en/i.test(v.lang || "")) || vs[0] || null;
   }
-  function speak(text) {
+
+  function speakBrowser(text) {
     try {
-      const synth = window.speechSynthesis; if (!synth) return;
+      const synth = window.speechSynthesis; if (!synth) return endSpeak();
       synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      const v = pickVoice(); if (v) u.voice = v;
-      u.rate = 0.92; u.pitch = 0.96; u.volume = 1;  // warm, unhurried, reverent
-      u.onend = () => { const b = card && card.querySelector(".listen"); if (b) b.textContent = "▸ Listen"; };
+      const v = pickBrowserVoice(); if (v) u.voice = v;
+      u.rate = 0.92; u.pitch = 0.96; u.volume = 1; // warm, unhurried, reverent
+      u.onend = endSpeak; u.onerror = endSpeak;
+      speaking = true; reflectSpeaking();
       synth.speak(u);
-    } catch (e) {}
+    } catch (e) { endSpeak(); }
   }
-  function stopSpeak() { try { window.speechSynthesis.cancel(); } catch (e) {} }
 
-  // Parchment / aged-manuscript skin (matches the portfolio: paper #efe9df, ink #211d17,
-  // clay #a65b43). Kept in sync with web/panel-preview.html.
+  function speak(text) {
+    stopSpeak(false);
+    if (voiceId === "browser") { speakBrowser(text); return; }
+    try {
+      chrome.runtime.sendMessage({ type: "tts", voice: voiceId, text }, (resp) => {
+        if (chrome.runtime.lastError || !resp || !resp.ok) { speakBrowser(text); return; }
+        try {
+          const bin = atob(resp.b64);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          const url = URL.createObjectURL(new Blob([bytes], { type: resp.mime || "audio/wav" }));
+          audioEl = new Audio(url);
+          audioEl.onended = () => { URL.revokeObjectURL(url); endSpeak(); };
+          audioEl.onerror = () => { URL.revokeObjectURL(url); endSpeak(); };
+          speaking = true; reflectSpeaking();
+          audioEl.play().catch(() => { speaking = false; speakBrowser(text); });
+        } catch (e) { speakBrowser(text); }
+      });
+    } catch (e) { speakBrowser(text); }
+  }
+
+  function stopSpeak(reflect = true) {
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+    if (audioEl) { try { audioEl.pause(); } catch (e) {} audioEl = null; }
+    speaking = false;
+    if (reflect) reflectSpeaking();
+  }
+
+  function endSpeak() { speaking = false; reflectSpeaking(); scheduleFold(); }
+
+  function reflectSpeaking() {
+    if (card) { const b = card.querySelector(".listen"); if (b) b.textContent = speaking ? "◼ Stop" : "▸ Listen"; }
+    if (seal) seal.classList.toggle("speaking", speaking);
+  }
+
+  // ---------- panel skin ----------
+  // Parchment / aged-manuscript (paper #efe9df, ink #211d17, clay #a65b43), kept in sync
+  // with web/panel-preview.html. The card enters from the right edge like a slipped note,
+  // and folds into a small wax seal when it has been quiet for a while.
   const PANEL_CSS = `
-    .card{width:370px;box-sizing:border-box;
+    :host-context(html){}
+    .wrap{display:flex;flex-direction:column;align-items:flex-end;gap:0}
+    .card{width:340px;box-sizing:border-box;
       font-family:'Space Grotesk',ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif;color:#211d17;
       background:radial-gradient(130% 120% at 100% 0%, rgba(166,91,67,.07), transparent 58%),
         linear-gradient(177deg,#efe9df 0%,#e9e1d3 58%,#e3d7c4 100%);
-      border:1px solid rgba(33,29,23,.22);border-radius:18px;padding:22px 24px 15px;
+      border:1px solid rgba(33,29,23,.22);border-radius:16px;padding:19px 20px 13px;
       box-shadow:0 18px 50px rgba(33,29,23,.28), inset 0 1px 0 rgba(255,255,255,.5);
-      position:relative;animation:rin .32s cubic-bezier(.22,.61,.36,1)}
+      position:relative;
+      transform-origin:100% 100%;
+      animation:slidein .5s cubic-bezier(.21,.68,.33,1) both;
+      transition:transform .38s cubic-bezier(.55,.06,.68,.19), opacity .38s ease}
     .card.hidden{display:none}
+    .card.out{transform:translateX(380px);opacity:0}
+    .card.fold{transform:scale(.12) translate(46px,54px);opacity:0}
+    @keyframes slidein{from{opacity:0;transform:translateX(380px)}to{opacity:1;transform:none}}
     .card::before{content:"";position:absolute;inset:7px;border:1px solid rgba(33,29,23,.13);
-      border-radius:12px;pointer-events:none}
-    @keyframes rin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-    .x{position:absolute;top:10px;right:13px;background:none;border:none;color:#9a8f7f;font-size:17px;
+      border-radius:11px;pointer-events:none}
+    .x{position:absolute;top:9px;right:12px;background:none;border:none;color:#9a8f7f;font-size:16px;
       cursor:pointer;line-height:1;font-family:inherit;z-index:1}
     .x:hover{color:#a65b43}
-    .ref{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#a65b43;margin:0 0 11px;padding-right:18px}
+    .ref{font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:#a65b43;margin:0 0 10px;padding-right:18px}
     .ref .tr{color:#a89c8a;letter-spacing:.2em}
-    .ref::after{content:"";display:block;width:32px;height:1px;background:#a65b43;opacity:.55;margin-top:9px}
+    .ref::after{content:"";display:block;width:32px;height:1px;background:#a65b43;opacity:.55;margin-top:8px}
     .verse{font-family:'Cormorant Garamond','EB Garamond','Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
-      font-size:22px;line-height:1.4;color:#211d17;font-weight:500}
-    .bridge{margin-top:13px;font-family:'Cormorant Garamond','EB Garamond',Georgia,serif;font-size:15px;
-      font-style:italic;color:#6b6358;border-top:1px solid rgba(33,29,23,.13);padding-top:11px}
-    .mem{margin-top:11px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#a65b43;opacity:.92}
-    .foot{margin-top:13px;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#a89c8a}
-    .card.help .verse{font-size:17.5px}
-    .card.help .ref::after{width:46px}
-    .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
-    .listen{font-family:inherit;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#a65b43;
-      background:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:5px 13px;cursor:pointer}
+      font-size:20px;line-height:1.42;color:#211d17;font-weight:500}
+    .bridge{margin-top:11px;font-family:'Cormorant Garamond','EB Garamond',Georgia,serif;font-size:14px;
+      font-style:italic;color:#6b6358;border-top:1px solid rgba(33,29,23,.13);padding-top:10px}
+    .mem{margin-top:10px;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#a65b43;opacity:.92}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .listen{font-family:inherit;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#a65b43;
+      background:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:4px 12px;cursor:pointer}
     .listen:hover{background:rgba(166,91,67,.10)}
-    .auto{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#a89c8a;cursor:pointer;user-select:none}
-    .auto b{color:#6b6358}`;
+    .vpick{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#a89c8a;cursor:pointer;user-select:none;
+      border:none;background:none;font-family:inherit;padding:2px 0}
+    .vpick b{color:#6b6358}
+    .vpick:hover b{color:#a65b43}
+    .auto{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#a89c8a;cursor:pointer;user-select:none}
+    .auto b{color:#6b6358}
+    .reel{display:block;margin-top:12px;text-align:center;text-decoration:none;
+      font-family:inherit;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#efe9df;
+      background:linear-gradient(160deg,#a65b43,#8a4a35);border-radius:999px;padding:7px 12px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 2px 8px rgba(138,74,53,.35)}
+    .reel:hover{filter:brightness(1.06)}
+    .foot{margin-top:11px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#a89c8a}
+    .card.help .verse{font-size:16.5px}
+    .card.help .ref::after{width:46px}
+    /* --- the wax seal (folded state): quiet, small, glad to wait --- */
+    .seal{width:46px;height:46px;border-radius:50%;cursor:pointer;border:none;padding:0;
+      background:radial-gradient(circle at 34% 30%, #c07a5e 0%, #a65b43 42%, #7d3f2c 100%);
+      box-shadow:0 6px 18px rgba(33,29,23,.35), inset 0 2px 4px rgba(255,255,255,.28), inset 0 -3px 6px rgba(60,25,14,.5);
+      color:#f3e4d5;font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:600;line-height:1;
+      display:flex;align-items:center;justify-content:center;position:relative;
+      animation:pop .32s cubic-bezier(.22,.61,.36,1) both}
+    .seal::after{content:"";position:absolute;inset:5px;border-radius:50%;border:1px solid rgba(243,228,213,.4)}
+    .seal:hover{transform:scale(1.08)}
+    .seal.hidden{display:none}
+    .seal.speaking{animation:pulse 1.6s ease-in-out infinite}
+    @keyframes pop{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:none}}
+    @keyframes pulse{0%,100%{box-shadow:0 6px 18px rgba(33,29,23,.35), 0 0 0 0 rgba(166,91,67,.45)}
+      50%{box-shadow:0 6px 18px rgba(33,29,23,.35), 0 0 0 9px rgba(166,91,67,0)}}
+    @media (prefers-reduced-motion: reduce){
+      .card,.seal{animation:none !important;transition:none !important}
+      .seal.speaking{animation:none !important}
+    }`;
+
+  const FOLD_AFTER_MS = 14000;   // idle time before the card folds into the seal
+  const FOLD_ANIM_MS = 420;
 
   function ensurePanel() {
     if (host) return;
     host = document.createElement("div");
-    host.style.cssText = "position:fixed;right:18px;bottom:96px;z-index:2147483647;";
+    // Bottom-right, floating above the composer; never overlaps the input on a
+    // normal-width window because the chat column is centered.
+    host.style.cssText = "position:fixed;right:18px;bottom:104px;z-index:2147483647;";
     shadow = host.attachShadow({ mode: "open" });
     const style = document.createElement("style");
     style.textContent = PANEL_CSS;
+    const wrap = document.createElement("div");
+    wrap.className = "wrap";
     card = document.createElement("div");
     card.className = "card hidden";
-    shadow.append(style, card);
+    seal = document.createElement("button");
+    seal.className = "seal hidden";
+    seal.title = "Resonate — open the verse";
+    seal.textContent = "R";
+    seal.onclick = unfold;
+    wrap.append(card, seal);
+    shadow.append(style, wrap);
     document.documentElement.appendChild(host);
+
+    card.addEventListener("mouseenter", () => { hovering = true; clearTimeout(foldTimer); });
+    card.addEventListener("mouseleave", () => { hovering = false; scheduleFold(); });
+  }
+
+  function scheduleFold() {
+    clearTimeout(foldTimer);
+    if (!card || card.classList.contains("hidden")) return;
+    foldTimer = setTimeout(() => {
+      if (hovering || speaking) { scheduleFold(); return; } // busy — check again later
+      fold();
+    }, FOLD_AFTER_MS);
+  }
+
+  function fold() {
+    if (!card || card.classList.contains("hidden")) return;
+    card.classList.add("fold");
+    setTimeout(() => {
+      card.classList.add("hidden");
+      card.classList.remove("fold");
+      seal.classList.remove("hidden");
+      reflectSpeaking();
+    }, FOLD_ANIM_MS);
+  }
+
+  function unfold() {
+    seal.classList.add("hidden");
+    card.classList.remove("hidden", "out", "fold");
+    // retrigger the slide-in
+    card.style.animation = "none";
+    void card.offsetWidth; // reflow
+    card.style.animation = "";
+    scheduleFold();
+  }
+
+  function dismiss() {
+    stopSpeak();
+    clearTimeout(foldTimer);
+    if (!card) return;
+    card.classList.add("out");
+    setTimeout(() => { card.classList.add("hidden"); card.classList.remove("out"); }, 400);
+    if (seal) seal.classList.add("hidden");
   }
 
   function esc(s) {
-    return (s || "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+    return (s || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  }
+
+  function freshCard(cls) {
+    ensurePanel();
+    seal.classList.add("hidden");
+    card.classList.remove("hidden", "out", "fold");
+    card.className = "card " + cls;
+    card.style.animation = "none";
+    void card.offsetWidth; // restart the slide-in for every new arrival
+    card.style.animation = "";
   }
 
   function showVerse(d) {
-    ensurePanel();
-    stopSpeak();
-    card.className = "card verse";
+    stopSpeak(false);
+    current = d;
+    freshCard("verse");
+    const reel = d.reel || null;
+    const reelLabel = reel && reel.kind === "story" ? "▷ Watch this verse's story"
+                                                    : "❧ Read on YouVersion";
     card.innerHTML =
       '<button class="x" title="Dismiss">×</button>' +
       '<div class="ref">' + esc(d.reference) + ' <span class="tr">' + esc(d.translation) + "</span></div>" +
@@ -114,43 +279,59 @@
       (d.memory_note ? '<div class="mem">' + esc(d.memory_note) + "</div>" : "") +
       '<div class="row">' +
         '<button class="listen">▸ Listen</button>' +
-        '<span class="auto" title="Read every verse aloud automatically">auto-read: <b>' + (autoSpeak ? "on" : "off") + "</b></span>" +
+        '<button class="vpick" title="Change voice">voice: <b>' + esc(VOICE_LABEL[voiceId]) + "</b></button>" +
+        '<span class="auto" title="Read every verse aloud automatically">auto: <b>' + (autoSpeak ? "on" : "off") + "</b></span>" +
       "</div>" +
+      (reel ? '<a class="reel" href="' + esc(reel.url) + '" target="_blank" rel="noopener noreferrer">' + reelLabel + "</a>" : "") +
       '<div class="foot">Resonate · processed locally · nothing stored</div>';
 
-    const listenBtn = card.querySelector(".listen");
-    listenBtn.onclick = () => {
-      if (window.speechSynthesis && window.speechSynthesis.speaking) { stopSpeak(); listenBtn.textContent = "▸ Listen"; }
-      else { speak(d.verse_text); listenBtn.textContent = "■ Stop"; }
+    card.querySelector(".listen").onclick = () => {
+      if (speaking) stopSpeak();
+      else speak(d.verse_text);
+    };
+    card.querySelector(".vpick").onclick = (e) => {
+      voiceId = VOICES[(VOICES.indexOf(voiceId) + 1) % VOICES.length];
+      e.currentTarget.querySelector("b").textContent = VOICE_LABEL[voiceId];
+      persistVoice();
+      if (speaking) { stopSpeak(false); speak(d.verse_text); } // hear the new voice at once
     };
     card.querySelector(".auto").onclick = (e) => {
       autoSpeak = !autoSpeak;
       e.currentTarget.querySelector("b").textContent = autoSpeak ? "on" : "off";
-      try { if (chrome.storage && chrome.storage.sync) chrome.storage.sync.set({ autoSpeak }); } catch (err) {}
-      if (autoSpeak) { speak(d.verse_text); listenBtn.textContent = "■ Stop"; }
+      persistVoice();
+      if (autoSpeak && !speaking) speak(d.verse_text);
     };
-    card.querySelector(".x").onclick = () => { stopSpeak(); card.classList.add("hidden"); };
+    card.querySelector(".x").onclick = dismiss;
 
-    if (autoSpeak) { speak(d.verse_text); listenBtn.textContent = "■ Stop"; }
+    if (autoSpeak) speak(d.verse_text);
+    scheduleFold();
   }
 
   function showHelp(message) {
-    ensurePanel();
-    stopSpeak();  // never read crisis content aloud
-    card.className = "card help";
+    stopSpeak(); // never read crisis content aloud
+    current = null;
+    freshCard("help");
     card.innerHTML =
       '<button class="x" title="Dismiss">×</button>' +
       '<div class="ref">A pause, not a verse</div>' +
       '<div class="verse">' + esc(message) + "</div>" +
       '<div class="foot">Resonate · your wellbeing comes first</div>';
-    card.querySelector(".x").onclick = () => { stopSpeak(); card.classList.add("hidden"); };
+    card.querySelector(".x").onclick = dismiss;
+    clearTimeout(foldTimer); // a help card never folds itself away
   }
 
-  function handle(text) {
+  function userMessages() {
+    const nodes = document.querySelectorAll('[data-message-author-role="user"]');
+    return Array.from(nodes).map((n) => (n.innerText || "").trim()).filter(Boolean);
+  }
+
+  function handle(all) {
+    const text = all.length ? all[all.length - 1] : "";
     if (!text || text === lastText) return;
     lastText = text;
+    const history = all.slice(-4, -1); // up to 3 prior messages — conversation context
     try {
-      chrome.runtime.sendMessage({ type: "resonate", text, userId: USER_ID }, (resp) => {
+      chrome.runtime.sendMessage({ type: "resonate", text, history, userId: USER_ID }, (resp) => {
         if (chrome.runtime.lastError || !resp || !resp.ok) return; // engine offline -> stay invisible
         const data = resp.data || {};
         const policy = data.policy || {};
@@ -171,15 +352,9 @@
     }
   }
 
-  function latestUserMessage() {
-    const nodes = document.querySelectorAll('[data-message-author-role="user"]');
-    if (!nodes.length) return "";
-    return (nodes[nodes.length - 1].innerText || "").trim();
-  }
-
   const observer = new MutationObserver(() => {
     clearTimeout(debounce);
-    debounce = setTimeout(() => handle(latestUserMessage()), 600);
+    debounce = setTimeout(() => handle(userMessages()), 600);
   });
 
   function start() {

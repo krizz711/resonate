@@ -248,5 +248,115 @@ class TestEvalThresholds(unittest.TestCase):
         self.assertGreaterEqual(m["hit1"], 80.0)
 
 
+class TestConversationContext(unittest.TestCase):
+    """The rolling-history 'recommendation engine' behavior: history sharpens WHICH
+    verse is chosen but never decides WHETHER we speak (that stays with the present
+    message), and never re-triggers safety for past messages."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.eng = Engine(EngineConfig())
+        cls.vs = VerseStore()
+        cls.retr = HybridRetriever(cls.vs)
+        cls.gloo = MockGloo(EngineConfig())
+
+    def _provision_positions(self, items):
+        return [i for i, it in enumerate(items) if "provision" in it["verse"].get("themes", [])]
+
+    def test_context_themes_shift_ranking(self):
+        beat = self.gloo.segment("I can't stop worrying about everything.")[0]
+        plain = self._provision_positions(self.retr.retrieve(beat, topk=12))
+        money = self._provision_positions(
+            self.retr.retrieve(beat, topk=12, context_themes=["provision", "provision"]))
+        # a money-worry conversation should pull provision verses up: the best one
+        # rises AND more of them make the shortlist (observed: pos 5 -> 0, count 1 -> 9)
+        self.assertLess(min(money), min(plain) if plain else 12)
+        self.assertGreater(len(money), len(plain))
+
+    def test_engine_reports_context(self):
+        res = self.eng.resonate(
+            "I'm so worried about everything.", "t_ctx",
+            history=["The rent is due next week and I can't afford it.",
+                     "My paycheck barely covers the bills."])
+        self.assertEqual(res["context"]["history_messages"], 2)
+        self.assertIn("provision", res["context"]["themes"])
+
+    def test_history_never_triggers_alone(self):
+        res = self.eng.resonate("what's the capital of France?", "t_ctx2",
+                                history=["I'm completely exhausted and heartbroken."])
+        self.assertFalse([d for d in res["deliveries"] if d["status"] == "delivered"],
+                         "a neutral present message must stay silent regardless of history")
+
+    def test_history_crisis_does_not_hold_present(self):
+        res = self.eng.resonate("I'm a bit worried about my exam.", "t_ctx3",
+                                history=["I don't want to live anymore."])
+        self.assertFalse(any(d["status"] == "safety_hold" for d in res["deliveries"]),
+                         "past messages were safety-handled when they arrived")
+
+    def test_no_history_is_baseline(self):
+        res = self.eng.resonate("I'm so anxious about tomorrow.", "t_ctx4")
+        self.assertEqual(res["context"], {"history_messages": 0, "themes": []})
+
+
+class TestReels(unittest.TestCase):
+    def setUp(self):
+        from resonate.reels import ReelStore
+        self.store = ReelStore()
+
+    def test_fallback_is_youversion_page(self):
+        r = self.store.resolve("PHP.4.6-PHP.4.7", "KJV")
+        self.assertEqual(r["kind"], "verse-page")
+        self.assertIn("bible.com/bible/1/PHP.4.6.KJV", r["url"])
+
+    def test_override_becomes_story(self):
+        self.store.reels["PSA.23.4"] = {"url": "https://example.com/reel.mp4", "title": "The Valley"}
+        r = self.store.resolve("PSA.23.4", "KJV")
+        self.assertEqual(r, {"url": "https://example.com/reel.mp4", "kind": "story", "title": "The Valley"})
+
+    def test_range_uses_first_verse(self):
+        from resonate.reels import _first_usfm
+        self.assertEqual(_first_usfm("PHP.4.6-PHP.4.7"), "PHP.4.6")
+        self.assertEqual(_first_usfm("JHN.3.16"), "JHN.3.16")
+
+
+class TestTTS(unittest.TestCase):
+    def test_voices_listed(self):
+        from resonate import tts
+        ids = [v["id"] for v in tts.voices()]
+        self.assertEqual(ids, ["bella", "isabella", "george"])
+
+    def test_cache_key_stable_and_voice_specific(self):
+        from resonate import tts
+        p = tts.PRESETS["bella"]
+        a = tts.cache_key("bella", "Fear not.", p)
+        b = tts.cache_key("bella", "Fear not.", p)
+        c = tts.cache_key("george", "Fear not.", tts.PRESETS["george"])
+        self.assertEqual(a, b)
+        self.assertNotEqual(a, c)
+
+    def test_unknown_voice_rejected(self):
+        from resonate import tts
+        with self.assertRaises(ValueError):
+            tts.synthesize("gandalf", "You shall not pass.")
+
+    def test_unavailable_raises_for_fallback(self):
+        from resonate import tts
+        old = tts.KOKORO_PY
+        tts.KOKORO_PY = r"C:\definitely\not\here\python.exe"
+        try:
+            with self.assertRaises(RuntimeError):
+                tts.synthesize("bella", "unique text %d" % os.getpid())
+        finally:
+            tts.KOKORO_PY = old
+
+    def test_fx_chain_shape(self):
+        from resonate import tts
+        self.assertEqual(tts._pitch_chain(0.0), "")
+        chain = tts._fx_chain(tts.PRESETS["george"])
+        self.assertIn("bass=", chain)
+        self.assertIn("aecho=", chain)
+        self.assertIn("loudnorm", chain)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
