@@ -45,11 +45,12 @@ def main():
     cfg.provider_mode = "live"
 
     step("0. environment")
-    if cfg.gloo_client_id and cfg.gloo_client_secret:
+    gloo_ready = bool(cfg.gloo_client_id and cfg.gloo_client_secret)
+    if gloo_ready:
         ok("Gloo client credentials present")
     else:
-        bad("GLOO_CLIENT_ID / GLOO_CLIENT_SECRET missing",
-            "studio.ai.gloo.com -> Dashboard -> API Credentials -> create key pair; put both in .env")
+        print("  [SKIP] Gloo credentials not set yet (challenge keys open 2026-07-06) — "
+              "running the YouVersion-only checks.")
     if cfg.yv_app_key:
         ok("YouVersion app key present")
     else:
@@ -68,21 +69,22 @@ def main():
     gloo = LiveGloo(cfg)
     yv = LiveYouVersion(cfg)
 
-    step("1. Gloo OAuth2 token exchange")
-    try:
-        tok = gloo._access_token()
-        ok("access token obtained (%d chars, ~1h lifetime)" % len(tok))
-    except Exception as e:
-        bad("token exchange failed: %s" % e,
-            "check client id/secret; endpoint = %s/oauth2/token" % cfg.gloo_base_url)
-        return finish()
+    if gloo_ready:
+        step("1. Gloo OAuth2 token exchange")
+        try:
+            tok = gloo._access_token()
+            ok("access token obtained (%d chars, ~1h lifetime)" % len(tok))
+        except Exception as e:
+            bad("token exchange failed: %s" % e,
+                "check client id/secret; endpoint = %s/oauth2/token" % cfg.gloo_base_url)
+            return finish()
 
-    step("2. Gloo chat completion (auto_routing)")
-    try:
-        out = gloo._chat("Reply with exactly one word: ready.", "ping", temperature=0.0)
-        ok("completion returned: %r" % out.strip()[:60])
-    except Exception as e:
-        bad("completion failed: %s" % e)
+        step("2. Gloo chat completion (auto_routing)")
+        try:
+            out = gloo._chat("Reply with exactly one word: ready.", "ping", temperature=0.0)
+            ok("completion returned: %r" % out.strip()[:60])
+        except Exception as e:
+            bad("completion failed: %s" % e)
 
     step("3. YouVersion bible catalog (resolve bible id)")
     bible_id = cfg.bible_id
@@ -91,11 +93,18 @@ def main():
         items = data.get("data") or data.get("bibles") or (data if isinstance(data, list) else [])
         ok("catalog returned %d English bibles" % len(items))
         want = (cfg.translation or "KJV").upper()
-        match = next((b for b in items
-                      if str(b.get("abbreviation", "")).upper() == want), None)
+        # exact match first, then prefix (the catalog uses year-suffixed abbreviations,
+        # e.g. NIV -> "NIV11", NASB -> "NASB2020"); prefer the shortest candidate.
+        abbrs = [(str(b.get("abbreviation", "")).upper(), b) for b in items]
+        match = next((b for a, b in abbrs if a == want), None)
+        if match is None:
+            pref = sorted([(len(a), a, b) for a, b in abbrs if a.startswith(want)])
+            if pref:
+                match = pref[0][2]
         if match:
             bible_id = str(match.get("id", ""))
-            ok("%s found -> bible id %s" % (want, bible_id))
+            found = match.get("abbreviation", want)
+            ok("%s resolved -> %s (bible id %s)" % (want, found, bible_id))
             if not cfg.bible_id:
                 print("         put this in .env:  RESONATE_BIBLE_ID=%s" % bible_id)
         else:
@@ -117,21 +126,24 @@ def main():
     else:
         bad("skipped — no bible id resolved")
 
-    step("5. Engine end-to-end in LIVE mode")
-    try:
-        from resonate import Engine
-        eng = Engine(cfg)
-        res = eng.resonate("I'm so anxious about tomorrow, I can't stop worrying.", "live_check")
-        d = next((x for x in res["deliveries"] if x["status"] == "delivered"), None)
-        if d and d["text_source"] == "youversion":
-            ok("verse delivered from live YouVersion: %s — %r" % (d["reference"], d["verse_text"][:60]))
-            ok("bridge (live Gloo): %r" % d["bridge"][:80])
-        elif d:
-            bad("verse delivered but text_source=%s (expected youversion)" % d["text_source"])
-        else:
-            bad("no verse delivered — inspect deliveries: %s" % [x["status"] for x in res["deliveries"]])
-    except Exception as e:
-        bad("end-to-end failed: %s" % e)
+    if gloo_ready:
+        step("5. Engine end-to-end in LIVE mode")
+        try:
+            from resonate import Engine
+            eng = Engine(cfg)
+            res = eng.resonate("I'm so anxious about tomorrow, I can't stop worrying.", "live_check")
+            d = next((x for x in res["deliveries"] if x["status"] == "delivered"), None)
+            if d and d["text_source"] == "youversion":
+                ok("verse delivered from live YouVersion: %s — %r" % (d["reference"], d["verse_text"][:60]))
+                ok("bridge (live Gloo): %r" % d["bridge"][:80])
+            elif d:
+                bad("verse delivered but text_source=%s (expected youversion)" % d["text_source"])
+            else:
+                bad("no verse delivered — inspect deliveries: %s" % [x["status"] for x in res["deliveries"]])
+        except Exception as e:
+            bad("end-to-end failed: %s" % e)
+    else:
+        step("5. Engine end-to-end — SKIPPED until Gloo keys arrive (July 6)")
 
     return finish()
 
