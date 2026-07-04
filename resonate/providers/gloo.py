@@ -149,19 +149,59 @@ class MockGloo:
 
 
 class LiveGloo:
-    """Real Gloo AI Studio integration (OpenAI-compatible). Not exercised in mock mode;
-    wired up and confirmed in Phase 1 once an API key exists."""
+    """Real Gloo AI Studio integration, per docs.gloo.com (verified 2026-07-04):
+
+      auth : OAuth2 client-credentials — POST {base}/oauth2/token with
+             Basic base64(client_id:client_secret), body
+             grant_type=client_credentials&scope=api/access; tokens live 1h.
+      chat : POST {base}/ai/v2/chat/completions with Bearer <access_token>;
+             routing via auto_routing=true (or an explicit gloo model id) and an
+             optional `tradition` (theological perspective) parameter.
+
+    A grounded variant exists at /ai/v2/chat/completions/grounded (RAG +
+    citations via rag_publisher / include_citations) — a candidate for citing
+    devotional sources in bridges later; not used in the core path."""
 
     def __init__(self, config):
         self.config = config
+        self._token = None
+        self._token_exp = 0.0
+
+    def _access_token(self):
+        import base64
+        import time as _time
+        import httpx
+        if self._token and _time.time() < self._token_exp - 300:
+            return self._token
+        basic = base64.b64encode(
+            ("%s:%s" % (self.config.gloo_client_id, self.config.gloo_client_secret)).encode()).decode()
+        r = httpx.post(
+            "%s/oauth2/token" % self.config.gloo_base_url,
+            headers={"Authorization": "Basic %s" % basic,
+                     "Content-Type": "application/x-www-form-urlencoded"},
+            content="grant_type=client_credentials&scope=api/access",
+            timeout=30)
+        r.raise_for_status()
+        data = r.json()
+        self._token = data["access_token"]
+        self._token_exp = _time.time() + float(data.get("expires_in", 3600))
+        return self._token
 
     def _chat(self, system, user, temperature=0.3):
         import httpx
-        headers = {"Authorization": "Bearer %s" % self.config.gloo_api_key, "Content-Type": "application/json"}
-        payload = {"model": self.config.gloo_model,
-                   "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-                   "temperature": temperature}
-        r = httpx.post("%s/chat/completions" % self.config.gloo_base_url, headers=headers, json=payload, timeout=60)
+        headers = {"Authorization": "Bearer %s" % self._access_token(),
+                   "Content-Type": "application/json"}
+        payload = {"messages": [{"role": "system", "content": system},
+                                {"role": "user", "content": user}],
+                   "temperature": temperature, "max_tokens": 500}
+        if self.config.gloo_model:
+            payload["model"] = self.config.gloo_model
+        else:
+            payload["auto_routing"] = True
+        if self.config.gloo_tradition:
+            payload["tradition"] = self.config.gloo_tradition
+        r = httpx.post("%s/ai/v2/chat/completions" % self.config.gloo_base_url,
+                       headers=headers, json=payload, timeout=60)
         r.raise_for_status()
         return r.json()["choices"][0]["message"]["content"]
 

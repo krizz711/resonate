@@ -22,6 +22,10 @@ except Exception:
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from resonate.envfile import load_env  # noqa: E402
+
+load_env()  # entrypoint-only .env loading; existing env always wins
+
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer  # noqa: E402
 
 from resonate import Engine, EngineConfig  # noqa: E402

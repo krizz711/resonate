@@ -8,8 +8,9 @@ Bible app. Scripture has never been present there. **Resonate** is the bridge: i
 it truly fits.
 
 Built for the Kaggle hackathon **Scripture in New Frontiers** (frontier: *AI & digital
-assistants*). Uses the **YouVersion Platform API** + **Gloo AI Studio API**. Submission due
-**2026-08-01**.
+assistants*). Uses the **YouVersion Platform API** + **Gloo AI Studio API**. Submissions close
+**July 31, 2026** — one submission per team. MIT-licensed (OSI-approved, per the winning
+requirements).
 
 > **Not another Bible app.** You never open anything. The verse appears inside the tool you're
 > already in — as a small, dismissible parchment panel — processed locally, storing nothing.
@@ -44,28 +45,40 @@ Full design: [ENGINE-DESIGN.md](ENGINE-DESIGN.md).
 4. **Privacy.** Reads only the user's own message, locally; stores nothing; opt-in per site. An
    optional warm voice can read the verse aloud.
 
-## Quickstart (offline — no keys, no installs)
-The engine runs on the Python standard library alone (mock providers + local memory):
+## Reproduce it (offline — no keys, no installs)
+Requirements: **Python 3.11+** and a Chromium browser. The engine core runs on the Python
+standard library alone (mock providers + local memory) — clone and run:
 ```bash
-python scripts/demo.py                         # end-to-end engine demo (creator transcript)
-python scripts/policy_demo.py                  # the Delivery Policy staying quiet at the right times
-python integrations/discord/bot.py --selftest  # the Discord surface, offline
+git clone https://github.com/krizz711/resonate && cd resonate
+python scripts/demo.py                         # 1. end-to-end engine demo (creator transcript)
+python scripts/policy_demo.py                  # 2. the Delivery Policy staying quiet at the right times
+python -m unittest discover -s tests           # 3. 49 tests (incl. the eval regression guard)
+python eval/run_eval.py                        # 4. 32-scenario evaluation harness
+python scripts/serve.py                        # 5. local engine  ->  http://127.0.0.1:8765
 ```
-Run the local engine server (the browser/editor connectors talk to it):
+With the server running, either open **http://127.0.0.1:8765/mock-chat.html** (a faithful
+ChatGPT stand-in running the real extension script — verse panel, wax-seal fold, voices, reels),
+or load `integrations/chatgpt-extension` at `chrome://extensions` → Developer mode → Load
+unpacked, and chat on chatgpt.com. The VS Code surface: open `integrations/vscode`, press F5.
+
+**Optional voices** (Kokoro TTS): install [Kokoro-82M](https://github.com/hexgrad/kokoro) in any
+venv (`pip install kokoro soundfile`), set `RESONATE_KOKORO_PY` to that venv's python, have
+`ffmpeg` on PATH — the panel's Listen button then uses Bella/Isabella/George; without it, the
+browser voice is used automatically.
+
+## Go live (competition keys, from 2026-07-06)
 ```bash
-python scripts/serve.py     # http://127.0.0.1:8765
+cp .env.example .env         # paste GLOO_CLIENT_ID/SECRET + YOUVERSION_APP_KEY
+pip install httpx
+python scripts/live_check.py # validates: Gloo OAuth -> completion -> YouVersion catalog
+                             # (resolves your RESONATE_BIBLE_ID) -> passage -> engine end-to-end
 ```
-Then load `integrations/chatgpt-extension` as an unpacked Chrome extension, or open
-`integrations/vscode` in VS Code and press F5. To go live later: `cp .env.example .env`, add
-keys, set `RESONATE_MODE=live`.
+Then set `RESONATE_MODE=live` in `.env` and restart `scripts/serve.py`. Accept your Bible's
+license agreement under **Licensing** on platform.youversion.com first, or passage calls 4xx.
 
 ## Verification — *proof it works*
-```bash
-python -m unittest discover -s tests    # 31 tests
-python eval/run_eval.py                 # 32-scenario evaluation harness
-```
-Current metrics: **theme recall 100% · verse hit@1 96% · hit@3 100% · safety recall 100% ·
-false-positive 0%** (enforced as a regression guard in the test suite).
+Current metrics (enforced as a regression guard in the test suite): **theme recall 100% ·
+verse hit@1 96% · hit@3 100% · safety recall 100% · false-positive 0%**.
 
 ## Submission assets
 - 🎬 Video script — [docs/VIDEO-SCRIPT.md](docs/VIDEO-SCRIPT.md)
@@ -83,11 +96,14 @@ data/            verses.json (131 refs+tags, no text) · sample_texts.json (KJV 
 scripts/         demo.py · policy_demo.py · serve.py (local engine server)
 web/             control-panel playground served by the engine
 eval/            dataset.json + run_eval.py (metrics)
-tests/           test_resonate.py (31 cases incl. the eval guard)
+tests/           test_resonate.py (49 cases incl. the eval guard)
 docs/            video script · writeup · cover · competitiveness review
 ```
 
 ## Status
-Engine, all three surfaces, restraint, safety, memory, tests + eval — **built and green in mock
-mode** (runs anywhere offline). The live Gloo + YouVersion integration flips on with one config
-change once challenge keys open (**2026-07-06**).
+Engine, all three surfaces, restraint, safety, memory, voices, reels, tests + eval — **built and
+green in mock mode** (runs anywhere offline). The live Gloo + YouVersion providers are
+**pre-wired to the documented APIs** (Gloo OAuth2 client-credentials → `/ai/v2/chat/completions`
+with auto-routing; YouVersion `X-YVP-App-Key` → `/v1/bibles/{id}/passages/{USFM}?format=text`)
+— when challenge keys open (**2026-07-06**), `python scripts/live_check.py` validates the whole
+chain and `RESONATE_MODE=live` flips it on.

@@ -4,6 +4,34 @@ A frank assessment against the rubric (Impact & Vision 40 · Video & Storytellin
 Technical Depth 30). The goal: know exactly where we're strong and what would most raise the
 score.
 
+## Webinar intel (2026-07-04 pre-challenge session — bind the plan to this)
+- **Dates:** opens **July 6** · submissions close **July 31** · judging Aug 3–7 · winners Aug 10.
+- **ONE submission per team, total.** No iterating. **Ties go to the EARLIER submission** →
+  target submitting ~July 27–28 fully polished, not July 31.
+- **Winning requirements:** full source code + documentation + **reproduction instructions**
+  (README "Reproduce it" section ✓), **OSI-approved license** (MIT ✓), prize/tax docs within
+  2 weeks of notification.
+- **Judge's own words on Impact & Vision (40 pts):** a *real* problem — "not a made-up one, not
+  one already addressed"; she is *"not looking for Bible painted on top of Facebook"* or an
+  "xyz app with Bible scripts"; uniquely connect Scripture with people **and be scalable**.
+  Our restraint/safety/memory story answers exactly this; say "not another Bible app" out loud
+  in the video.
+- **Video (30 pts):** "exciting… could this go viral… don't hold back" — show the product in
+  action, make the experience feel real. **Tech (30 pts):** "verified by your code and writeup…
+  genuinely functional and well-engineered, not just faked for the demo… pushed the tools to do
+  something new" → film against LIVE APIs, flash the tests/eval, highlight innovative API use
+  (Gloo auto-routing + `tradition`; grounded-completions w/ citations as a stretch; verified
+  YouVersion passage fetch).
+- **Frontier framing from the deck:** gaming · social · creator tools · wearables · fitness ·
+  **AI assistants** (us) · spatial — "go where people already are."
+- **$20 Gloo credit:** first 500 developers who register; also create accounts on
+  **studio.ai.gloo.com** and **developer.youversion.com** — Gloo emails the code July 6 (or at
+  signup). Setup: YouVersion → new application → app key → **Licensing → accept each Bible's
+  agreement**; Gloo → Dashboard → API Credentials → client id + secret. Validate with
+  `python scripts/live_check.py`.
+- Official pages: kaggle.com/competitions/scripture-in-new-frontiers ·
+  platform.youversion.com/summer-virtual-challenge-2026 · studio.ai.gloo.com/challenge.
+
 ## Where we stand by criterion
 
 ### Impact & Vision — 40 pts  ·  strong

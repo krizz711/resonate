@@ -319,6 +319,84 @@ class TestReels(unittest.TestCase):
         self.assertEqual(_first_usfm("JHN.3.16"), "JHN.3.16")
 
 
+class TestLiveProviders(unittest.TestCase):
+    """Offline tests of the live-provider plumbing (no network, no httpx needed)."""
+
+    def test_strip_html(self):
+        from resonate.providers.youversion import _strip_html
+        s = _strip_html("<p>For God so <span class='wj'>loved</span> the&nbsp;world.</p>")
+        self.assertNotIn("<", s)
+        self.assertIn("For God so", s)
+        self.assertIn("loved", s)
+        self.assertIn("the world.", s.replace("  ", " "))
+
+    def test_fetch_strips_html_and_caches(self):
+        from resonate.providers.youversion import LiveYouVersion
+        cfg = EngineConfig(); cfg.bible_id = "1"; cfg.yv_app_key = "k"
+
+        class FakeResp:
+            status_code = 200
+            def json(self):
+                return {"content": "<p>Fear not: for I am with thee.</p>", "abbreviation": "KJV"}
+            def raise_for_status(self):
+                pass
+
+        yv = LiveYouVersion(cfg)
+        calls = []
+        yv._get = lambda usfm: (calls.append(usfm), FakeResp())[1]
+        out = yv.fetch("ISA.43.5")
+        self.assertEqual(out["text"], "Fear not: for I am with thee.")
+        self.assertEqual(out["translation"], "KJV")
+        self.assertEqual(out["source"], "youversion")
+        yv.fetch("ISA.43.5")  # second hit -> cache, no new call
+        self.assertEqual(len(calls), 1)
+
+    def test_fetch_range_falls_back_to_first_verse(self):
+        from resonate.providers.youversion import LiveYouVersion
+        cfg = EngineConfig(); cfg.bible_id = "1"; cfg.yv_app_key = "k"
+
+        class Bad:
+            status_code = 404
+            def json(self): return {}
+            def raise_for_status(self): raise RuntimeError("404")
+
+        class Good:
+            status_code = 200
+            def json(self): return {"content": "Be careful for nothing...", "abbreviation": "KJV"}
+            def raise_for_status(self): pass
+
+        yv = LiveYouVersion(cfg)
+        seen = []
+        yv._get = lambda usfm: (seen.append(usfm), Bad() if "-" in usfm else Good())[1]
+        out = yv.fetch("PHP.4.6-PHP.4.7")
+        self.assertEqual(seen, ["PHP.4.6-PHP.4.7", "PHP.4.6"])
+        self.assertIn("Be careful", out["text"])
+
+    def test_config_live_defaults(self):
+        cfg = EngineConfig()
+        self.assertEqual(cfg.gloo_base_url, "https://platform.ai.gloo.com")
+        self.assertTrue(hasattr(cfg, "gloo_client_id") and hasattr(cfg, "gloo_client_secret"))
+        self.assertEqual(cfg.yv_base_url, "https://api.youversion.com/v1")
+
+    def test_envfile_loader_never_overrides(self):
+        import tempfile
+        from resonate.envfile import load_env
+        with tempfile.NamedTemporaryFile("w", suffix=".env", delete=False, encoding="utf-8") as f:
+            f.write("# comment\nRESONATE_TEST_VAR=hello\nRESONATE_TEST_KEEP=new\n\nBROKEN LINE\n")
+            path = f.name
+        os.environ.pop("RESONATE_TEST_VAR", None)
+        os.environ["RESONATE_TEST_KEEP"] = "original"
+        try:
+            n = load_env(path)
+            self.assertEqual(os.environ["RESONATE_TEST_VAR"], "hello")
+            self.assertEqual(os.environ["RESONATE_TEST_KEEP"], "original")  # existing wins
+            self.assertEqual(n, 1)
+        finally:
+            os.environ.pop("RESONATE_TEST_VAR", None)
+            os.environ.pop("RESONATE_TEST_KEEP", None)
+            os.unlink(path)
+
+
 class TestTTS(unittest.TestCase):
     def test_voices_listed(self):
         from resonate import tts

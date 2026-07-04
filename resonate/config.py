@@ -45,10 +45,14 @@ class EngineConfig:
     memory_path: str = field(default_factory=lambda: os.getenv("RESONATE_MEMORY_PATH", str(DATA_DIR / ".memory.json")))
 
     # --- live API config (only used when provider_mode == "live") -------------
-    # NOTE: base URLs / model id are placeholders to confirm during integration (keys open 2026-07-06).
-    gloo_api_key: str = field(default_factory=lambda: os.getenv("GLOO_API_KEY", ""))
-    gloo_base_url: str = field(default_factory=lambda: os.getenv("GLOO_BASE_URL", "https://platform.ai.gloo.com/ai/v1"))
-    gloo_model: str = field(default_factory=lambda: os.getenv("GLOO_MODEL", ""))  # set to a Gloo-hosted model id at integration
+    # Verified against docs.gloo.com + developers.youversion.com on 2026-07-04.
+    # Gloo: OAuth2 client-credentials (Studio Dashboard -> API Credentials).
+    gloo_client_id: str = field(default_factory=lambda: os.getenv("GLOO_CLIENT_ID", ""))
+    gloo_client_secret: str = field(default_factory=lambda: os.getenv("GLOO_CLIENT_SECRET", ""))
+    gloo_base_url: str = field(default_factory=lambda: os.getenv("GLOO_BASE_URL", "https://platform.ai.gloo.com"))
+    gloo_model: str = field(default_factory=lambda: os.getenv("GLOO_MODEL", ""))  # empty => auto_routing=true
+    gloo_tradition: str = field(default_factory=lambda: os.getenv("GLOO_TRADITION", ""))  # optional theological lens
+    # YouVersion: app key from platform.youversion.com (accept each Bible's license there first).
     yv_app_key: str = field(default_factory=lambda: os.getenv("YOUVERSION_APP_KEY", ""))
     yv_base_url: str = field(default_factory=lambda: os.getenv("YOUVERSION_BASE_URL", "https://api.youversion.com/v1"))
-    bible_id: str = field(default_factory=lambda: os.getenv("RESONATE_BIBLE_ID", ""))
+    bible_id: str = field(default_factory=lambda: os.getenv("RESONATE_BIBLE_ID", ""))  # numeric id; resolve via scripts/live_check.py
