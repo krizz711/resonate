@@ -45,17 +45,20 @@ class VoicePreset:
     bass_gain_db: float   # low-shelf warmth
     bass_freq: int
     reverb: str           # ffmpeg aecho args — the quiet-chapel tail
+    loudness_i: float = -17.0  # loudnorm integrated target (LUFS); higher = louder
 
 
 # The "godly" defaults. scripts/voice_lab.py renders a whole tuning matrix so the
 # user can audition and adjust these by ear.
+# User picks (2026-07-04): Bella = the shipped preset (favorite). George = his
+# ORIGINAL Kokoro voice (no pitch drop, minimal colour) but noticeably LOUDER.
 PRESETS = {
     "bella": VoicePreset("af_bella", "Bella — warm, close", 0.88, -1.0, 3.0, 110,
                          "aecho=0.72:0.68:52|84:0.20|0.14"),
     "isabella": VoicePreset("bf_isabella", "Isabella — luminous, formal", 0.86, -1.5, 2.5, 120,
                             "aecho=0.74:0.70:58|92:0.22|0.15"),
-    "george": VoicePreset("bm_george", "George — deep, patriarchal", 0.84, -2.5, 4.0, 100,
-                          "aecho=0.75:0.72:64|104:0.24|0.17"),
+    "george": VoicePreset("bm_george", "George — natural, fuller", 0.94, 0.0, 1.5, 100,
+                          "aecho=0.68:0.64:46|74:0.14|0.10", loudness_i=-12.0),
 }
 
 _GEN_LOCK = threading.Lock()  # one synthesis at a time — Kokoro is heavy on this laptop
@@ -80,18 +83,18 @@ def _pitch_chain(semitones: float) -> str:
 def _fx_chain(p: VoicePreset) -> str:
     parts = [c for c in (
         _pitch_chain(p.pitch_semitones),
-        "bass=g=%.1f:f=%d" % (p.bass_gain_db, p.bass_freq),
+        ("bass=g=%.1f:f=%d" % (p.bass_gain_db, p.bass_freq)) if abs(p.bass_gain_db) > 0.05 else "",
         p.reverb,
-        "loudnorm=I=-17:TP=-1.5:LRA=9",
+        "loudnorm=I=%.0f:TP=-1.5:LRA=9" % p.loudness_i,
     ) if c]
     return ",".join(parts)
 
 
 def cache_key(voice_id: str, text: str, preset: VoicePreset) -> str:
     h = hashlib.sha1()
-    h.update(("%s|%.3f|%.2f|%.1f|%s|%s" % (
+    h.update(("%s|%.3f|%.2f|%.1f|%.1f|%s|%s" % (
         preset.kokoro_voice, preset.speed, preset.pitch_semitones,
-        preset.bass_gain_db, preset.reverb, text.strip())).encode("utf-8"))
+        preset.bass_gain_db, preset.loudness_i, preset.reverb, text.strip())).encode("utf-8"))
     return "%s_%s" % (voice_id, h.hexdigest()[:20])
 
 
