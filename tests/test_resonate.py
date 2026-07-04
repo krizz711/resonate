@@ -233,6 +233,74 @@ class TestResponder(unittest.TestCase):
         self.assertTrue(out["surface"] and out["kind"] == "help")
 
 
+class TestMCPServer(unittest.TestCase):
+    """The MCP surface — dispatch-level (no stdio), same engine guarantees."""
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, os.path.join(_ROOT, "integrations", "mcp"))
+        import resonate_mcp
+        cls.mcp = resonate_mcp
+
+    def _call(self, name, args, rid=9):
+        resp = self.mcp.dispatch({"jsonrpc": "2.0", "id": rid, "method": "tools/call",
+                                  "params": {"name": name, "arguments": args}})
+        import json as _json
+        return _json.loads(resp["result"]["content"][0]["text"])
+
+    def test_initialize_and_tools_list(self):
+        r = self.mcp.dispatch({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
+        self.assertEqual(r["result"]["serverInfo"]["name"], "resonate")
+        t = self.mcp.dispatch({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
+        names = [x["name"] for x in t["result"]["tools"]]
+        self.assertEqual(names, ["resonate_verse", "generate_story", "fetch_passage"])
+
+    def test_notification_returns_none(self):
+        self.assertIsNone(self.mcp.dispatch({"jsonrpc": "2.0",
+                                             "method": "notifications/initialized"}))
+
+    def test_unknown_method_errors(self):
+        r = self.mcp.dispatch({"jsonrpc": "2.0", "id": 3, "method": "nope"})
+        self.assertEqual(r["error"]["code"], -32601)
+
+    def test_verse_tool_delivers(self):
+        out = self._call("resonate_verse",
+                         {"text": "I feel like I'm failing everyone and I can't keep up.",
+                          "user_id": "mcp_t1"})
+        self.assertEqual(out["kind"], "verse")
+        self.assertTrue(out["reference"] and out["verse_text"])
+        self.assertIn("quote_rule", out)
+
+    def test_verse_tool_silent_on_neutral(self):
+        out = self._call("resonate_verse", {"text": "what's the capital of France?",
+                                            "user_id": "mcp_t2"})
+        self.assertEqual(out["kind"], "silent")
+
+    def test_verse_tool_crisis_never_verse(self):
+        out = self._call("resonate_verse", {"text": "honestly I do not want to live anymore",
+                                            "user_id": "mcp_t3"})
+        self.assertEqual(out["kind"], "help")
+        self.assertNotIn("verse_text", out)
+
+    def test_story_tool_labeled_and_verbatim(self):
+        out = self._call("generate_story",
+                         {"text": "I'm completely exhausted and burned out lately.",
+                          "user_id": "mcp_t4"})
+        self.assertEqual(out["kind"], "story")
+        self.assertIn("not Scripture", out["label"])
+        self.assertIn(out["verse_reference"], out["label"])
+
+    def test_story_tool_crisis_refused(self):
+        out = self._call("generate_story", {"text": "I want to end my life",
+                                            "user_id": "mcp_t5"})
+        self.assertEqual(out["kind"], "help")
+
+    def test_fetch_passage(self):
+        out = self._call("fetch_passage", {"usfm": "JHN.3.16"})
+        self.assertEqual(out["kind"], "passage")
+        self.assertTrue(out["text"])
+
+
 class TestEvalThresholds(unittest.TestCase):
     """Turns the evaluation harness into a regression guard — quality can't silently drop."""
 

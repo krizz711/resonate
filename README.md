@@ -20,7 +20,8 @@ One engine, many native delivery surfaces (this is the architecture, not a sloga
 
 | Surface | What it is | Where |
 |---|---|---|
-| **ChatGPT extension** *(flagship)* | a quiet verse beside your AI chat | [`integrations/chatgpt-extension`](integrations/chatgpt-extension) |
+| **ChatGPT extension** *(flagship)* | a quiet verse beside your AI chat — with voices, "your story", reels | [`integrations/chatgpt-extension`](integrations/chatgpt-extension) |
+| **MCP server** | Scripture as a native capability for ANY assistant (Claude, ChatGPT, Gemini…) | [`integrations/mcp`](integrations/mcp) |
 | **VS Code companion** | Scripture in the margins where builders think | [`integrations/vscode`](integrations/vscode) |
 | **Discord bot** | Scripture as conversation, not broadcast | [`integrations/discord`](integrations/discord) |
 
@@ -55,6 +56,7 @@ python scripts/policy_demo.py                  # 2. the Delivery Policy staying 
 python -m unittest discover -s tests           # 3. 49 tests (incl. the eval regression guard)
 python eval/run_eval.py                        # 4. 32-scenario evaluation harness
 python scripts/serve.py                        # 5. local engine  ->  http://127.0.0.1:8765
+python integrations/mcp/smoke_client.py        # 6. MCP surface: real stdio session, all 3 tools
 ```
 With the server running, either open **http://127.0.0.1:8765/mock-chat.html** (a faithful
 ChatGPT stand-in running the real extension script — verse panel, wax-seal fold, voices, reels),
@@ -91,7 +93,7 @@ verse hit@1 96% · hit@3 100% · safety recall 100% · false-positive 0%**.
 ```
 resonate/        engine package — config, models, embeddings, verses, retrieval,
                  memory, policy, engine (orchestrator), responder, providers/(gloo, youversion)
-integrations/    chatgpt-extension/ · vscode/ · discord/   (delivery surfaces)
+integrations/    chatgpt-extension/ · mcp/ · vscode/ · discord/   (delivery surfaces)
 data/            verses.json (131 refs+tags, no text) · sample_texts.json (KJV demo text)
 scripts/         demo.py · policy_demo.py · serve.py (local engine server)
 web/             control-panel playground served by the engine

@@ -27,3 +27,6 @@ data/.memory.json
 # generated audio (voice cache + tuning lab renders)
 data/.tts-cache/
 data/voice-lab/
+
+# generated training corpora (the live one ships as a Kaggle dataset, not in-repo)
+data/corpus/
