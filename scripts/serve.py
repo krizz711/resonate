@@ -98,6 +98,12 @@ class Handler(BaseHTTPRequestHandler):
             self._send_html(os.path.join(WEB_DIR, os.path.basename(path)))  # basename avoids traversal
         elif path == "/ext/content.js":  # for web/mock-chat.html — runs the real content script
             self._send_file(os.path.join(EXT_DIR, "content.js"), "text/javascript; charset=utf-8")
+        elif path.startswith("/assets/"):  # landing-page images (basename avoids traversal)
+            name = os.path.basename(path)
+            ctype = "image/jpeg" if name.lower().endswith((".jpg", ".jpeg")) else \
+                    "image/png" if name.lower().endswith(".png") else \
+                    "image/webp" if name.lower().endswith(".webp") else "application/octet-stream"
+            self._send_file(os.path.join(WEB_DIR, "assets", name), ctype)
         elif path == "/health":
             self._send(200, {"ok": True, "mode": ENGINE.config.provider_mode,
                              "targets": list(TARGETS), "tts": tts.available()})
