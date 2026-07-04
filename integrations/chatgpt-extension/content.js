@@ -155,11 +155,24 @@
     .vpick:hover b{color:#a65b43}
     .auto{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#a89c8a;cursor:pointer;user-select:none}
     .auto b{color:#6b6358}
-    .reel{display:block;margin-top:12px;text-align:center;text-decoration:none;
+    .story{display:block;width:100%;box-sizing:border-box;margin-top:12px;text-align:center;cursor:pointer;
       font-family:inherit;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#efe9df;
-      background:linear-gradient(160deg,#a65b43,#8a4a35);border-radius:999px;padding:7px 12px;
+      background:linear-gradient(160deg,#a65b43,#8a4a35);border:none;border-radius:999px;padding:7px 12px;
       box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 2px 8px rgba(138,74,53,.35)}
-    .reel:hover{filter:brightness(1.06)}
+    .story:hover{filter:brightness(1.06)}
+    .story[disabled]{opacity:.6;cursor:wait}
+    .reel{display:block;margin-top:8px;text-align:center;text-decoration:none;
+      font-family:inherit;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#a65b43;
+      background:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:6px 12px}
+    .reel:hover{background:rgba(166,91,67,.10)}
+    .storytext{font-family:'Cormorant Garamond','EB Garamond',Georgia,serif;font-size:15.5px;line-height:1.55;
+      color:#211d17;max-height:280px;overflow-y:auto;padding-right:6px;white-space:pre-line}
+    .storytext::-webkit-scrollbar{width:5px}
+    .storytext::-webkit-scrollbar-thumb{background:rgba(166,91,67,.35);border-radius:3px}
+    .backlink{font-family:inherit;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#a89c8a;
+      background:none;border:none;cursor:pointer;padding:0}
+    .backlink:hover{color:#a65b43}
+    .label{margin-top:9px;font-size:8.5px;letter-spacing:.08em;color:#a89c8a;line-height:1.5}
     .foot{margin-top:11px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#a89c8a}
     .card.help .verse{font-size:16.5px}
     .card.help .ref::after{width:46px}
@@ -282,12 +295,31 @@
         '<button class="vpick" title="Change voice">voice: <b>' + esc(VOICE_LABEL[voiceId]) + "</b></button>" +
         '<span class="auto" title="Read every verse aloud automatically">auto: <b>' + (autoSpeak ? "on" : "off") + "</b></span>" +
       "</div>" +
+      '<button class="story">✦ Your story</button>' +
       (reel ? '<a class="reel" href="' + esc(reel.url) + '" target="_blank" rel="noopener noreferrer">' + reelLabel + "</a>" : "") +
       '<div class="foot">Resonate · processed locally · nothing stored</div>';
 
     card.querySelector(".listen").onclick = () => {
       if (speaking) stopSpeak();
       else speak(d.verse_text);
+    };
+    card.querySelector(".story").onclick = (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true; btn.textContent = "✦ weaving your story…";
+      try {
+        chrome.runtime.sendMessage({
+          type: "story", userId: USER_ID, text: lastText,
+          beat: d.beat || {}, memoryNote: d.memory_note || null,
+          verse: { reference: d.reference, usfm: d.usfm, verse_text: d.verse_text,
+                   translation: d.translation },
+        }, (resp) => {
+          if (chrome.runtime.lastError || !resp || !resp.ok || !resp.data || !resp.data.ok) {
+            btn.disabled = false; btn.textContent = "✦ Your story";
+            return;
+          }
+          showStory(d, resp.data.story);
+        });
+      } catch (err) { btn.disabled = false; btn.textContent = "✦ Your story"; }
     };
     card.querySelector(".vpick").onclick = (e) => {
       voiceId = VOICES[(VOICES.indexOf(voiceId) + 1) % VOICES.length];
@@ -305,6 +337,28 @@
 
     if (autoSpeak) speak(d.verse_text);
     scheduleFold();
+  }
+
+  function showStory(d, story) {
+    stopSpeak(false);
+    clearTimeout(foldTimer); // long-form reading — never fold mid-story
+    freshCard("verse");
+    card.innerHTML =
+      '<button class="x" title="Dismiss">×</button>' +
+      '<div class="ref">Your story · ' + esc(story.title) + ' <span class="tr">' + esc(story.reference) + "</span></div>" +
+      '<div class="storytext">' + esc(story.text) + "</div>" +
+      '<div class="label">' + esc(story.label) + "</div>" +
+      '<div class="row">' +
+        '<button class="listen">▸ Listen</button>' +
+        '<button class="backlink">← back to the verse</button>' +
+      "</div>" +
+      '<div class="foot">Resonate · woven for you · nothing stored</div>';
+    card.querySelector(".listen").onclick = () => {
+      if (speaking) stopSpeak();
+      else speak(story.text);
+    };
+    card.querySelector(".backlink").onclick = () => { stopSpeak(); showVerse(d); };
+    card.querySelector(".x").onclick = dismiss;
   }
 
   function showHelp(message) {

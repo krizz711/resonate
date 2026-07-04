@@ -64,6 +64,14 @@
                                    history: msg.history || [] }),
           }).then(r => r.json()).then(data => cb({ ok: true, data }))
             .catch(e => cb({ ok: false, error: String(e) }));
+        } else if (msg && msg.type === "story") {
+          fetch("/story", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: msg.userId, text: msg.text, beat: msg.beat,
+                                   verse: msg.verse, memory_note: msg.memoryNote }),
+          }).then(r => r.json()).then(data => cb({ ok: true, data }))
+            .catch(e => cb({ ok: false, error: String(e) }));
         } else if (msg && msg.type === "tts") {
           fetch("/tts?voice=" + encodeURIComponent(msg.voice || "bella") +
                 "&text=" + encodeURIComponent(msg.text || ""))

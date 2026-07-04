@@ -141,6 +141,23 @@ class MockGloo:
         }
         return templates.get(verse.get("tone", "hope"), templates["hope"])
 
+    def story(self, user_text, emotion, narrative, verse, memory_note=None):
+        """Mock 'Your story': an honest template that mirrors the user's words, retells
+        the vetted narrative's synopsis, and hands off to the verified verse. Live Gloo
+        writes this properly; the mock proves the shape offline."""
+        snippet = (user_text or "").strip()
+        if len(snippet) > 90:
+            snippet = snippet[:87] + "..."
+        parts = [
+            'You said "%s" — and you are not the first to stand exactly there.' % snippet,
+            "%s: %s" % (narrative["title"], narrative["synopsis"]),
+        ]
+        if memory_note:
+            parts.append("This keeps finding you lately — %s That's not failure; that's a thread." % memory_note.lower())
+        parts.append("Which is why these words were kept for a moment like yours — %s: “%s”"
+                     % (verse.get("reference", ""), (verse.get("verse_text", "") or "").strip()))
+        return "\n\n".join(parts)
+
     def safety(self, beat):
         return is_crisis(beat.text)
 
@@ -231,6 +248,26 @@ class LiveGloo:
     def bridge(self, beat, verse, verse_text):
         sys_p = "Write ONE warm sentence linking the person's words to the verse. No preamble."
         return self._chat(sys_p, 'Their words: "%s"\nVerse %s: "%s"' % (beat.text, verse["reference"], verse_text)).strip()
+
+    def story(self, user_text, emotion, narrative, verse, memory_note=None):
+        sys_p = (
+            "You write a short personal reflection (170-220 words, second person, warm, "
+            "reverent, unhurried — never preachy, never clinical) that weaves the person's "
+            "present moment into ONE given biblical narrative. HARD RULES: use ONLY the "
+            "narrative provided (title, reference, synopsis) — do not import other passages; "
+            "NEVER invent or quote scripture wording — the verse text is supplied and must be "
+            "quoted exactly once, verbatim, at the end, introduced by its reference; make no "
+            "promises of outcomes; no medical or crisis advice. Structure: (1) meet them in "
+            "their own words, (2) walk them into the narrative as if standing beside it, "
+            "(3) land on the supplied verse."
+        )
+        mem = ("\nRecurring thread: %s" % memory_note) if memory_note else ""
+        user = ('Their words: "%s" (emotion: %s)%s\n\nNarrative: %s (%s)\nSynopsis: %s\n\n'
+                'Verse to end on — %s (%s): "%s"'
+                % (user_text, emotion, mem, narrative["title"], narrative["reference"],
+                   narrative["synopsis"], verse.get("reference", ""),
+                   verse.get("translation", "KJV"), verse.get("verse_text", "")))
+        return self._chat(sys_p, user, temperature=0.6).strip()
 
     def safety(self, beat):
         # regex backstop + (optionally) a Gloo guardrail classification call

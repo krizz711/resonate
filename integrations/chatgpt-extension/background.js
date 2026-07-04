@@ -22,6 +22,21 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     return true; // keep the message channel open for the async response
   }
 
+  if (msg && msg.type === "story") {
+    fetch(BASE + "/story", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: msg.userId, text: msg.text, beat: msg.beat,
+        verse: msg.verse, memory_note: msg.memoryNote,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => sendResponse({ ok: true, data }))
+      .catch((e) => sendResponse({ ok: false, error: String(e) }));
+    return true;
+  }
+
   if (msg && msg.type === "tts") {
     // Fetch the Kokoro voice as bytes and hand them to the content script as base64
     // (messages must be JSON-serializable). 503 => tell the panel to use Web Speech.

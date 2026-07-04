@@ -32,6 +32,8 @@ from resonate import Engine, EngineConfig  # noqa: E402
 from resonate.delivery import render, TARGETS  # noqa: E402
 from resonate.policy import DeliveryPolicy, PolicyConfig  # noqa: E402
 from resonate.reels import ReelStore  # noqa: E402
+from resonate.story import StoryWeaver  # noqa: E402
+from resonate.providers.gloo import is_crisis  # noqa: E402
 from resonate import tts  # noqa: E402
 
 _CFG = EngineConfig()
@@ -45,6 +47,7 @@ POLICY = DeliveryPolicy(PolicyConfig(
     cooldown_seconds=3, max_per_session=50, min_confidence=0.5,
 ))
 REELS = ReelStore()
+WEAVER = StoryWeaver(ENGINE.gloo)
 _PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(_PROJ, "web")
 EXT_DIR = os.path.join(_PROJ, "integrations", "chatgpt-extension")
@@ -120,7 +123,8 @@ class Handler(BaseHTTPRequestHandler):
         self._send_file(str(wav), "audio/wav")
 
     def do_POST(self):
-        if self.path.split("?")[0] != "/resonate":
+        path = self.path.split("?")[0]
+        if path not in ("/resonate", "/story"):
             self._send(404, {"error": "not found"})
             return
         length = int(self.headers.get("Content-Length", 0))
@@ -128,6 +132,9 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length) or b"{}")
         except Exception as e:
             self._send(400, {"error": "bad json: %s" % e})
+            return
+        if path == "/story":
+            self._handle_story(data)
             return
         user = data.get("user_id", "default")
         history = data.get("history") or []
@@ -152,6 +159,35 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 result["policy"] = {"surface": False, "reason": "no resonant beat — stay silent"}
         self._send(200, result)
+
+    def _handle_story(self, data):
+        """'Your story' — weave the user's moment + the just-delivered verse into one
+        vetted biblical narrative. The panel passes the delivery it already holds, so
+        nothing is recomputed. Crisis input never gets a story."""
+        user = data.get("user_id", "default")
+        text = data.get("text", "")
+        if is_crisis(text):
+            self._send(200, {"ok": False, "safety": True,
+                             "reason": "no story for crisis input — help card instead"})
+            return
+        verse = data.get("verse") or {}
+        beat = data.get("beat") or {}
+        themes = beat.get("themes") or []
+        ctx = data.get("context_themes") or []
+        arcs = [t for t, _ in (ENGINE.memory.patterns(user).get("top_themes") or [])[:3]] \
+            if hasattr(ENGINE.memory, "patterns") else []
+        narrative = WEAVER.select(themes, ctx, arcs, user_id=user)
+        if narrative is None:
+            self._send(200, {"ok": False, "reason": "no fitting narrative for this moment"})
+            return
+        try:
+            story = WEAVER.compose(text, themes, narrative, verse, user_id=user,
+                                   emotion=beat.get("emotion", ""),
+                                   memory_note=data.get("memory_note"))
+        except ValueError as e:
+            self._send(200, {"ok": False, "reason": str(e)})
+            return
+        self._send(200, {"ok": True, "story": story})
 
     def log_message(self, *args):
         pass  # quiet

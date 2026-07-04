@@ -397,6 +397,54 @@ class TestLiveProviders(unittest.TestCase):
             os.unlink(path)
 
 
+class TestStoryWeaver(unittest.TestCase):
+    """'Your story' — narrative selection + composition, offline (mock Gloo)."""
+
+    @classmethod
+    def setUpClass(cls):
+        from resonate.story import StoryWeaver
+        cls.weaver = StoryWeaver(MockGloo(EngineConfig()))
+        cls.verse = {"reference": "Galatians 6:9", "usfm": "GAL.6.9",
+                     "verse_text": "And let us not be weary in well doing: for in due season we shall reap, if we faint not.",
+                     "translation": "KJV"}
+
+    def test_selects_fitting_narrative(self):
+        s = self.weaver.select(["weariness", "rest"], user_id="ts1")
+        self.assertIsNotNone(s)
+        self.assertTrue(set(s["themes"]) & {"weariness", "rest"})
+
+    def test_context_and_arcs_influence_selection(self):
+        plain = self.weaver.select(["anxiety"], user_id="ts2a")
+        money = self.weaver.select(["anxiety"], ctx_themes=["provision", "provision"], user_id="ts2b")
+        self.assertIn("provision", money["themes"])
+        self.assertIsNotNone(plain)
+
+    def test_no_repeat_for_same_user(self):
+        first = self.weaver.select(["fear", "trust"], user_id="ts3")
+        self.weaver.compose("I'm afraid.", ["fear"], first, self.verse, user_id="ts3")
+        second = self.weaver.select(["fear", "trust"], user_id="ts3")
+        self.assertNotEqual(first["id"], second["id"])
+
+    def test_compose_contains_verse_verbatim_and_label(self):
+        n = self.weaver.select(["weariness"], user_id="ts4")
+        out = self.weaver.compose("I'm completely exhausted and burned out.",
+                                  ["weariness"], n, self.verse, user_id="ts4",
+                                  emotion="exhausted")
+        self.assertIn(self.verse["verse_text"], out["text"])   # verse quoted exactly
+        self.assertIn("not Scripture", out["label"])           # integrity label
+        self.assertIn(n["title"], out["title"] + out["text"])  # anchored to the narrative
+        self.assertIn("via YouVersion", out["label"])
+
+    def test_no_story_for_crisis(self):
+        n = self.weaver.select(["comfort"], user_id="ts5")
+        with self.assertRaises(ValueError):
+            self.weaver.compose("I don't want to live anymore.", ["comfort"], n,
+                                self.verse, user_id="ts5")
+
+    def test_no_narrative_for_empty_themes(self):
+        self.assertIsNone(self.weaver.select([], user_id="ts6"))
+
+
 class TestTTS(unittest.TestCase):
     def test_voices_listed(self):
         from resonate import tts
