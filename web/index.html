@@ -60,11 +60,31 @@
   .p-night .folio{color:rgba(233,225,211,.4)}
   .p-try{background:linear-gradient(180deg,var(--paper2),var(--paper3))}
 
-  /* scroll-driven settle: the sheet beneath eases back as the next covers it */
+  /* scroll-driven settle: the sheet beneath zooms out as the next slides over it */
   @supports (animation-timeline: view()) {
-    .page{animation:settle linear both;animation-timeline:view();animation-range:exit 0% exit 100%}
-    @keyframes settle{to{transform:scale(.965);filter:brightness(.92)}}
-    .page:last-child{animation:none}
+    .page{
+      animation: settle linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+      transform-origin: center center;
+    }
+    @keyframes settle {
+      0%   { transform: scale(1);    filter: brightness(1)    blur(0px); }
+      100% { transform: scale(.84);  filter: brightness(.72)  blur(3px); }
+    }
+    .page:last-child { animation: none; }
+  }
+
+  /* JS fallback for Safari / older browsers */
+  .page.is-behind {
+    transform: scale(.84) !important;
+    filter: brightness(.72) blur(3px) !important;
+    transition: transform .6s cubic-bezier(.4,0,.2,1), filter .6s cubic-bezier(.4,0,.2,1);
+  }
+  .page.is-active {
+    transform: scale(1) !important;
+    filter: brightness(1) blur(0px) !important;
+    transition: transform .6s cubic-bezier(.4,0,.2,1), filter .6s cubic-bezier(.4,0,.2,1);
   }
 
   /* ---------------- hero ---------------- */
@@ -426,6 +446,24 @@
       b.textContent = "copied"; setTimeout(() => (b.textContent = "copy"), 1400);
     });
   }));
+
+  // ---- zoom-out fallback for Safari / no animation-timeline support ----
+  if (!CSS.supports("animation-timeline", "view()")) {
+    const pages = Array.from(document.querySelectorAll(".page"));
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        const idx = pages.indexOf(e.target);
+        if (e.isIntersecting) {
+          // current page entering — restore all previous pages to behind
+          pages.forEach((p, i) => {
+            if (i < idx) { p.classList.add("is-behind"); p.classList.remove("is-active"); }
+            else if (i === idx) { p.classList.add("is-active"); p.classList.remove("is-behind"); }
+          });
+        }
+      });
+    }, { threshold: 0.3 });
+    pages.forEach(p => obs.observe(p));
+  }
 </script>
 </body>
 </html>
