@@ -60,22 +60,7 @@
   .p-night .folio{color:rgba(233,225,211,.4)}
   .p-try{background:linear-gradient(180deg,var(--paper2),var(--paper3))}
 
-  /* scroll-driven settle: the sheet beneath zooms out as the next slides over it */
-  @supports (animation-timeline: view()) {
-    .page{
-      animation: settle linear both;
-      animation-timeline: view();
-      animation-range: exit 0% exit 100%;
-      transform-origin: center center;
-    }
-    @keyframes settle {
-      0%   { transform: scale(1);    filter: brightness(1)    blur(0px); }
-      100% { transform: scale(.84);  filter: brightness(.72)  blur(3px); }
-    }
-    .page:last-child { animation: none; }
-  }
-
-  /* JS fallback for Safari / older browsers */
+  /* zoom-out effect for pages going behind */
   .page.is-behind {
     transform: scale(.84) !important;
     filter: brightness(.72) blur(3px) !important;
@@ -447,23 +432,49 @@
     });
   }));
 
-  // ---- zoom-out fallback for Safari / no animation-timeline support ----
-  if (!CSS.supports("animation-timeline", "view()")) {
+  // ---- zoom-out effect for pages going behind ----
+  (function () {
     const pages = Array.from(document.querySelectorAll(".page"));
+    const activeStates = new Array(pages.length).fill(false);
+    
     const obs = new IntersectionObserver(entries => {
+      let changed = false;
       entries.forEach(e => {
         const idx = pages.indexOf(e.target);
-        if (e.isIntersecting) {
-          // current page entering — restore all previous pages to behind
-          pages.forEach((p, i) => {
-            if (i < idx) { p.classList.add("is-behind"); p.classList.remove("is-active"); }
-            else if (i === idx) { p.classList.add("is-active"); p.classList.remove("is-behind"); }
-          });
+        const isIntersecting = e.isIntersecting;
+        if (activeStates[idx] !== isIntersecting) {
+          activeStates[idx] = isIntersecting;
+          changed = true;
         }
       });
-    }, { threshold: 0.3 });
+      
+      if (changed) {
+        // Find the highest index page that is currently intersecting
+        let maxActiveIdx = 0;
+        for (let i = pages.length - 1; i >= 0; i--) {
+          if (activeStates[i]) {
+            maxActiveIdx = i;
+            break;
+          }
+        }
+        
+        pages.forEach((p, i) => {
+          if (i < maxActiveIdx) {
+            p.classList.add("is-behind");
+            p.classList.remove("is-active");
+          } else if (i === maxActiveIdx) {
+            p.classList.add("is-active");
+            p.classList.remove("is-behind");
+          } else {
+            p.classList.remove("is-behind");
+            p.classList.remove("is-active");
+          }
+        });
+      }
+    }, { threshold: 0.35 });
+    
     pages.forEach(p => obs.observe(p));
-  }
+  })();
 </script>
 </body>
 </html>
