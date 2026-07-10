@@ -88,42 +88,61 @@ class Handler(BaseHTTPRequestHandler):
     def _send_html(self, path):
         self._send_file(path, "text/html; charset=utf-8")
 
+    _MIME = {
+        "html": "text/html; charset=utf-8",
+        "js": "text/javascript; charset=utf-8",
+        "css": "text/css; charset=utf-8",
+        "json": "application/json; charset=utf-8",
+        "jpg": "image/jpeg", "jpeg": "image/jpeg",
+        "png": "image/png", "webp": "image/webp",
+        "svg": "image/svg+xml", "ico": "image/x-icon",
+        "woff": "font/woff", "woff2": "font/woff2",
+        "glb": "model/gltf-binary", "gltf": "model/gltf+json",
+        "mp3": "audio/mpeg", "wav": "audio/wav",
+    }
+
+    def _mime(self, name):
+        ext = name.lower().rsplit(".", 1)[-1] if "." in name else ""
+        return self._MIME.get(ext, "application/octet-stream")
+
     def do_GET(self):
         raw_path, _, query = self.path.partition("?")
         path = raw_path
         q = urllib.parse.parse_qs(query)
-        if path in ("/", "/index.html"):
-            self._send_html(os.path.join(WEB_DIR, "index.html"))
-        elif path.endswith(".html"):
-            self._send_html(os.path.join(WEB_DIR, os.path.basename(path)))  # basename avoids traversal
-        elif path == "/ext/content.js":  # for web/mock-chat.html — runs the real content script
-            self._send_file(os.path.join(EXT_DIR, "content.js"), "text/javascript; charset=utf-8")
-        elif path.startswith("/assets/"):  # Vite build output assets (js, css, images)
-            name = os.path.basename(path)
-            ext = name.lower().rsplit(".", 1)[-1] if "." in name else ""
-            ctype = {
-                "js": "text/javascript; charset=utf-8",
-                "css": "text/css; charset=utf-8",
-                "jpg": "image/jpeg", "jpeg": "image/jpeg",
-                "png": "image/png", "webp": "image/webp",
-                "svg": "image/svg+xml", "ico": "image/x-icon",
-                "woff": "font/woff", "woff2": "font/woff2",
-            }.get(ext, "application/octet-stream")
-            self._send_file(os.path.join(WEB_DIR, "assets", name), ctype)
-        elif path == "/health":
+
+        # API endpoints first
+        if path == "/health":
             self._send(200, {"ok": True, "mode": ENGINE.config.provider_mode,
                              "targets": list(TARGETS), "tts": tts.available()})
-        elif path == "/voices":
+            return
+        if path == "/voices":
             self._send(200, {"ok": True, "available": tts.available(), "voices": tts.voices()})
-        elif path == "/tts":
+            return
+        if path == "/tts":
             self._handle_tts(q)
+            return
+        if path == "/ext/content.js":
+            self._send_file(os.path.join(EXT_DIR, "content.js"), "text/javascript; charset=utf-8")
+            return
+
+        # Serve any static file that exists in site/dist — covers JS, CSS, GLB, images, fonts, etc.
+        # Strip leading slash, resolve safely (no path traversal)
+        rel = path.lstrip("/") or "index.html"
+        # Prevent directory traversal
+        candidate = os.path.normpath(os.path.join(WEB_DIR, rel))
+        if not candidate.startswith(os.path.normpath(WEB_DIR)):
+            self._send(403, {"error": "forbidden"})
+            return
+        if os.path.isfile(candidate):
+            self._send_file(candidate, self._mime(candidate))
+            return
+
+        # SPA fallback: all other paths → index.html (React router handles it)
+        index = os.path.join(WEB_DIR, "index.html")
+        if os.path.isfile(index):
+            self._send_html(index)
         else:
-            # SPA fallback: serve index.html for any unmatched path
-            index = os.path.join(WEB_DIR, "index.html")
-            if os.path.exists(index):
-                self._send_html(index)
-            else:
-                self._send(404, {"error": "not found"})
+            self._send(404, {"error": "not found"})
 
     def _handle_tts(self, q):
         voice = (q.get("voice") or ["bella"])[0]
