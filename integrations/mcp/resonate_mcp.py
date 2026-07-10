@@ -32,15 +32,17 @@ from resonate.envfile import load_env  # noqa: E402
 load_env()
 
 from resonate import Engine, EngineConfig  # noqa: E402
+from resonate.reels import ReelStore  # noqa: E402
 from resonate.story import StoryWeaver  # noqa: E402
 
 PROTOCOL_VERSION = "2024-11-05"
-SERVER_INFO = {"name": "resonate", "version": "0.3.0"}
+SERVER_INFO = {"name": "resonate", "version": "0.4.0"}
 
 _cfg = EngineConfig()
 _cfg.memory_persist = True  # series memory spans assistants and sessions
 ENGINE = Engine(_cfg)
 WEAVER = StoryWeaver(ENGINE.gloo)
+REELS = ReelStore()
 
 TOOLS = [
     {
@@ -81,6 +83,27 @@ TOOLS = [
                 "user_id": {"type": "string", "description": "Stable id for series memory (optional)."},
             },
             "required": ["text"],
+        },
+    },
+    {
+        "name": "reel_groups",
+        "description": (
+            "Given what a person said (and optional prior messages), return small prioritized "
+            "sets of story reels — 'reels for you' in watch order. Group 1: for the themes they "
+            "just named; group 2: threads recurring in the conversation; group 3: steady "
+            "comfort/hope anchors. Each group has a title, a one-line subtitle saying what it's "
+            "for, and up to 3 reels (curated story films when available, licensed verse pages "
+            "otherwise). Crisis input returns help guidance instead of reels."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "text": {"type": "string", "description": "The person's message / moment."},
+                "history": {"type": "array", "items": {"type": "string"},
+                            "description": "Recent prior user messages, oldest first (optional)."},
+                "themes": {"type": "array", "items": {"type": "string"},
+                           "description": "Explicit themes to group for (optional; overrides text segmentation)."},
+            },
         },
     },
     {
@@ -155,6 +178,26 @@ def _tool_generate_story(args):
                                  "the verse quote must remain verbatim."}
 
 
+def _tool_reel_groups(args):
+    text = (args.get("text") or "").strip()
+    themes = [t for t in (args.get("themes") or []) if isinstance(t, str) and t.strip()]
+    if not text and not themes:
+        return {"kind": "error", "message": "text or themes is required"}
+    if text and ENGINE.gloo.safety_text(text):
+        return {"kind": "help", "message": "Crisis signals detected — share crisis resources; "
+                                           "reels are not the right response here."}
+    if not themes:
+        beats = ENGINE.gloo.segment(text)
+        themes = beats[0].themes if beats else []
+    ctx = ENGINE._history_themes(args.get("history") or [])
+    groups = REELS.groups_for(ENGINE.verses, themes, ctx, ENGINE.config.translation)
+    if not groups:
+        return {"kind": "silent", "message": "Nothing resonant enough to group reels for."}
+    return {"kind": "reel_groups", "groups": groups,
+            "presentation_rule": "Show groups in priority order with their subtitles; "
+                                 "reel links open licensed pages or curated story films."}
+
+
 def _tool_fetch_passage(args):
     usfm = (args.get("usfm") or "").strip()
     if not usfm:
@@ -166,6 +209,7 @@ def _tool_fetch_passage(args):
 
 _TOOL_FNS = {"resonate_verse": _tool_resonate_verse,
              "generate_story": _tool_generate_story,
+             "reel_groups": _tool_reel_groups,
              "fetch_passage": _tool_fetch_passage}
 
 

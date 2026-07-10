@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from .config import EngineConfig
+from .guardian import GuardianAlerts
 from .verses import VerseStore
 from .retrieval import HybridRetriever
 from .memory import make_memory
@@ -40,6 +41,7 @@ class Engine:
         self.gloo = make_gloo(self.config)
         self.yv = make_youversion(self.config)
         self.memory = make_memory(self.config)
+        self.guardian = GuardianAlerts(self.config)
 
     def _history_themes(self, history) -> list:
         """Themes heard in the last few prior messages, most recent counted twice.
@@ -68,7 +70,8 @@ class Engine:
             return {"user_id": user_id, "episode": episode,
                     "deliveries": [{"status": "safety_hold",
                                     "beat": {"text": text, "themes": [], "emotion": "in distress", "intensity": 0.95},
-                                    "message": SAFETY_MESSAGE}],
+                                    "message": SAFETY_MESSAGE,
+                                    "guardian": self.guardian.alert(user_id)}],
                     "series_memory": self.memory.patterns(user_id)}
 
         ctx_themes = self._history_themes(history)
@@ -78,7 +81,8 @@ class Engine:
         for beat in beats:
             # per-beat backstop (a transcript could carry a crisis sentence mid-way)
             if self.gloo.safety(beat):
-                deliveries.append({"status": "safety_hold", "beat": vars(beat), "message": SAFETY_MESSAGE})
+                deliveries.append({"status": "safety_hold", "beat": vars(beat), "message": SAFETY_MESSAGE,
+                                   "guardian": self.guardian.alert(user_id)})
                 continue
 
             # stage 3 — hybrid retrieve + RRF (conversation context echoes into the query)

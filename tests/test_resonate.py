@@ -11,6 +11,11 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _ROOT)
 sys.path.insert(0, os.path.join(_ROOT, "eval"))
 
+# Tests are mock-hermetic even when .env says live: the MCP module (imported below)
+# loads .env at import time, but load_env never overrides existing env — so pinning
+# mock HERE keeps every Engine in this process offline and deterministic.
+os.environ["RESONATE_MODE"] = "mock"
+
 import run_eval                                                 # noqa: E402
 from resonate import Engine, EngineConfig                      # noqa: E402
 from resonate.models import Beat                                # noqa: E402
@@ -253,7 +258,7 @@ class TestMCPServer(unittest.TestCase):
         self.assertEqual(r["result"]["serverInfo"]["name"], "resonate")
         t = self.mcp.dispatch({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         names = [x["name"] for x in t["result"]["tools"]]
-        self.assertEqual(names, ["resonate_verse", "generate_story", "fetch_passage"])
+        self.assertEqual(names, ["resonate_verse", "generate_story", "reel_groups", "fetch_passage"])
 
     def test_notification_returns_none(self):
         self.assertIsNone(self.mcp.dispatch({"jsonrpc": "2.0",

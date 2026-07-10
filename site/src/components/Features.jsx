@@ -52,6 +52,7 @@ function Mcp() {
           <div className="meta">
             <span className="chip">resonate_verse</span>
             <span className="chip">generate_story</span>
+            <span className="chip">reel_groups</span>
             <span className="chip">fetch_passage</span>
           </div>
         </div>
@@ -134,11 +135,12 @@ function Verses() {
           <div className="folio-mark"><span className="num">III</span><span className="lbl">Verses</span></div>
           <h3 className="headline">Verified words, sealed until they’re yours.</h3>
           <p>
-            The model proposes a reference from a vetted shortlist; the <b>YouVersion Platform API</b>
-            {' '}confirms the words. Nothing is ever hallucinated — every verse arrives licensed and
-            verbatim, like a letter you break the seal on.
+            <b>Gloo AI</b> — values-aligned reasoning — proposes a reference from a vetted
+            shortlist; the <b>YouVersion Platform API</b> confirms the words. Nothing is ever
+            hallucinated — every verse arrives licensed and verbatim, like a letter you break
+            the seal on.
           </p>
-          <div className="meta"><span className="chip">verbatim · licensed</span><span className="chip">131 curated refs</span></div>
+          <div className="meta"><span className="chip">Gloo AI · aligned</span><span className="chip">verbatim · licensed</span><span className="chip">131 curated refs</span></div>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>
@@ -169,10 +171,11 @@ function Safety() {
           <h3 className="headline">When it hears darkness, it sends people — not verses.</h3>
           <p>
             Crisis text is caught on the raw input and routed to a <b>human-help card</b>, never a
-            verse — 100% recall on the eval set. Restraint and rate-limiting keep it quiet; privacy
-            by design keeps it local. It reads only your own message and stores nothing.
+            verse — 100% recall on the eval set. And if you've registered <b>guardians</b>, it
+            quietly reaches them by WhatsApp or email — consent-first, never sharing what you
+            wrote. Restraint and rate-limiting keep it quiet; privacy by design keeps it local.
           </p>
-          <div className="meta"><span className="chip">safety recall · 100%</span><span className="chip">stores nothing</span><span className="chip">rate-limited</span></div>
+          <div className="meta"><span className="chip">safety recall · 100%</span><span className="chip">guardian alerts · opt-in</span><span className="chip">stores nothing</span></div>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>
@@ -226,10 +229,10 @@ function Reels() {
           <h3 className="headline">Every verse carries a doorway.</h3>
           <p>
             One tap turns the moment into a short vertical <span className="script">story film</span> of
-            the passage — the format we pitch for YouVersion and partners to host. The verse moves
-            from a quiet popup to something you carry.
+            the passage — and reels arrive in small <b>sets, ordered for you</b>: for this moment,
+            threads you return to, steady ground. Each set carries a line about why it found you.
           </p>
-          <div className="meta"><span className="chip">9:16 · shareable</span><span className="chip">labeled reflection</span></div>
+          <div className="meta"><span className="chip">9:16 · shareable</span><span className="chip">sets · priority I·II·III</span><span className="chip">labeled reflection</span></div>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>
@@ -289,7 +292,7 @@ function Reels() {
   )
 }
 
-/* ---------- 6. Scripture Master ---------- */
+/* ---------- 6. Scripture Guide ---------- */
 function Master() {
   const [s, setS] = useState(12)
   useEffect(() => {
@@ -302,17 +305,17 @@ function Master() {
 
   return (
     <section id="master">
-      <div className="bg-word" aria-hidden="true"><span>MASTER</span></div>
+      <div className="bg-word" aria-hidden="true"><span>GUIDE</span></div>
       <div className="wrap act flip">
         <div className="copy reveal">
-          <div className="folio-mark"><span className="num">VI</span><span className="lbl">Scripture Master</span></div>
+          <div className="folio-mark"><span className="num">VI</span><span className="lbl">Scripture Guide</span></div>
           <h3 className="headline">Ask deeper — by chat, or by phone.</h3>
           <p>
-            Talk with <span className="script">Scripture Master</span>, an assistant tuned for
-            scriptural knowledge and honest debate. Reachable in chat — or by a real phone call
-            through an n8n voice automation. The same engine, now on the line.
+            Talk with <span className="script">Scripture Guide</span>, an assistant tuned for
+            scriptural knowledge and honest debate — Gloo AI's aligned models on the line.
+            Reachable in chat, by voice message, or a real phone call through an n8n automation.
           </p>
-          <div className="meta"><span className="chip">chat</span><span className="chip">voice call · n8n</span></div>
+          <div className="meta"><span className="chip">chat · voice</span><span className="chip">n8n · Gloo AI</span></div>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>
@@ -320,7 +323,7 @@ function Master() {
               <div className="mchat">
                 <div className="mbub me">Is doubt the opposite of faith?</div>
                 <div className="mbub sm">
-                  <div className="who">Scripture Master</div>
+                  <div className="who">Scripture Guide</div>
                   Not quite — Scripture treats doubt as a doorway.{' '}
                   <span className="script">“Lord, I believe; help my unbelief.”</span> (Mark 9:24)
                   Shall we sit with that?

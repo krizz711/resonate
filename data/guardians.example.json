@@ -1,0 +1,13 @@
+{
+  "_comment": "Copy to guardians.json (git-ignored). Registration is the person's own act: they add their guardians and set consent:true. The alert never includes what they typed.",
+  "users": {
+    "chat_example1": {
+      "consent": true,
+      "display_name": "K.",
+      "guardians": [
+        { "name": "Mom", "channel": "email", "address": "mom@example.com" },
+        { "name": "Sam", "channel": "whatsapp", "address": "+15551234567" }
+      ]
+    }
+  }
+}

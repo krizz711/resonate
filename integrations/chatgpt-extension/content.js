@@ -107,7 +107,14 @@
   function endSpeak() { speaking = false; reflectSpeaking(); scheduleFold(); }
 
   function reflectSpeaking() {
-    if (card) { const b = card.querySelector(".listen"); if (b) b.textContent = speaking ? "◼ Stop" : "▸ Listen"; }
+    if (card) {
+      const b = card.querySelector(".listen");
+      if (b) {
+        b.textContent = speaking ? "◼" : "♪";
+        b.title = speaking ? "Stop reading" : "Listen — read this verse aloud";
+        b.classList.toggle("on", speaking);
+      }
+    }
     if (seal) seal.classList.toggle("speaking", speaking);
   }
 
@@ -145,26 +152,23 @@
     .bridge{margin-top:11px;font-family:'Cormorant Garamond','EB Garamond',Georgia,serif;font-size:14px;
       font-style:italic;color:#6b6358;border-top:1px solid rgba(33,29,23,.13);padding-top:10px}
     .mem{margin-top:10px;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#a65b43;opacity:.92}
-    .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;flex-wrap:wrap}
-    .listen{font-family:inherit;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#a65b43;
-      background:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:4px 12px;cursor:pointer}
-    .listen:hover{background:rgba(166,91,67,.10)}
-    .vpick{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#a89c8a;cursor:pointer;user-select:none;
-      border:none;background:none;font-family:inherit;padding:2px 0}
-    .vpick b{color:#6b6358}
-    .vpick:hover b{color:#a65b43}
-    .auto{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#a89c8a;cursor:pointer;user-select:none}
-    .auto b{color:#6b6358}
+    /* --- compact icon row: listen / voice / auto / reel — titles say the rest --- */
+    .icons{display:flex;align-items:center;gap:8px;margin-top:12px}
+    .ico{width:27px;height:27px;border-radius:50%;box-sizing:border-box;flex:0 0 auto;
+      border:1px solid rgba(166,91,67,.45);color:#a65b43;background:none;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;font-family:inherit;font-size:12px;
+      line-height:1;padding:0;text-decoration:none;
+      transition:background .18s ease, transform .18s ease}
+    .ico:hover{background:rgba(166,91,67,.12);transform:translateY(-1px)}
+    .ico.on{background:linear-gradient(160deg,#a65b43,#8a4a35);color:#f3e4d5;border-color:transparent;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+    .ico.voice{font-size:11.5px;font-weight:600;font-family:'Cormorant Garamond',Georgia,serif}
     .story{display:block;width:100%;box-sizing:border-box;margin-top:12px;text-align:center;cursor:pointer;
       font-family:inherit;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#efe9df;
       background:linear-gradient(160deg,#a65b43,#8a4a35);border:none;border-radius:999px;padding:7px 12px;
       box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 2px 8px rgba(138,74,53,.35)}
     .story:hover{filter:brightness(1.06)}
     .story[disabled]{opacity:.6;cursor:wait}
-    .reel{display:block;margin-top:8px;text-align:center;text-decoration:none;
-      font-family:inherit;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#a65b43;
-      background:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:6px 12px}
-    .reel:hover{background:rgba(166,91,67,.10)}
     .storytext{font-family:'Cormorant Garamond','EB Garamond',Georgia,serif;font-size:15.5px;line-height:1.55;
       color:#211d17;max-height:280px;overflow-y:auto;padding-right:6px;white-space:pre-line}
     .storytext::-webkit-scrollbar{width:5px}
@@ -282,21 +286,24 @@
     current = d;
     freshCard("verse");
     const reel = d.reel || null;
-    const reelLabel = reel && reel.kind === "story" ? "▷ Watch this verse's story"
-                                                    : "❧ Read on YouVersion";
+    const reelTitle = reel && reel.kind === "story" ? "Watch this verse's story reel"
+                                                    : "Read this verse on YouVersion";
     card.innerHTML =
       '<button class="x" title="Dismiss">×</button>' +
       '<div class="ref">' + esc(d.reference) + ' <span class="tr">' + esc(d.translation) + "</span></div>" +
       '<div class="verse">' + esc(d.verse_text) + "</div>" +
       '<div class="bridge">' + esc(d.bridge) + "</div>" +
       (d.memory_note ? '<div class="mem">' + esc(d.memory_note) + "</div>" : "") +
-      '<div class="row">' +
-        '<button class="listen">▸ Listen</button>' +
-        '<button class="vpick" title="Change voice">voice: <b>' + esc(VOICE_LABEL[voiceId]) + "</b></button>" +
-        '<span class="auto" title="Read every verse aloud automatically">auto: <b>' + (autoSpeak ? "on" : "off") + "</b></span>" +
+      '<div class="icons">' +
+        '<button class="ico listen" title="Listen — read this verse aloud">♪</button>' +
+        '<button class="ico voice" title="Voice: ' + esc(VOICE_LABEL[voiceId]) + ' — click to change">' +
+          esc(VOICE_LABEL[voiceId][0]) + "</button>" +
+        '<button class="ico auto' + (autoSpeak ? " on" : "") + '" title="Auto-play every verse aloud (' +
+          (autoSpeak ? "on" : "off") + ') — click to toggle">⟳</button>' +
+        (reel ? '<a class="ico reelico" href="' + esc(reel.url) +
+                '" target="_blank" rel="noopener noreferrer" title="' + reelTitle + '">▷</a>' : "") +
       "</div>" +
       '<button class="story">✦ Your story</button>' +
-      (reel ? '<a class="reel" href="' + esc(reel.url) + '" target="_blank" rel="noopener noreferrer">' + reelLabel + "</a>" : "") +
       '<div class="foot">Resonate · processed locally · nothing stored</div>';
 
     card.querySelector(".listen").onclick = () => {
@@ -321,15 +328,17 @@
         });
       } catch (err) { btn.disabled = false; btn.textContent = "✦ Your story"; }
     };
-    card.querySelector(".vpick").onclick = (e) => {
+    card.querySelector(".voice").onclick = (e) => {
       voiceId = VOICES[(VOICES.indexOf(voiceId) + 1) % VOICES.length];
-      e.currentTarget.querySelector("b").textContent = VOICE_LABEL[voiceId];
+      e.currentTarget.textContent = VOICE_LABEL[voiceId][0];
+      e.currentTarget.title = "Voice: " + VOICE_LABEL[voiceId] + " — click to change";
       persistVoice();
       if (speaking) { stopSpeak(false); speak(d.verse_text); } // hear the new voice at once
     };
     card.querySelector(".auto").onclick = (e) => {
       autoSpeak = !autoSpeak;
-      e.currentTarget.querySelector("b").textContent = autoSpeak ? "on" : "off";
+      e.currentTarget.classList.toggle("on", autoSpeak);
+      e.currentTarget.title = "Auto-play every verse aloud (" + (autoSpeak ? "on" : "off") + ") — click to toggle";
       persistVoice();
       if (autoSpeak && !speaking) speak(d.verse_text);
     };
@@ -348,8 +357,8 @@
       '<div class="ref">Your story · ' + esc(story.title) + ' <span class="tr">' + esc(story.reference) + "</span></div>" +
       '<div class="storytext">' + esc(story.text) + "</div>" +
       '<div class="label">' + esc(story.label) + "</div>" +
-      '<div class="row">' +
-        '<button class="listen">▸ Listen</button>' +
+      '<div class="icons">' +
+        '<button class="ico listen" title="Listen — read this story aloud">♪</button>' +
         '<button class="backlink">← back to the verse</button>' +
       "</div>" +
       '<div class="foot">Resonate · woven for you · nothing stored</div>';
@@ -361,14 +370,17 @@
     card.querySelector(".x").onclick = dismiss;
   }
 
-  function showHelp(message) {
+  function showHelp(hold) {
     stopSpeak(); // never read crisis content aloud
     current = null;
     freshCard("help");
+    const g = (hold && hold.guardian) || {};
     card.innerHTML =
       '<button class="x" title="Dismiss">×</button>' +
       '<div class="ref">A pause, not a verse</div>' +
-      '<div class="verse">' + esc(message) + "</div>" +
+      '<div class="verse">' + esc(hold && hold.message ? hold.message : "") + "</div>" +
+      (g.dispatched ? '<div class="mem" title="You registered your guardians and consented to this — what you wrote stays private.">' +
+        "Your guardians have been quietly notified.</div>" : "") +
       '<div class="foot">Resonate · your wellbeing comes first</div>';
     card.querySelector(".x").onclick = dismiss;
     clearTimeout(foldTimer); // a help card never folds itself away
@@ -392,7 +404,7 @@
         const deliveries = data.deliveries || [];
         if (policy.safety) {
           const hold = deliveries.find((d) => d.status === "safety_hold");
-          if (hold) showHelp(hold.message);
+          if (hold) showHelp(hold);
           return;
         }
         if (policy.surface) {

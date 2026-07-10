@@ -39,3 +39,48 @@ class ReelStore:
         first = _first_usfm(usfm)
         return {"url": "https://www.bible.com/bible/%d/%s.%s" % (ver, first, (translation or "KJV").upper()),
                 "kind": "verse-page", "title": ""}
+
+    def groups_for(self, verse_store, beat_themes, context_themes=None,
+                   translation: str = "KJV", per_group: int = 3) -> list:
+        """Context -> prioritized reel sets: 'reels for you', in watch order.
+
+        Priority 1  For this moment      — reels for the themes the person just named.
+        Priority 2  Threads you return to — themes echoing through the conversation.
+        Priority 3  Steady ground        — comfort/hope/peace staples, always worth keeping.
+
+        Each group carries a one-line subtitle saying what it is for. Curated story
+        reels rank before verse-page fallbacks inside a group; a verse never appears
+        twice across groups. Groups with no reels are dropped, so callers can rely
+        on every returned group having something to watch."""
+        ctx = [t for t in (context_themes or []) if t not in set(beat_themes or [])]
+        specs = [
+            (1, "For this moment",
+             "Because you spoke of %s." % ", ".join(beat_themes[:2]) if beat_themes else "Picked for what you just said.",
+             beat_themes or []),
+            (2, "Threads you return to",
+             "This conversation kept touching %s." % ", ".join(ctx[:2]) if ctx else "Echoes from this conversation.",
+             ctx),
+            (3, "Steady ground",
+             "Kept for moments like this — quiet anchors of comfort and hope.",
+             ["comfort", "hope", "peace", "rest"]),
+        ]
+        groups, seen = [], set()
+        for priority, title, subtitle, themes in specs:
+            want = set(themes)
+            if not want:
+                continue
+            matched = []
+            for v in verse_store.verses:
+                if v["reference"] in seen or not (want & set(v.get("themes", []))):
+                    continue
+                reel = self.resolve(v.get("usfm", ""), translation)
+                matched.append({"reference": v["reference"], "usfm": v.get("usfm", ""),
+                                "note": v.get("note", ""), **reel})
+            matched.sort(key=lambda r: r["kind"] != "story")  # real story films first
+            matched = matched[:per_group]
+            if not matched:
+                continue
+            seen.update(r["reference"] for r in matched)
+            groups.append({"priority": priority, "title": title,
+                           "subtitle": subtitle, "reels": matched})
+        return groups

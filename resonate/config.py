@@ -52,7 +52,24 @@ class EngineConfig:
     gloo_base_url: str = field(default_factory=lambda: os.getenv("GLOO_BASE_URL", "https://platform.ai.gloo.com"))
     gloo_model: str = field(default_factory=lambda: os.getenv("GLOO_MODEL", ""))  # empty => auto_routing=true
     gloo_tradition: str = field(default_factory=lambda: os.getenv("GLOO_TRADITION", ""))  # optional theological lens
+    # Pinned model for structured tasks (segment/verify/bridge). auto_routing's values-aligned
+    # router sends emotional text to pastoral chat models that answer with care instead of JSON
+    # (observed live 2026-07-10); stories keep auto_routing, where that warmth is the point.
+    gloo_model_structured: str = field(default_factory=lambda: os.getenv("GLOO_MODEL_STRUCTURED", "gloo-anthropic-claude-haiku-4.5"))
     # YouVersion: app key from platform.youversion.com (accept each Bible's license there first).
     yv_app_key: str = field(default_factory=lambda: os.getenv("YOUVERSION_APP_KEY", ""))
     yv_base_url: str = field(default_factory=lambda: os.getenv("YOUVERSION_BASE_URL", "https://api.youversion.com/v1"))
     bible_id: str = field(default_factory=lambda: os.getenv("RESONATE_BIBLE_ID", ""))  # numeric id; resolve via scripts/live_check.py
+
+    # --- guardian alerts (security module; consent-first, see resonate/guardian.py) ---
+    guardian_enabled: bool = field(default_factory=lambda: os.getenv("RESONATE_GUARDIAN", "0") == "1")
+    guardian_file: str = field(default_factory=lambda: os.getenv("GUARDIAN_FILE", str(DATA_DIR / "guardians.json")))
+    guardian_cooldown_h: float = field(default_factory=lambda: float(os.getenv("GUARDIAN_COOLDOWN_H", "24")))
+    smtp_host: str = field(default_factory=lambda: os.getenv("SMTP_HOST", ""))
+    smtp_port: int = field(default_factory=lambda: int(os.getenv("SMTP_PORT", "587")))
+    smtp_user: str = field(default_factory=lambda: os.getenv("SMTP_USER", ""))
+    smtp_password: str = field(default_factory=lambda: os.getenv("SMTP_PASSWORD", ""))
+    smtp_from: str = field(default_factory=lambda: os.getenv("SMTP_FROM", ""))
+    twilio_sid: str = field(default_factory=lambda: os.getenv("TWILIO_SID", ""))
+    twilio_token: str = field(default_factory=lambda: os.getenv("TWILIO_TOKEN", ""))
+    twilio_whatsapp_from: str = field(default_factory=lambda: os.getenv("TWILIO_WHATSAPP_FROM", ""))

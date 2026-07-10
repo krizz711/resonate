@@ -1,0 +1,67 @@
+{
+  "name": "Scripture Guide — chat & voice (skeleton)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scripture-guide",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Chat In (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "scripture-guide"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Shape the incoming message (chat text, or a transcribed voice note)\n// into Gloo chat messages. Safety note: the Resonate engine's crisis gate\n// should be called FIRST in production — see integrations/n8n/README.md.\nconst body = $input.first().json.body || {};\nconst text = (body.text || '').trim();\nconst history = Array.isArray(body.history) ? body.history : [];\nconst messages = [\n  { role: 'system', content: 'You are Scripture Guide — warm, reverent, honest. You know the Scriptures deeply and discuss them plainly: context, meaning, hard questions, differing views. Quote verses only when you can cite book/chapter/verse; never invent wording. If someone signals crisis, respond with care and human help lines, never a verse.' },\n  ...history.map((h) => ({ role: 'user', content: String(h) })),\n  { role: 'user', content: text },\n];\nreturn [{ json: { messages, max_tokens: 600, auto_routing: true } }];"
+      },
+      "name": "Build Gloo Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://platform.ai.gloo.com/ai/v2/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "name": "Gloo Chat (values-aligned)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_WITH_GLOO_OAUTH2_CREDENTIAL",
+          "name": "Gloo AI Studio (client credentials)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { reply: $json.choices[0].message.content } }}",
+        "options": {}
+      },
+      "name": "Chat Out",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, 0]
+    }
+  ],
+  "connections": {
+    "Chat In (Webhook)": { "main": [[{ "node": "Build Gloo Messages", "type": "main", "index": 0 }]] },
+    "Build Gloo Messages": { "main": [[{ "node": "Gloo Chat (values-aligned)", "type": "main", "index": 0 }]] },
+    "Gloo Chat (values-aligned)": { "main": [[{ "node": "Chat Out", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}
