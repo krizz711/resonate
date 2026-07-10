@@ -3,7 +3,7 @@ services:
     name: resonate
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && cd site && npm install && npm run build
     startCommand: python scripts/serve.py
     healthCheckPath: /health
     envVars:

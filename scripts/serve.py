@@ -49,7 +49,7 @@ POLICY = DeliveryPolicy(PolicyConfig(
 REELS = ReelStore()
 WEAVER = StoryWeaver(ENGINE.gloo)
 _PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WEB_DIR = os.path.join(_PROJ, "web")
+WEB_DIR = os.path.join(_PROJ, "site", "dist")
 EXT_DIR = os.path.join(_PROJ, "integrations", "chatgpt-extension")
 
 
@@ -98,11 +98,17 @@ class Handler(BaseHTTPRequestHandler):
             self._send_html(os.path.join(WEB_DIR, os.path.basename(path)))  # basename avoids traversal
         elif path == "/ext/content.js":  # for web/mock-chat.html — runs the real content script
             self._send_file(os.path.join(EXT_DIR, "content.js"), "text/javascript; charset=utf-8")
-        elif path.startswith("/assets/"):  # landing-page images (basename avoids traversal)
+        elif path.startswith("/assets/"):  # Vite build output assets (js, css, images)
             name = os.path.basename(path)
-            ctype = "image/jpeg" if name.lower().endswith((".jpg", ".jpeg")) else \
-                    "image/png" if name.lower().endswith(".png") else \
-                    "image/webp" if name.lower().endswith(".webp") else "application/octet-stream"
+            ext = name.lower().rsplit(".", 1)[-1] if "." in name else ""
+            ctype = {
+                "js": "text/javascript; charset=utf-8",
+                "css": "text/css; charset=utf-8",
+                "jpg": "image/jpeg", "jpeg": "image/jpeg",
+                "png": "image/png", "webp": "image/webp",
+                "svg": "image/svg+xml", "ico": "image/x-icon",
+                "woff": "font/woff", "woff2": "font/woff2",
+            }.get(ext, "application/octet-stream")
             self._send_file(os.path.join(WEB_DIR, "assets", name), ctype)
         elif path == "/health":
             self._send(200, {"ok": True, "mode": ENGINE.config.provider_mode,
@@ -112,7 +118,12 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/tts":
             self._handle_tts(q)
         else:
-            self._send(404, {"error": "not found"})
+            # SPA fallback: serve index.html for any unmatched path
+            index = os.path.join(WEB_DIR, "index.html")
+            if os.path.exists(index):
+                self._send_html(index)
+            else:
+                self._send(404, {"error": "not found"})
 
     def _handle_tts(self, q):
         voice = (q.get("voice") or ["bella"])[0]
