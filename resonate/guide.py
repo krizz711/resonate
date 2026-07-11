@@ -11,15 +11,30 @@ Guarantees, same as everywhere else in the engine:
 """
 from __future__ import annotations
 
+import re
+
 from .engine import SAFETY_MESSAGE
 from .providers.gloo import lexicon_segment
 
+# Ezra is rendered as plain text and (on a call) SPOKEN — markdown must never survive,
+# or Kokoro reads "asterisk asterisk" and the bubble shows raw ** . Strip emphasis marks,
+# code ticks, and leading header/bullet markers; leave the words untouched.
+_MD_LINE = re.compile(r"^\s{0,3}(#{1,6}\s+|[-*•]\s+)", re.M)
+_MD_INLINE = re.compile(r"\*\*|\*|`|~~")
+
+
+def _plain(s: str) -> str:
+    s = _MD_LINE.sub("", s or "")
+    s = _MD_INLINE.sub("", s)
+    return re.sub(r"[ \t]+", " ", s).strip()
+
 PERSONA = (
-    "You are Scripture Guide — warm, reverent, plain-spoken, and honest about hard "
-    "questions and differing views. You discuss the Scriptures with people: context, "
-    "meaning, history, application. HARD RULES: quote verse wording ONLY from the "
-    "CONTEXT block below, verbatim, citing the reference; if the CONTEXT is empty you "
-    "may discuss books, passages and themes but NEVER quote or reconstruct wording from "
+    "You are Ezra — the Scripture Guide, named for the scribe 'skilled in the Law' "
+    "(Ezra 7:6): warm, reverent, plain-spoken, and honest about hard questions and "
+    "differing views. You discuss the Scriptures with people: context, meaning, "
+    "history, application. HARD RULES: quote verse wording ONLY from the CONTEXT "
+    "block below, verbatim, citing the reference; if the CONTEXT is empty you may "
+    "discuss books, passages and themes but NEVER quote or reconstruct wording from "
     "memory. Never invent references. No promises of outcomes; no medical or legal "
     "advice. If someone sounds like they are in crisis, respond with care and human "
     "help lines, never a verse."
@@ -30,8 +45,10 @@ class ScriptureGuide:
     def __init__(self, engine):
         self.engine = engine
 
-    def _ground(self, text):
-        """Our retrieval as manual RAG: lexicon beats -> hybrid retrieve -> licensed text."""
+    def _ground(self, text, user_id):
+        """Our retrieval as manual RAG: lexicon beats -> hybrid retrieve -> licensed text.
+        Memory writes use the SAME user_id as every other surface — one context graph
+        per person, so the popup, the reels page and Ezra all deepen the same threads."""
         refs = []
         for beat in lexicon_segment(text)[:2]:
             for c in self.engine.retriever.retrieve(beat, topk=3)[:1]:
@@ -41,8 +58,7 @@ class ScriptureGuide:
                 fetched = self.engine.yv.fetch(v["usfm"], self.engine.config.translation)
                 refs.append({"reference": v["reference"], "usfm": v["usfm"],
                              "translation": fetched["translation"], "text": fetched["text"]})
-                self.engine.memory.add("guide:" + self._user, beat.themes, beat.intensity,
-                                       v["reference"])
+                self.engine.memory.add(user_id, beat.themes, beat.intensity, v["reference"])
         return refs
 
     def reply(self, text, user_id: str = "guide", history=None, voice: bool = False) -> dict:
@@ -50,23 +66,38 @@ class ScriptureGuide:
         text = (text or "").strip()
         if not text:
             return {"ok": False, "error": "text required"}
-        self._user = user_id
 
         # safety gate first — a crisis ends the conversation turn with help, not chat
         if self.engine.gloo.safety_text(text):
             return {"ok": True, "safety": True, "reply": SAFETY_MESSAGE, "refs": [],
                     "guardian": self.engine.guardian.alert(user_id)}
 
-        refs = self._ground(text)
+        refs = self._ground(text, user_id)
         context = "\n".join('%s (%s): "%s"' % (r["reference"], r["translation"], r["text"])
                             for r in refs) or "(empty)"
-        system = PERSONA + "\n\nCONTEXT:\n" + context
+        # series memory -> gentle continuity: Ezra may acknowledge recurring threads,
+        # but never recites them like a record (themes only — no text is ever stored)
+        threads = [t for t, n in (self.engine.memory.patterns(user_id).get("top_themes") or [])
+                   if n >= 2][:3]
+        thread_note = ("\n\nRECENT THREADS (themes this person has returned to lately, from "
+                       "their private on-device series memory — you may gently acknowledge "
+                       "the continuity, at most once, never as a list): "
+                       + ", ".join(threads)) if threads else ""
+        system = PERSONA + thread_note + "\n\nCONTEXT:\n" + context
         if voice:
-            system += ("\n\nThis is a VOICE call: answer in at most 3 short spoken "
-                       "sentences, no lists, no markdown.")
+            # head position + repetition: a mid-prompt "keep it short" loses to the
+            # model's helpfulness; leading with the channel constraint holds (live-tested)
+            system = ("LIVE VOICE CALL. Your reply is spoken aloud: MAXIMUM 3 short "
+                      "sentences (a quoted verse counts as one). Absolutely no lists, "
+                      "bullet points, asterisks, headers, or markdown — spoken prose "
+                      "only. End with warmth, not homework.\n\n" + system +
+                      "\n\nRemember: at most 3 spoken sentences, no lists.")
         msgs = [{"role": m.get("role", "user"), "content": str(m.get("content", ""))[:1500]}
                 for m in (history or [])[-8:] if m.get("content")]
         msgs.append({"role": "user", "content": text})
 
-        answer = self.engine.gloo.converse(system, msgs)
-        return {"ok": True, "safety": False, "reply": answer.strip(), "refs": refs}
+        # voice turns get a hard token ceiling too — the ≤3-sentence instruction alone
+        # drifts under model variance (observed live), and a call can't absorb a sermon
+        answer = self.engine.gloo.converse(system, msgs,
+                                           max_tokens=190 if voice else 420)
+        return {"ok": True, "safety": False, "reply": _plain(answer), "refs": refs}

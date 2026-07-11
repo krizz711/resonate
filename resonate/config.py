@@ -56,6 +56,9 @@ class EngineConfig:
     # router sends emotional text to pastoral chat models that answer with care instead of JSON
     # (observed live 2026-07-10); stories keep auto_routing, where that warmth is the point.
     gloo_model_structured: str = field(default_factory=lambda: os.getenv("GLOO_MODEL_STRUCTURED", "gloo-anthropic-claude-haiku-4.5"))
+    # Scripture Guide conversations: haiku keeps a voice call snappy; set empty to let
+    # auto_routing pick (pastoral warmth, unknown latency/cost per turn).
+    gloo_model_guide: str = field(default_factory=lambda: os.getenv("GLOO_MODEL_GUIDE", "gloo-anthropic-claude-haiku-4.5"))
     # YouVersion: app key from platform.youversion.com (accept each Bible's license there first).
     yv_app_key: str = field(default_factory=lambda: os.getenv("YOUVERSION_APP_KEY", ""))
     yv_base_url: str = field(default_factory=lambda: os.getenv("YOUVERSION_BASE_URL", "https://api.youversion.com/v1"))

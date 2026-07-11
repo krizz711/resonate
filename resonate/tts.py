@@ -16,6 +16,8 @@ browser's Web Speech — the demo never breaks.
 from __future__ import annotations
 
 import hashlib
+import glob as _glob
+import json
 import os
 import shutil
 import subprocess
@@ -34,6 +36,24 @@ WORKER = str(ROOT / "scripts" / "tts_kokoro.py")
 CACHE_DIR = Path(os.getenv("RESONATE_TTS_CACHE", str(DATA_DIR / ".tts-cache")))
 # Kokoro/soundfile chokes on very long Windows paths -> raw synth goes to a short temp dir.
 SHORT_TMP = Path(os.getenv("RESONATE_TTS_TMP", r"C:\ktts"))
+
+
+def _find_ffmpeg():
+    """PATH is not enough on this machine: the WinGet ffmpeg is visible to Git Bash but
+    not to a python started from Explorer/Task Scheduler. Resolve an absolute path."""
+    hit = os.getenv("RESONATE_FFMPEG") or shutil.which("ffmpeg")
+    if hit:
+        return hit
+    local = os.getenv("LOCALAPPDATA", "")
+    for pat in (os.path.join(local, r"Microsoft\WinGet\Links\ffmpeg.exe"),
+                os.path.join(local, r"Microsoft\WinGet\Packages\Gyan.FFmpeg*\*\bin\ffmpeg.exe")):
+        for c in _glob.glob(pat):
+            if os.path.isfile(c):
+                return c
+    return None
+
+
+FFMPEG = _find_ffmpeg()
 
 
 @dataclass
@@ -63,9 +83,63 @@ PRESETS = {
 
 _GEN_LOCK = threading.Lock()  # one synthesis at a time — Kokoro is heavy on this laptop
 
+# ---- persistent Kokoro worker (loads the 82M model once; a live call can't pay
+# ---- ~8s of model load per reply). Falls back to one-shot spawning on any hiccup.
+_WORKER_PROC = None
+
+
+def _worker_proc():
+    global _WORKER_PROC
+    if _WORKER_PROC is not None and _WORKER_PROC.poll() is None:
+        return _WORKER_PROC
+    _WORKER_PROC = subprocess.Popen(
+        [KOKORO_PY, WORKER, "--serve"],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+        text=True, encoding="utf-8")
+    return _WORKER_PROC
+
+
+def _worker_request(req: dict, timeout: float):
+    """One JSON-line round trip. Windows pipes have no select(), so the blocking
+    readline runs on a scrap thread with a join timeout; a dead/hung worker is
+    killed and forgotten so the next call starts fresh."""
+    w = _worker_proc()
+    w.stdin.write(json.dumps(req) + "\n")
+    w.stdin.flush()
+    box = []
+    t = threading.Thread(target=lambda: box.append(w.stdout.readline()), daemon=True)
+    t.start()
+    t.join(timeout)
+    if not box or not box[0]:
+        global _WORKER_PROC
+        try:
+            w.kill()
+        except Exception:
+            pass
+        _WORKER_PROC = None
+        raise RuntimeError("kokoro worker timed out or died")
+    return json.loads(box[0])
+
+
+def warm() -> None:
+    """Load the Kokoro model in the background so the first spoken reply is fast.
+    Call at server startup; a missing venv makes this a silent no-op."""
+    if not available():
+        return
+
+    def _go():
+        try:
+            with _GEN_LOCK:  # both language pipelines: a=Bella, b=Isabella/George
+                _worker_request({"op": "ping", "warm_voice": "af_bella"}, timeout=180)
+                _worker_request({"op": "ping", "warm_voice": "bm_george"}, timeout=180)
+        except Exception:
+            pass
+
+    threading.Thread(target=_go, daemon=True).start()
+
 
 def available() -> bool:
-    return os.path.isfile(KOKORO_PY) and shutil.which("ffmpeg") is not None
+    return os.path.isfile(KOKORO_PY) and FFMPEG is not None
 
 
 def voices() -> list:
@@ -125,6 +199,24 @@ def synthesize(voice_id: str, text: str) -> Path:
     return out
 
 
+def _synth_raw(preset: VoicePreset, text: str, raw: str) -> None:
+    """Kokoro -> raw WAV at `raw`. Persistent worker first (synthesis-time latency);
+    one-shot venv spawn as the fallback so a wedged worker never kills the voice."""
+    try:
+        resp = _worker_request({"voice": preset.kokoro_voice, "speed": preset.speed,
+                                "text": text, "out": raw}, timeout=180)
+        if not resp.get("ok"):
+            raise RuntimeError(resp.get("error", "worker error"))
+        return
+    except Exception:
+        r = subprocess.run(
+            [KOKORO_PY, WORKER, "--voice", preset.kokoro_voice,
+             "--speed", str(preset.speed), "--out", raw, text],
+            capture_output=True, text=True, timeout=180)
+        if r.returncode != 0:
+            raise RuntimeError("kokoro synth failed: %s" % (r.stderr or r.stdout).strip()[:300])
+
+
 def generate_to(preset: VoicePreset, text: str, out) -> None:
     """Raw synthesis: Kokoro (in its venv) -> ffmpeg preset chain -> out path.
     No cache, no lock — synthesize() wraps this; scripts/voice_lab.py calls it
@@ -133,14 +225,9 @@ def generate_to(preset: VoicePreset, text: str, out) -> None:
     fd, raw = tempfile.mkstemp(suffix=".wav", dir=str(SHORT_TMP))
     os.close(fd)
     try:
-        r = subprocess.run(
-            [KOKORO_PY, WORKER, "--voice", preset.kokoro_voice,
-             "--speed", str(preset.speed), "--out", raw, text],
-            capture_output=True, text=True, timeout=180)
-        if r.returncode != 0:
-            raise RuntimeError("kokoro synth failed: %s" % (r.stderr or r.stdout).strip()[:300])
+        _synth_raw(preset, text, raw)
         f = subprocess.run(
-            ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+            [FFMPEG or "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
              "-i", raw, "-filter:a", _fx_chain(preset), "-ar", "24000", "-ac", "1", str(out)],
             capture_output=True, text=True, timeout=120)
         if f.returncode != 0:

@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reels for you — Resonate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#efe9df; --paper2:#e9e1d3; --paper3:#e3d7c4;
+    --ink:#211d17; --ink-soft:#6b6358; --faded:#a89c8a;
+    --clay:#a65b43; --clay-deep:#8a4a35; --gold:#b98f35;
+    --serif:'Cormorant Garamond',Georgia,serif; --sans:'Space Grotesk',ui-sans-serif,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;background:linear-gradient(180deg,#e4d7c6 0%,#ddcdb8 60%,#d5c4ac 100%);
+    color:var(--ink);font-family:var(--sans);padding-bottom:60px}
+  .wrap{width:min(860px,94vw);margin:0 auto}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:24px 0 8px}
+  header .brand{font-family:var(--serif);font-weight:600;font-size:24px}
+  header .brand .cross{color:var(--clay);margin-right:6px}
+  header nav a{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--clay);
+    text-decoration:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:5px 12px;margin-left:8px}
+  header nav a:hover{background:rgba(166,91,67,.1)}
+
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,5vw,40px);margin-top:18px}
+  .sub{margin-top:6px;font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink-soft)}
+  .basis{margin-top:10px;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faded)}
+  .basis b{color:var(--clay)}
+
+  .ask{display:flex;gap:10px;margin:18px 0 8px}
+  .ask input{flex:1;font-family:var(--sans);font-size:13.5px;color:var(--ink);
+    background:linear-gradient(178deg,#f5efe3,#efe7d7);border:1px solid rgba(33,29,23,.22);
+    border-radius:999px;padding:11px 18px;outline:none}
+  .ask input::placeholder{color:var(--faded)}
+  .ask input:focus{border-color:rgba(166,91,67,.55)}
+  .ask button{font-family:var(--sans);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+    color:#efe9df;background:linear-gradient(160deg,var(--clay),var(--clay-deep));border:none;
+    border-radius:999px;padding:0 20px;cursor:pointer}
+  .ask button:hover{filter:brightness(1.06)}
+
+  .group{margin-top:34px}
+  .group .gtitle{display:flex;align-items:baseline;gap:12px}
+  .group .gtitle .pri{font-family:var(--serif);font-size:15px;color:var(--gold)}
+  .group h2{font-family:var(--serif);font-weight:600;font-size:24px}
+  .group .gsub{margin-top:3px;font-size:12px;color:var(--ink-soft)}
+  .row{display:flex;gap:14px;overflow-x:auto;padding:16px 2px 8px;scroll-snap-type:x mandatory}
+  .row::-webkit-scrollbar{height:6px}
+  .row::-webkit-scrollbar-thumb{background:rgba(166,91,67,.35);border-radius:3px}
+
+  .card{flex:0 0 158px;scroll-snap-align:start;text-decoration:none;color:inherit;display:block}
+  .art{position:relative;width:158px;aspect-ratio:9/16;border-radius:14px;overflow:hidden;
+    border:1px solid rgba(33,29,23,.25);box-shadow:0 14px 30px rgba(70,55,30,.28);
+    display:flex;flex-direction:column;justify-content:flex-end;padding:12px 11px;
+    transition:transform .25s ease, box-shadow .25s ease}
+  .card:hover .art{transform:translateY(-4px);box-shadow:0 20px 40px rgba(70,55,30,.36)}
+  .art::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(16,11,5,.82))}
+  .art .play{position:absolute;top:10px;right:10px;z-index:2;width:26px;height:26px;border-radius:50%;
+    display:grid;place-items:center;font-size:10px;color:#f6efe2;
+    background:rgba(20,14,6,.5);border:1px solid rgba(246,239,226,.5)}
+  .art .ref{position:relative;z-index:2;font-family:var(--serif);font-size:16.5px;line-height:1.25;color:#f6efe2}
+  .art .kind{position:relative;z-index:2;margin-top:5px;font-size:7.5px;letter-spacing:.16em;
+    text-transform:uppercase;color:rgba(243,228,213,.85)}
+  .card .under{margin-top:8px;font-size:10.5px;line-height:1.45;color:var(--ink-soft);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+  .empty{margin-top:40px;font-family:var(--serif);font-style:italic;color:var(--ink-soft)}
+  footer{margin-top:56px;text-align:center;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faded)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="cross">†</span>Resonate</div>
+    <nav>
+      <a href="/guide.html" title="Talk with Ezra, the Scripture Guide">☎ talk to Ezra</a>
+      <a href="/" title="Resonate home">home</a>
+    </nav>
+  </header>
+
+  <h1>Reels for you</h1>
+  <div class="sub">Story films that echo where you've been — in watch order.</div>
+  <div class="basis" id="basis"></div>
+
+  <form class="ask" id="ask">
+    <input id="q" autocomplete="off" placeholder="What's on your heart today? (refreshes your reels)" />
+    <button type="submit">Find reels</button>
+  </form>
+
+  <div id="groups"></div>
+  <div class="empty" id="empty" style="display:none">
+    Nothing resonant enough to group yet — say a little more above, and the shelves will fill.
+  </div>
+
+  <footer>Resonate · reels open licensed partner films on YouVersion · verse pages when no film exists yet</footer>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  // one identity across surfaces (popup ?uid= handoff -> shared context graph)
+  const qp = new URLSearchParams(location.search);
+  let uid = qp.get("uid") || localStorage.getItem("resonate_uid") || localStorage.getItem("guide_uid");
+  if (!uid) uid = "res_" + Math.random().toString(36).slice(2, 10);
+  localStorage.setItem("resonate_uid", uid);
+
+  // theme -> 9:16 scene gradient (same family as the site's reel phone)
+  const SCENES = {
+    anxiety:  "radial-gradient(120% 90% at 50% 25%,#3a5570,#0b0e12)",
+    peace:    "radial-gradient(120% 90% at 50% 25%,#3a5570,#0b0e12)",
+    fear:     "radial-gradient(120% 90% at 50% 20%,#4a3f63,#0d0a14)",
+    courage:  "radial-gradient(120% 90% at 50% 20%,#4a3f63,#0d0a14)",
+    grief:    "radial-gradient(120% 90% at 50% 25%,#6d4a63,#100a10)",
+    comfort:  "radial-gradient(120% 90% at 50% 25%,#6d4a63,#100a10)",
+    weariness:"radial-gradient(120% 90% at 50% 20%,#8a6a3a,#141008)",
+    rest:     "radial-gradient(120% 90% at 50% 20%,#8a6a3a,#141008)",
+    hope:     "radial-gradient(120% 90% at 50% 20%,#87652a,#141008)",
+    joy:      "radial-gradient(120% 90% at 50% 20%,#87652a,#141008)",
+    provision:"radial-gradient(120% 90% at 50% 22%,#5d6b46,#0c100a)",
+    trust:    "radial-gradient(120% 90% at 50% 22%,#5d6b46,#0c100a)",
+    default:  "radial-gradient(120% 90% at 50% 22%,#5a5a52,#0e0d0a)",
+  };
+  const BASIS_LINE = {
+    text:    "picked from what you just shared",
+    memory:  "picked from the themes you keep returning to",
+    themes:  "picked from your chosen themes",
+    default: "a steady starting shelf — tell it what's on your heart to personalize",
+  };
+
+  function sceneFor(note, reference) {
+    const hay = (note + " " + reference).toLowerCase();
+    for (const k of Object.keys(SCENES)) if (k !== "default" && hay.includes(k)) return SCENES[k];
+    return SCENES.default;
+  }
+
+  function render(data) {
+    const root = $("groups");
+    root.innerHTML = "";
+    $("basis").innerHTML = data.themes && data.themes.length
+      ? (BASIS_LINE[data.basis] || "") + " — <b>" + data.themes.join(" · ") + "</b>"
+      : (BASIS_LINE[data.basis] || "");
+    const groups = data.groups || [];
+    $("empty").style.display = groups.length ? "none" : "block";
+    const roman = ["", "I", "II", "III"];
+    groups.forEach((g) => {
+      const sec = document.createElement("section");
+      sec.className = "group";
+      sec.innerHTML =
+        '<div class="gtitle"><span class="pri">' + (roman[g.priority] || g.priority) + "</span>" +
+        "<h2>" + g.title + "</h2></div>" +
+        '<div class="gsub">' + g.subtitle + "</div>";
+      const row = document.createElement("div");
+      row.className = "row";
+      (g.reels || []).forEach((r) => {
+        const a = document.createElement("a");
+        a.className = "card";
+        a.href = r.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+        a.title = (r.kind === "story" ? "Watch: " + (r.title || r.reference)
+                                      : "Read " + r.reference + " on YouVersion");
+        const art = document.createElement("div");
+        art.className = "art";
+        art.style.background = sceneFor(r.note || "", r.reference);
+        art.innerHTML =
+          '<span class="play">' + (r.kind === "story" ? "▶" : "❧") + "</span>" +
+          '<div class="ref">' + r.reference + "</div>" +
+          '<div class="kind">' + (r.kind === "story" ? "story film · YouVersion" : "verse page · YouVersion") + "</div>";
+        const under = document.createElement("div");
+        under.className = "under";
+        under.textContent = r.kind === "story" && r.title ? r.title : (r.note || "");
+        a.append(art, under);
+        row.appendChild(a);
+      });
+      sec.appendChild(row);
+      root.appendChild(sec);
+    });
+  }
+
+  function load(text) {
+    $("basis").textContent = "gathering your shelves…";
+    fetch("/reel-groups", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(text ? { user_id: uid, text } : { user_id: uid }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.safety) {
+          $("groups").innerHTML = "";
+          $("basis").innerHTML = "<b>this sounds heavy</b> — reels aren't the right response; " +
+            'please talk to someone you trust, or <a href="/guide.html">reach Ezra</a>';
+          return;
+        }
+        render(d);
+      })
+      .catch(() => { $("basis").textContent = "engine offline — start it with: python scripts/serve.py"; });
+  }
+
+  $("ask").onsubmit = (e) => { e.preventDefault(); load($("q").value.trim()); };
+  load("");
+  window.__reelsLoad = load; // verification hook
+})();
+</script>
+</body>
+</html>

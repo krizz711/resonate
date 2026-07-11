@@ -302,6 +302,10 @@
           (autoSpeak ? "on" : "off") + ') — click to toggle">⟳</button>' +
         (reel ? '<a class="ico reelico" href="' + esc(reel.url) +
                 '" target="_blank" rel="noopener noreferrer" title="' + reelTitle + '">▷</a>' : "") +
+        '<a class="ico" href="' + esc("http://127.0.0.1:8765/guide.html?uid=" + encodeURIComponent(USER_ID) +
+            "&q=" + encodeURIComponent(lastText.slice(0, 600))) +
+            '" target="_blank" rel="noopener noreferrer" ' +
+            'title="Ask Ezra — carry this moment into a deeper conversation (you choose to share it)">☎</a>' +
       "</div>" +
       '<button class="story">✦ Your story</button>' +
       '<div class="foot">Resonate · processed locally · nothing stored</div>';

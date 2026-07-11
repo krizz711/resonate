@@ -7,6 +7,12 @@ Endpoints:
   GET  /health                      -> {ok, mode, targets, tts}
   GET  /voices                      -> {ok, available, voices:[{id,label}...]}
   GET  /tts?voice=bella&text=...    -> audio/wav (Kokoro + godly preset) | 503 {fallback}
+  GET  /guide.html                  -> Ezra, the Scripture Guide — chat + web-call page
+  GET  /reels.html                  -> "Reels for you" — prioritized story-reel sets
+  POST /guide     {text, user_id?, history?[{role,content}], voice?}
+                                    -> {ok, reply, refs, safety, guardian?}
+  POST /reel-groups {user_id?, text?, themes?[]}
+                                    -> {ok, groups:[{priority,title,subtitle,reels[]}], basis}
   POST /resonate  {text, user_id?, history?, event?, targets?}
                                     -> {deliveries(+reel_url), context, policy?, rendered}
 """
@@ -30,7 +36,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer  # noqa: E40
 
 from resonate import Engine, EngineConfig  # noqa: E402
 from resonate.delivery import render, TARGETS  # noqa: E402
+from resonate.guide import ScriptureGuide  # noqa: E402
 from resonate.policy import DeliveryPolicy, PolicyConfig  # noqa: E402
+from resonate.ratelimit import RateLimiter  # noqa: E402
 from resonate.reels import ReelStore  # noqa: E402
 from resonate.story import StoryWeaver  # noqa: E402
 from resonate.providers.gloo import is_crisis  # noqa: E402
@@ -48,8 +56,20 @@ POLICY = DeliveryPolicy(PolicyConfig(
 ))
 REELS = ReelStore()
 WEAVER = StoryWeaver(ENGINE.gloo)
+GUIDE = ScriptureGuide(ENGINE)
+# fairness on a shared engine: per-user windows for the endpoints that cost
+# real resources (Gloo credit, the Kokoro worker). Context isolation itself is
+# free — every memory/graph read-write is already keyed by user_id.
+LIMITS = RateLimiter({
+    "guide": (8, 60),        # conversation turns / minute / user
+    "guide_day": (240, 86400),
+    "tts": (30, 60),         # sentence renders / minute / user (streaming uses several per reply)
+    "reels": (12, 60),
+    "story": (6, 60),
+})
 _PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(_PROJ, "site", "dist")
+SRC_WEB_DIR = os.path.join(_PROJ, "web")
 EXT_DIR = os.path.join(_PROJ, "integrations", "chatgpt-extension")
 
 
@@ -70,6 +90,15 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.end_headers()
+
+    def _limited(self, bucket, key) -> bool:
+        """True (and a polite 429 already sent) when this user should slow down."""
+        if LIMITS.allow(bucket, key):
+            return False
+        self._send(429, {"ok": False, "rate_limited": True,
+                         "retry_after": LIMITS.retry_after(bucket, key),
+                         "reason": "a quiet pace keeps the line open for everyone — one moment"})
+        return True
 
     def _send_file(self, path, ctype):
         try:
@@ -124,6 +153,12 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/ext/content.js":
             self._send_file(os.path.join(EXT_DIR, "content.js"), "text/javascript; charset=utf-8")
             return
+        if path == "/guide.html":  # the web call — standalone page, not part of the Vite build
+            self._send_html(os.path.join(SRC_WEB_DIR, "guide.html"))
+            return
+        if path == "/reels.html":  # "Reels for you" — same standalone treatment
+            self._send_html(os.path.join(SRC_WEB_DIR, "reels.html"))
+            return
 
         # Serve any static file that exists in site/dist — covers JS, CSS, GLB, images, fonts, etc.
         # Strip leading slash, resolve safely (no path traversal)
@@ -135,6 +170,13 @@ class Handler(BaseHTTPRequestHandler):
             return
         if os.path.isfile(candidate):
             self._send_file(candidate, self._mime(candidate))
+            return
+
+        # Also serve assets that live next to the standalone pages in web/ (e.g. the
+        # chat-page background at /bg/athena.jpg) — same path-traversal guard.
+        web_candidate = os.path.normpath(os.path.join(SRC_WEB_DIR, rel))
+        if web_candidate.startswith(os.path.normpath(SRC_WEB_DIR)) and os.path.isfile(web_candidate):
+            self._send_file(web_candidate, self._mime(web_candidate))
             return
 
         # SPA fallback: all other paths → index.html (React router handles it)
@@ -150,6 +192,8 @@ class Handler(BaseHTTPRequestHandler):
         if not text.strip():
             self._send(400, {"error": "text required"})
             return
+        if self._limited("tts", (q.get("uid") or [self.client_address[0]])[0]):
+            return
         try:
             wav = tts.synthesize(voice, text)
         except Exception as e:
@@ -160,7 +204,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = self.path.split("?")[0]
-        if path not in ("/resonate", "/story"):
+        if path not in ("/resonate", "/story", "/guide", "/reel-groups"):
             self._send(404, {"error": "not found"})
             return
         length = int(self.headers.get("Content-Length", 0))
@@ -168,6 +212,21 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length) or b"{}")
         except Exception as e:
             self._send(400, {"error": "bad json: %s" % e})
+            return
+        if path == "/reel-groups":
+            self._handle_reel_groups(data)
+            return
+        if path == "/guide":
+            user = data.get("user_id", "guide_web")
+            if self._limited("guide", user) or self._limited("guide_day", user):
+                return
+            history = data.get("history") or []
+            if not isinstance(history, list):
+                history = []
+            out = GUIDE.reply(data.get("text", ""), user,
+                              history=[h for h in history if isinstance(h, dict)],
+                              voice=bool(data.get("voice")))
+            self._send(200 if out.get("ok") else 400, out)
             return
         if path == "/story":
             self._handle_story(data)
@@ -196,11 +255,41 @@ class Handler(BaseHTTPRequestHandler):
                 result["policy"] = {"surface": False, "reason": "no resonant beat — stay silent"}
         self._send(200, result)
 
+    def _handle_reel_groups(self, data):
+        """'Reels for you' — prioritized sets. Themes come from (in order): explicit
+        list, the text's beats, the person's series memory (recurring themes), or a
+        steady default — so the page always has something honest to show."""
+        from resonate.providers.gloo import lexicon_segment
+        user = data.get("user_id", "reels_web")
+        if self._limited("reels", user):
+            return
+        text = (data.get("text") or "").strip()
+        if text and is_crisis(text):
+            self._send(200, {"ok": False, "safety": True,
+                             "reason": "crisis input — reels are not the right response"})
+            return
+        themes = [t for t in (data.get("themes") or []) if isinstance(t, str) and t.strip()]
+        basis = "themes"
+        if not themes and text:
+            beats = lexicon_segment(text)
+            themes = beats[0].themes if beats else []
+            basis = "text"
+        if not themes:
+            top = (ENGINE.memory.patterns(user).get("top_themes") or [])
+            themes = [t for t, _ in top[:3]]
+            basis = "memory"
+        if not themes:
+            themes, basis = ["comfort", "hope"], "default"
+        groups = REELS.groups_for(ENGINE.verses, themes, [], ENGINE.config.translation)
+        self._send(200, {"ok": True, "groups": groups, "basis": basis, "themes": themes})
+
     def _handle_story(self, data):
         """'Your story' — weave the user's moment + the just-delivered verse into one
         vetted biblical narrative. The panel passes the delivery it already holds, so
         nothing is recomputed. Crisis input never gets a story."""
         user = data.get("user_id", "default")
+        if self._limited("story", user):
+            return
         text = data.get("text", "")
         if is_crisis(text):
             self._send(200, {"ok": False, "safety": True,
@@ -232,6 +321,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     host = os.getenv("RESONATE_HOST", "127.0.0.1")
     port = int(os.getenv("RESONATE_PORT") or os.getenv("PORT") or "8765")
+    tts.warm()  # load the Kokoro model in the background — first spoken reply lands fast
     print("Resonate engine running on http://%s:%d  (mode=%s)" % (host, port, ENGINE.config.provider_mode))
     print("Press Ctrl+C to stop.")
     ThreadingHTTPServer((host, port), Handler).serve_forever()

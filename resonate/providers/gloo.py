@@ -182,6 +182,23 @@ class MockGloo:
                      % (verse.get("reference", ""), (verse.get("verse_text", "") or "").strip()))
         return "\n\n".join(parts)
 
+    def converse(self, system, messages, temperature=0.55, max_tokens=420):
+        """Mock Scripture Guide turn: mirror the question and hand back the grounded
+        verse from the CONTEXT block (never invented) — proves the shape offline."""
+        last = next((m["content"] for m in reversed(messages) if m.get("role") == "user"), "")
+        snippet = last.strip()
+        if len(snippet) > 70:
+            snippet = snippet[:67] + "..."
+        ctx = system.split("CONTEXT:\n", 1)[-1].strip()
+        if ctx and ctx != "(empty)":
+            first = ctx.splitlines()[0]
+            return ('Sitting with "%s" — here is where Scripture meets it. %s '
+                    "Would you like to stay with this verse, or look at its story?"
+                    % (snippet, first))
+        return ('You asked "%s". Let\'s walk through what the Scriptures say about it '
+                "together — tell me a little more of where this question comes from."
+                % snippet)
+
     def safety(self, beat):
         return is_crisis(beat.text)
 
@@ -241,6 +258,26 @@ class LiveGloo:
             payload["auto_routing"] = True
         if json_mode:  # OpenAI-compatible structured output (verified honored 2026-07-10)
             payload["response_format"] = {"type": "json_object"}
+        if self.config.gloo_tradition:
+            payload["tradition"] = self.config.gloo_tradition
+        r = httpx.post("%s/ai/v2/chat/completions" % self.config.gloo_base_url,
+                       headers=headers, json=payload, timeout=60)
+        r.raise_for_status()
+        return r.json()["choices"][0]["message"]["content"]
+
+    def converse(self, system, messages, temperature=0.55, max_tokens=420):
+        """Multi-turn persona chat (Scripture Guide). Unlike the structured calls below,
+        the alignment layer's pastoral instinct is exactly right here — we only pin
+        gloo_model_guide to keep voice-call latency predictable (empty => auto_routing)."""
+        import httpx
+        headers = {"Authorization": "Bearer %s" % self._access_token(),
+                   "Content-Type": "application/json"}
+        payload = {"messages": [{"role": "system", "content": system}] + list(messages),
+                   "temperature": temperature, "max_tokens": max_tokens}
+        if self.config.gloo_model_guide:
+            payload["model"] = self.config.gloo_model_guide
+        else:
+            payload["auto_routing"] = True
         if self.config.gloo_tradition:
             payload["tradition"] = self.config.gloo_tradition
         r = httpx.post("%s/ai/v2/chat/completions" % self.config.gloo_base_url,

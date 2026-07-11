@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ezra — the Scripture Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#efe9df; --paper2:#e9e1d3; --paper3:#e3d7c4;
+    --ink:#211d17; --ink-soft:#6b6358; --faded:#a89c8a;
+    --clay:#a65b43; --clay-deep:#8a4a35;
+    --serif:'Cormorant Garamond',Georgia,serif; --sans:'Space Grotesk',ui-sans-serif,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  /* classical toile mural: Athena and the columns frame the edges while Ezra's
+     conversation lives in the calm cream centre. A soft central veil lifts the
+     text without hiding the ornaments; the art is fixed so it reads like a wall
+     the transcript scrolls against. */
+  body{display:flex;flex-direction:column;align-items:center;
+    color:var(--ink);font-family:var(--sans);
+    background:
+      radial-gradient(120% 78% at 50% 42%, rgba(245,240,227,.66), rgba(245,240,227,.14) 58%, rgba(245,240,227,0) 78%),
+      url(/bg/athena.jpg) center center / cover no-repeat fixed,
+      #e9decb}
+  @media (max-width:720px){ /* portrait crops the ornaments — fall back to plain parchment */
+    body{background:linear-gradient(180deg,#efe7d4,#e4d7c6)}
+  }
+  header{width:min(720px,94vw);padding:22px 0 6px;display:flex;align-items:baseline;justify-content:space-between}
+  header .brand{font-family:var(--serif);font-weight:600;font-size:24px}
+  header .brand .cross{color:var(--clay);margin-right:6px}
+  header .brand .role{font-size:13px;font-style:italic;color:var(--ink-soft);margin-left:8px}
+  header nav a{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--clay);
+    text-decoration:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:5px 12px;margin-left:8px}
+  header nav a:hover{background:rgba(166,91,67,.1)}
+
+  .call{width:min(720px,94vw);flex:1;display:flex;flex-direction:column;min-height:0}
+
+  /* top strip: seal + status + controls */
+  .strip{display:flex;align-items:center;gap:16px;padding:10px 0 14px;border-bottom:1px solid rgba(33,29,23,.14)}
+  .sealbtn{width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;position:relative;flex:0 0 auto;
+    background:radial-gradient(circle at 34% 30%, #c07a5e 0%, var(--clay) 42%, #7d3f2c 100%);
+    box-shadow:0 8px 20px rgba(33,29,23,.32), inset 0 2px 4px rgba(255,255,255,.28), inset 0 -3px 6px rgba(60,25,14,.5);
+    color:#f3e4d5;font-family:var(--serif);font-size:26px;font-weight:600;line-height:1}
+  .sealbtn::after{content:"";position:absolute;inset:6px;border-radius:50%;border:1px solid rgba(243,228,213,.4)}
+  .sealbtn:hover{transform:scale(1.05)}
+  .sealbtn.live{animation:pulse 1.8s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 8px 20px rgba(33,29,23,.32), 0 0 0 0 rgba(166,91,67,.45)}
+    50%{box-shadow:0 8px 20px rgba(33,29,23,.32), 0 0 0 13px rgba(166,91,67,0)}}
+  .strip .col{flex:1;min-width:0}
+  .status{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+  .status b{color:var(--clay)}
+  .hint{margin-top:4px;font-size:10.5px;color:var(--faded)}
+  .vpick,.endbtn{font-family:var(--sans);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--clay);background:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;
+    padding:5px 12px;cursor:pointer;flex:0 0 auto}
+  .vpick:hover,.endbtn:hover{background:rgba(166,91,67,.1)}
+  .endbtn{display:none}
+  .call.on .endbtn{display:inline-block}
+
+  .transcript{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:20px 2px}
+  .transcript::-webkit-scrollbar{width:6px}
+  .transcript::-webkit-scrollbar-thumb{background:rgba(166,91,67,.35);border-radius:3px}
+  .bub{max-width:84%;padding:12px 16px;border-radius:14px;font-size:14px;line-height:1.6}
+  .bub.me{align-self:flex-end;background:linear-gradient(160deg,var(--clay),var(--clay-deep));
+    color:#f3e4d5;border-bottom-right-radius:4px}
+  .bub.guide{align-self:flex-start;color:var(--ink);border-bottom-left-radius:4px;
+    background:linear-gradient(177deg,var(--paper),var(--paper2));border:1px solid rgba(33,29,23,.16);
+    font-family:var(--serif);font-size:16px}
+  .bub.guide.help{border-color:rgba(166,91,67,.55);background:linear-gradient(177deg,#f6ece2,var(--paper2))}
+  .bub .who{font-family:var(--sans);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--clay);margin-bottom:5px}
+  .refs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .refchip{font-family:var(--sans);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-soft);border:1px solid rgba(33,29,23,.2);border-radius:999px;padding:2px 9px}
+  .note{margin-top:6px;font-size:8.5px;letter-spacing:.08em;color:var(--faded);font-family:var(--sans)}
+
+  /* composer — type OR talk */
+  .composer{display:flex;gap:10px;padding:12px 0 18px;border-top:1px solid rgba(33,29,23,.14)}
+  .composer input{flex:1;font-family:var(--sans);font-size:13.5px;color:var(--ink);
+    background:linear-gradient(178deg,#f5efe3,#efe7d7);border:1px solid rgba(33,29,23,.22);
+    border-radius:999px;padding:11px 18px;outline:none}
+  .composer input::placeholder{color:var(--faded)}
+  .composer input:focus{border-color:rgba(166,91,67,.55)}
+  .composer button{font-family:var(--sans);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+    color:#efe9df;background:linear-gradient(160deg,var(--clay),var(--clay-deep));border:none;
+    border-radius:999px;padding:0 22px;cursor:pointer;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 2px 8px rgba(138,74,53,.35)}
+  .composer button:hover{filter:brightness(1.06)}
+
+  .unsupported{padding:8px 0;font-size:11.5px;color:var(--clay);display:none}
+  footer{padding:10px;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faded)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="cross">†</span>Ezra<span class="role">the Scripture Guide</span></div>
+  <nav>
+    <a href="/reels.html" title="Story reels picked for you">▷ reels for you</a>
+    <a href="/" title="Resonate home">home</a>
+  </nav>
+</header>
+
+<div class="call" id="call">
+  <div class="strip">
+    <button class="sealbtn" id="seal" title="Call Ezra — talk by voice">R</button>
+    <div class="col">
+      <div class="status" id="status">tap the seal to call — or just type below</div>
+      <div class="hint">Ezra listens while he speaks — interrupt him any time, like a real call.</div>
+    </div>
+    <button class="vpick" id="vpick" title="Voice for Ezra's replies">voice: <b id="vname">Bella</b></button>
+    <button class="endbtn" id="end" title="End the call">✕ end call</button>
+  </div>
+
+  <div class="transcript" id="log"></div>
+  <div class="unsupported" id="unsupported">No speech recognition in this browser — typing still works (use Chrome/Edge for the call).</div>
+
+  <form class="composer" id="composer">
+    <input id="ta" autocomplete="off" placeholder="Ask Ezra anything about the Scriptures…" />
+    <button type="submit">Send</button>
+  </form>
+</div>
+
+<footer>Resonate · Ezra never invents verse wording — every quote is licensed via YouVersion</footer>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const seal = $("seal"), status = $("status"), log = $("log"), call = $("call");
+
+  // ONE identity across every surface: the extension hands its id over via ?uid=
+  // so the popup, the reels shelves and Ezra all deepen the same context graph
+  // (themes only — no conversation text ever crosses between surfaces).
+  const qp = new URLSearchParams(location.search);
+  let uid = qp.get("uid") || localStorage.getItem("resonate_uid") || localStorage.getItem("guide_uid");
+  if (!uid) uid = "res_" + Math.random().toString(36).slice(2, 10);
+  localStorage.setItem("resonate_uid", uid);
+
+  const VOICES = ["bella", "isabella", "george", "browser"];
+  const LABEL = { browser: "Browser", bella: "Bella", isabella: "Isabella", george: "George" };
+  let voice = localStorage.getItem("guide_voice") || "bella";
+  if (!VOICES.includes(voice)) voice = "bella";
+  fetch("/health").then((r) => r.json()).then((h) => {
+    if (!h.tts && voice !== "browser") {
+      voice = "browser";
+      $("vname").textContent = LABEL[voice];
+      $("vpick").title = "Kokoro voices unavailable on this engine — using the browser voice";
+    }
+  }).catch(() => {});
+  $("vname").textContent = LABEL[voice];
+  $("vpick").onclick = () => {
+    voice = VOICES[(VOICES.indexOf(voice) + 1) % VOICES.length];
+    $("vname").textContent = LABEL[voice];
+    localStorage.setItem("guide_voice", voice);
+  };
+
+  // state: idle | listening | thinking | speaking | ended
+  let state = "idle", live = false;
+  const history = [];
+  let audioEl = null;
+
+  function setState(s, label) { state = s; status.innerHTML = label || s; seal.classList.toggle("live", live); }
+
+  function bubble(role, text, refs, help) {
+    const b = document.createElement("div");
+    b.className = "bub " + (role === "user" ? "me" : "guide" + (help ? " help" : ""));
+    if (role !== "user") b.innerHTML = '<div class="who">Ezra</div>';
+    const t = document.createElement("div");
+    t.textContent = text;
+    b.appendChild(t);
+    if (refs && refs.length) {
+      const r = document.createElement("div");
+      r.className = "refs";
+      refs.forEach((x) => {
+        const c = document.createElement("span");
+        c.className = "refchip"; c.textContent = x.reference + " · " + x.translation;
+        r.appendChild(c);
+      });
+      b.appendChild(r);
+      const n = document.createElement("div");
+      n.className = "note"; n.textContent = "quoted verbatim · licensed via YouVersion";
+      b.appendChild(n);
+    }
+    log.appendChild(b);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  // ---------- speaking (Ezra's voice) ----------
+  const norm = (s) => (s || "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  let speakingText = ""; // normalized text of what Ezra is saying — the echo guard
+
+  function speakBrowser(text, done) {
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.95; u.pitch = 0.96;
+      const vs = speechSynthesis.getVoices();
+      const pick = ["Google UK English Female", "Microsoft Aria", "Samantha", "Google US English"]
+        .map((n) => vs.find((v) => v.name && v.name.includes(n))).find(Boolean);
+      if (pick) u.voice = pick;
+      u.onend = done; u.onerror = done;
+      speechSynthesis.speak(u);
+    } catch (e) { done(); }
+  }
+
+  // Sentence-streamed speech: Ezra starts talking as soon as the FIRST sentence is
+  // rendered while the next ones synthesize in the background — human pacing instead
+  // of one long silence. A session counter cancels everything on barge-in.
+  let speakSession = 0, lastChunks = 0;
+
+  function splitSpoken(t) {
+    const parts = (t.match(/[^.!?…]+[.!?…]+["')\]]*|\S[^.!?…]*$/g) || [t]).map((s) => s.trim()).filter(Boolean);
+    const chunks = [];
+    for (const p of parts) { // merge stubs so the audio never sounds choppy
+      if (chunks.length && (chunks[chunks.length - 1].length < 45 || p.length < 25)) chunks[chunks.length - 1] += " " + p;
+      else chunks.push(p);
+    }
+    return chunks;
+  }
+
+  function speak(text, done) {
+    const sess = ++speakSession;
+    speakingText = norm(text);
+    const finish = () => { if (sess !== speakSession) return; speakingText = ""; done && done(); };
+    if (voice === "browser") return speakBrowser(text, finish);
+
+    const chunks = splitSpoken(text);
+    lastChunks = chunks.length;
+    const jobs = new Array(chunks.length).fill(null);
+    const wav = (i) => jobs[i] || (jobs[i] = fetch("/tts?voice=" + voice + "&uid=" + encodeURIComponent(uid) +
+                                                   "&text=" + encodeURIComponent(chunks[i]))
+      .then((r) => { if (!r.ok) throw 0; return r.blob(); }));
+
+    (async () => {
+      try {
+        for (let i = 0; i < chunks.length; i++) {
+          if (sess !== speakSession) return;
+          const cur = wav(i);
+          if (i + 1 < chunks.length) wav(i + 1); // prefetch the next sentence while this one plays
+          const blob = await cur;
+          if (sess !== speakSession) return;
+          const rejected = await new Promise((res) => {
+            const url = URL.createObjectURL(blob);
+            audioEl = new Audio(url);
+            audioEl.onended = () => { URL.revokeObjectURL(url); res(false); };
+            audioEl.onerror = () => { URL.revokeObjectURL(url); res(false); };
+            audioEl.play().catch(() => res(true));
+          });
+          if (rejected && i === 0) throw 0; // autoplay blocked — say the whole thing via Web Speech
+        }
+        finish();
+      } catch (e) {
+        if (sess === speakSession) speakBrowser(text, finish);
+      }
+    })();
+  }
+
+  function stopAudio() {
+    speakSession++; // cancels any in-flight sentence queue
+    try { speechSynthesis.cancel(); } catch (e) {}
+    if (audioEl) { try { audioEl.pause(); } catch (e) {} audioEl = null; }
+    speakingText = "";
+  }
+
+  // ---------- always-on listening with barge-in ----------
+  // The recognizer runs through the WHOLE call — even while Ezra speaks. If the
+  // person starts talking over him, he stops mid-sentence and listens until they
+  // finish (a silence gap closes their turn). An echo guard drops fragments that
+  // are just the microphone hearing Ezra's own voice.
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, recActive = false;
+  let pending = "";        // accumulated final transcript of the person's turn
+  let silenceTimer = null; // fires when they've stopped talking
+
+  function isEcho(chunk) {
+    const c = norm(chunk);
+    return c.length < 3 || (speakingText && speakingText.includes(c.slice(0, 24)));
+  }
+
+  function heard(interim, finals) {
+    if (state === "thinking") return; // their words during processing are dropped, shown by status
+    const anything = (interim + " " + finals).trim();
+    if (!anything || isEcho(anything)) return;
+
+    // barge-in: Ezra yields the moment real speech arrives while he's speaking
+    if (state === "speaking" && anything.length >= 6) {
+      stopAudio();
+      setState("listening", "go on — <b>I'm listening</b>");
+    }
+    if (finals && !isEcho(finals)) pending = (pending + " " + finals).trim();
+    if (interim && !isEcho(interim)) status.innerHTML = "hearing: <b>" + interim.slice(-46) + "</b>";
+
+    clearTimeout(silenceTimer);
+    silenceTimer = setTimeout(() => {           // they finished — take the turn
+      if (pending && state !== "thinking") { const t = pending; pending = ""; turn(t, true); }
+    }, 900);
+  }
+
+  function startRecognition() {
+    if (!SR) { $("unsupported").style.display = "block"; return; }
+    if (!live || recActive) return;
+    rec = new SR();
+    rec.lang = "en-US"; rec.continuous = true; rec.interimResults = true;
+    recActive = true;
+    rec.onresult = (e) => {
+      let interim = "", finals = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finals += r[0].transcript + " ";
+        else interim += r[0].transcript;
+      }
+      heard(interim, finals.trim());
+    };
+    rec.onend = () => { recActive = false; if (live) setTimeout(startRecognition, 200); };
+    rec.onerror = (e) => {
+      recActive = false;
+      if (e.error === "not-allowed") { setState("idle", "microphone blocked — allow mic access"); endCall(false); }
+    };
+    try { rec.start(); } catch (e) { recActive = false; }
+  }
+
+  function stopRecognition() {
+    clearTimeout(silenceTimer);
+    pending = "";
+    if (rec) { try { rec.onend = null; rec.stop(); } catch (e) {} rec = null; }
+    recActive = false;
+  }
+
+  // ---------- a conversation turn (typed or spoken) ----------
+  function turn(text, spoken) {
+    bubble("user", text);
+    setState("thinking", "Ezra is thinking…");
+    fetch("/guide", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, user_id: uid, history: history.slice(-8), voice: !!(live || spoken) }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!d.ok) throw new Error(d.error || "guide error");
+        history.push({ role: "user", content: text });
+        history.push({ role: "assistant", content: d.reply });
+        bubble("assistant", d.reply, d.refs, d.safety);
+        if (live) {
+          setState("speaking", "Ezra is speaking — <b>interrupt any time</b>");
+          speak(d.reply, () => {
+            if (d.safety) { endCall(true); return; } // a crisis ends the call with care
+            if (live && state === "speaking") setState("listening", "your turn — <b>I'm listening</b>");
+          });
+        } else {
+          setState("idle", "replied — type again, or tap the seal to talk");
+        }
+      })
+      .catch(() => {
+        setState(live ? "listening" : "idle", "line hiccup — <b>try that again?</b>");
+      });
+  }
+
+  // ---------- call lifecycle ----------
+  const GREETING = "Peace be with you — this is Ezra. What's on your heart?";
+
+  function startCall() {
+    live = true;
+    call.classList.add("on");
+    seal.title = "On the line — tap to end";
+    setState("speaking", "picking up…");
+    startRecognition();               // ears open from the first second — even the greeting can be interrupted
+    bubble("assistant", GREETING);
+    speak(GREETING, () => { if (live && state === "speaking") setState("listening", "your turn — <b>I'm listening</b>"); });
+  }
+
+  function endCall(spoken) {
+    live = false;
+    stopRecognition(); stopAudio();
+    call.classList.remove("on");
+    setState("ended", spoken ? "the line stays open whenever you need it" : "call ended — the chat still works");
+    seal.title = "Call Ezra — talk by voice";
+  }
+
+  seal.onclick = () => (live ? endCall(false) : startCall());
+  $("end").onclick = () => endCall(false);
+
+  $("composer").onsubmit = (e) => {
+    e.preventDefault();
+    const v = $("ta").value.trim();
+    if (!v || state === "thinking") return;
+    $("ta").value = "";
+    if (state === "speaking") stopAudio(); // typing over Ezra also interrupts him
+    turn(v, false);
+  };
+
+  // a handed-off question (the popup's "ask Ezra about this") starts the chat at once
+  const handoff = (qp.get("q") || "").trim();
+  if (handoff) setTimeout(() => turn(handoff.slice(0, 1200), false), 350);
+
+  // debug/verification hooks (the preview harness has no mic or audio)
+  window.__guideSend = (t) => turn(String(t), false);
+  window.__guideHear = (interim, finals) => heard(interim || "", finals || "");
+  window.__guideForce = (l, s) => { live = l; state = s; call.classList.toggle("on", l); };
+  window.__guideState = () => ({ state, live, turns: history.length, voice, pending,
+                                 speaking: !!speakingText, uid, lastChunks });
+})();
+</script>
+</body>
+</html>

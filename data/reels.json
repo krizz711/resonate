@@ -1,4 +1,49 @@
 {
-  "note": "Curated story-reel links keyed by usfm. A reel is a ~45s vertical story film of the verse (realistic people, inner-voice narration) — the format we pitch for YouVersion or a related platform to host. Entries here override the default bible.com verse-page fallback. Populated as reels are produced for the demo.",
-  "reels": {}
+  "note": "Curated story-reel links keyed by usfm. Entries point at YouVersion's own Videos catalog (bible.com/videos - partner series: The Chosen, LUMO Life of Jesus, House of David, Three Gospels, At the Table with Jesus), so every 'watch' lands on licensed partner content inside the YouVersion ecosystem. Replace/extend with our own produced reels as they're ready; anything un-keyed falls back to the verse's bible.com page.",
+  "reels": {
+    "MAT.11.28-MAT.11.30": {
+      "url": "https://www.bible.com/videos/collections/351-at-the-table-with-jesus",
+      "title": "At the Table with Jesus · YouVersion Videos"
+    },
+    "PSA.23.4": {
+      "url": "https://www.bible.com/videos/collections/1662-house-of-david-season-1",
+      "title": "House of David · YouVersion Videos"
+    },
+    "PSA.34.18": {
+      "url": "https://www.bible.com/videos/collections/1662-house-of-david-season-1",
+      "title": "House of David · YouVersion Videos"
+    },
+    "PSA.147.3": {
+      "url": "https://www.bible.com/videos/collections/1662-house-of-david-season-1",
+      "title": "House of David · YouVersion Videos"
+    },
+    "PSA.55.22": {
+      "url": "https://www.bible.com/videos/collections/1662-house-of-david-season-1",
+      "title": "House of David · YouVersion Videos"
+    },
+    "JHN.14.27": {
+      "url": "https://www.bible.com/videos/53528-507-the-upper-room-part-i",
+      "title": "The Chosen — The Upper Room (John 14) · YouVersion Videos"
+    },
+    "MAT.6.31-MAT.6.33": {
+      "url": "https://www.bible.com/videos/collections/170-three-gospels",
+      "title": "Three Gospels — Sermon on the Mount · YouVersion Videos"
+    },
+    "MAT.6.34": {
+      "url": "https://www.bible.com/videos/collections/170-three-gospels",
+      "title": "Three Gospels — Sermon on the Mount · YouVersion Videos"
+    },
+    "MAT.5.4": {
+      "url": "https://www.bible.com/videos/collections/170-three-gospels",
+      "title": "Three Gospels — the Beatitudes · YouVersion Videos"
+    },
+    "MRK.9.24": {
+      "url": "https://www.bible.com/videos/collections/14-life-of-jesus-gospel-of-john",
+      "title": "Life of Jesus (LUMO) · YouVersion Videos"
+    },
+    "1JN.1.9": {
+      "url": "https://www.bible.com/videos/collections/14-life-of-jesus-gospel-of-john",
+      "title": "Life of Jesus (LUMO) · YouVersion Videos"
+    }
+  }
 }

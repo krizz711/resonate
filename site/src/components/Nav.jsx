@@ -17,6 +17,9 @@ export default function Nav() {
         <li><a href="#features">Features</a></li>
         <li><a href="#voices">Voices</a></li>
         <li><a href="#mcp">MCP</a></li>
+        {/* live surfaces — served by the engine alongside this site */}
+        <li><a href="/reels.html">Reels</a></li>
+        <li><a href="/guide.html">Ezra</a></li>
       </ul>
       <a className="docs" href="https://github.com/krizz711/resonate" target="_blank" rel="noopener">Docs ↗</a>
     </header>

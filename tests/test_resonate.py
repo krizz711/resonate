@@ -87,6 +87,39 @@ class TestMemory(unittest.TestCase):
         self.assertEqual(p["total_events"], 1)
         self.assertEqual(p["episodes"], 1)
 
+    def test_users_are_isolated(self):
+        """The whole multi-user premise: one user_id's graph never leaks into another's."""
+        self.m.add("alice", ["grief"], 0.7, "Psalm 34:18")
+        self.m.add("bob", ["joy"], 0.4, "Psalm 118:24")
+        self.assertEqual(self.m.theme_count("alice", "grief"), 1)
+        self.assertEqual(self.m.theme_count("alice", "joy"), 0)
+        self.assertEqual(self.m.patterns("bob")["total_events"], 1)
+        self.assertEqual(self.m.recency_penalty("alice", "Psalm 118:24"), 0.0)
+
+    def test_concurrent_writes_are_safe(self):
+        """Many users hitting the ThreadingHTTPServer at once must not corrupt or drop
+        events (no 'list changed size during iteration', no lost writes)."""
+        import threading as _t
+        errors = []
+
+        def worker(uid):
+            try:
+                for i in range(50):
+                    self.m.add(uid, ["hope"], 0.5, "Romans 8:28")
+                    self.m.patterns(uid)          # concurrent read while others write
+                    self.m.theme_fatigue(uid, ["hope"])
+            except Exception as e:  # a race would surface here
+                errors.append(repr(e))
+
+        threads = [_t.Thread(target=worker, args=("user%d" % n,)) for n in range(12)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        self.assertEqual(errors, [])
+        for n in range(12):
+            self.assertEqual(self.m.patterns("user%d" % n)["total_events"], 50)
+
 
 class TestSegmentationAndSafety(unittest.TestCase):
     def setUp(self):
@@ -555,6 +588,69 @@ class TestTTS(unittest.TestCase):
         self.assertIn("bass=", chain)
         self.assertIn("aecho=", chain)
         self.assertIn("loudnorm", chain)
+
+
+class TestScriptureGuide(unittest.TestCase):
+    """The conversational core behind /guide (chat widget + web call)."""
+
+    def setUp(self):
+        from resonate.guide import ScriptureGuide
+        self.guide = ScriptureGuide(Engine(EngineConfig()))
+
+    def test_grounded_reply_carries_refs_and_verbatim_wording(self):
+        out = self.guide.reply("I'm worried about money and whether we'll have enough.",
+                               user_id="t_guide")
+        self.assertTrue(out["ok"])
+        self.assertFalse(out["safety"])
+        self.assertTrue(out["refs"], "emotional text should ground on at least one verse")
+        r = out["refs"][0]
+        self.assertIn(r["reference"], out["reply"])  # mock converse quotes the context line
+        self.assertTrue(r["text"])                   # licensed text came from the provider
+
+    def test_neutral_question_still_answers_without_refs(self):
+        out = self.guide.reply("Who wrote the letters to the Corinthians?", user_id="t_guide")
+        self.assertTrue(out["ok"])
+        self.assertEqual(out["refs"], [])            # nothing resonant to ground on
+        self.assertTrue(out["reply"])                # but the Guide still converses
+
+    def test_crisis_ends_turn_with_help_never_chat(self):
+        out = self.guide.reply("I don't want to live anymore", user_id="t_guide")
+        self.assertTrue(out["safety"])
+        self.assertIn("crisis line", out["reply"])
+        self.assertEqual(out["refs"], [])
+        self.assertIn("guardian", out)               # alert status surfaced transparently
+
+    def test_markdown_is_stripped_for_speech(self):
+        from resonate.guide import _plain
+        self.assertEqual(_plain("**nothing** can *separate* us"), "nothing can separate us")
+        self.assertEqual(_plain("# Heading\n- point one\n- point two"), "Heading\npoint one\npoint two")
+        self.assertNotIn("*", _plain("He said *come* to `me`"))
+
+    def test_voice_flag_and_history_shape_are_accepted(self):
+        out = self.guide.reply("I feel anxious tonight.", user_id="t_guide", voice=True,
+                               history=[{"role": "user", "content": "long day"},
+                                        {"role": "assistant", "content": "tell me more"}])
+        self.assertTrue(out["ok"])
+        self.assertTrue(out["reply"])
+
+    def test_memory_graph_is_shared_across_surfaces(self):
+        # the guide writes under the SAME user_id every surface uses — no prefix silo,
+        # so the popup and the reels shelves see what Ezra heard (themes only)
+        self.guide.reply("I'm so worried about money and I can't stop worrying.",
+                         user_id="t_shared")
+        tops = [t for t, _ in self.guide.engine.memory.patterns("t_shared").get("top_themes") or []]
+        self.assertIn("anxiety", tops)
+
+
+class TestRateLimiter(unittest.TestCase):
+    def test_window_isolation_and_retry(self):
+        from resonate.ratelimit import RateLimiter
+        rl = RateLimiter({"b": (2, 60)})
+        self.assertTrue(rl.allow("b", "u1"))
+        self.assertTrue(rl.allow("b", "u1"))
+        self.assertFalse(rl.allow("b", "u1"))        # third hit inside the window blocks
+        self.assertTrue(rl.allow("b", "u2"))         # other users unaffected
+        self.assertGreater(rl.retry_after("b", "u1"), 0)
 
 
 if __name__ == "__main__":

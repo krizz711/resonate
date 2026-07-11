@@ -232,7 +232,7 @@ function Reels() {
             the passage — and reels arrive in small <b>sets, ordered for you</b>: for this moment,
             threads you return to, steady ground. Each set carries a line about why it found you.
           </p>
-          <div className="meta"><span className="chip">9:16 · shareable</span><span className="chip">sets · priority I·II·III</span><span className="chip">labeled reflection</span></div>
+          <div className="meta"><span className="chip">9:16 · shareable</span><span className="chip">sets · priority I·II·III</span><a className="chip" href="/reels.html" title="Open your recommended reel sets">▷ open your reels</a></div>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>
@@ -315,7 +315,7 @@ function Master() {
             scriptural knowledge and honest debate — Gloo AI's aligned models on the line.
             Reachable in chat, by voice message, or a real phone call through an n8n automation.
           </p>
-          <div className="meta"><span className="chip">chat · voice</span><span className="chip">n8n · Gloo AI</span></div>
+          <div className="meta"><span className="chip">chat · voice</span><span className="chip">n8n · Gloo AI</span><a className="chip" href="/guide.html" title="Chat with Ezra, or call him by voice">☎ talk to Ezra</a></div>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>
