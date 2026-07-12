@@ -12,8 +12,10 @@ venv/
 # node / web (later phases)
 node_modules/
 .next/
+# build output is NEVER tracked — Render builds it (render.yaml buildCommand), and a
+# tracked dist can be silently reverted to a stale bundle by sync tools (observed
+# 2026-07-12: OneDrive restored the committed dist over two fresh local builds)
 dist/
-!site/dist/
 
 # build artifacts / scratch
 out/

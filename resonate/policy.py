@@ -50,6 +50,25 @@ class DeliveryPolicy:
     def reset_session(self, user_id):
         self._u(user_id).session_count = 0
 
+    def precheck(self, user_id, event, now=None):
+        """READ-ONLY early gate: the parts of decide() that need no engine output
+        (seam, session budget, cooldown). Callers use it to skip the expensive
+        pipeline when the answer would be silence anyway. Never mutates state —
+        no decision is counted, no cooldown is stamped — so a later decide() on
+        the same turn behaves exactly as if precheck had never run.
+        NOTE: crisis input must bypass this gate entirely (safety never waits)."""
+        u = self._u(user_id)
+        now = self.clock() if now is None else now
+        if event == "manual":
+            return {"surface": True, "reason": "manual request"}
+        if event not in self.cfg.seams:
+            return self._deny("not a seam — would interrupt flow")
+        if u.session_count >= self.cfg.max_per_session:
+            return self._deny("session cap reached")
+        if now - u.last_surface_ts < self.cfg.cooldown_seconds:
+            return self._deny("within cooldown")
+        return {"surface": True, "reason": "worth engaging the engine"}
+
     def decide(self, user_id, event, confidence=None, themes=(), now=None, manual=False):
         """Return {'surface': bool, 'reason': str}."""
         u = self._u(user_id)

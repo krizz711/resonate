@@ -7,6 +7,7 @@ from .verses import VerseStore
 from .retrieval import HybridRetriever
 from .memory import make_memory
 from .providers import make_gloo, make_youversion
+from .providers.gloo import lexicon_segment
 
 SAFETY_MESSAGE = (
     "This sounds heavy, and a verse isn't the right response here. Please reach out to someone "
@@ -46,14 +47,20 @@ class Engine:
     def _history_themes(self, history) -> list:
         """Themes heard in the last few prior messages, most recent counted twice.
         Compact, high-signal conversation context — raw history text never joins the
-        query (a long old message would drown the present moment)."""
+        query (a long old message would drown the present moment).
+
+        History is segmented with the free LEXICON, never the live model: these
+        themes only nudge retrieval, and re-annotating already-seen messages cost
+        up to history_max extra LLM round-trips on EVERY /resonate (measured as
+        the bulk of live panel latency). The current message still gets the full
+        live treatment in resonate() below."""
         themes = []
         if not history:
             return themes
         recent = [h for h in history if isinstance(h, str) and h.strip()]
         recent = recent[-self.config.history_max:]
         for age, h in enumerate(reversed(recent)):  # age 0 = the message just before this one
-            for b in self.gloo.segment(h):
+            for b in lexicon_segment(h):
                 for t in b.themes:
                     themes.extend([t, t] if age == 0 else [t])
         return themes

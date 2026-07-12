@@ -37,6 +37,16 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     return true;
   }
 
+  if (msg && msg.type === "voices") {
+    // the engine's /voices is the single source of truth for the Kokoro list —
+    // the panel only falls back to its built-in defaults when the engine is away
+    fetch(BASE + "/voices")
+      .then((r) => r.json())
+      .then((data) => sendResponse({ ok: true, data }))
+      .catch((e) => sendResponse({ ok: false, error: String(e) }));
+    return true;
+  }
+
   if (msg && msg.type === "handoff") {
     // "Ask Ezra about this" — park the moment engine-side (single-read, short TTL) so
     // the guide page can pick it up without the words ever riding in a URL.

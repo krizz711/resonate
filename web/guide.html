@@ -160,10 +160,23 @@
   if (!uid) uid = "res_" + Math.random().toString(36).slice(2, 10);
   localStorage.setItem("resonate_uid", uid);
 
-  const VOICES = ["bella", "isabella", "george", "browser"];
-  const LABEL = { browser: "Browser", bella: "Bella", isabella: "Isabella", george: "George" };
+  // defaults only until /voices answers — resonate/tts.py is the single source of
+  // truth for the Kokoro list, so a new voice lands here with no page edit
+  let VOICES = ["bella", "isabella", "george", "browser"];
+  let LABEL = { browser: "Browser", bella: "Bella", isabella: "Isabella", george: "George" };
   let voice = localStorage.getItem("guide_voice") || "bella";
   if (!VOICES.includes(voice)) voice = "bella";
+  fetch("/voices").then((r) => r.json()).then((d) => {
+    if (!(d && d.ok && Array.isArray(d.voices) && d.voices.length)) return;
+    const ids = [], labels = {};
+    d.voices.forEach((v) => {
+      if (v && v.id) { ids.push(v.id); labels[v.id] = String(v.label || v.id).split("—")[0].trim(); }
+    });
+    ids.push("browser"); labels.browser = "Browser";
+    VOICES = ids; LABEL = labels;
+    if (!VOICES.includes(voice)) voice = VOICES[0];
+    $("vname").textContent = LABEL[voice];
+  }).catch(() => {});
   fetch("/health").then((r) => r.json()).then((h) => {
     if (!h.tts && voice !== "browser") {
       voice = "browser";

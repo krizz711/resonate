@@ -316,14 +316,29 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_story(data)
             return
         user = data.get("user_id", "default")
-        # crisis text is exempt from rate limiting — the help card must ALWAYS render
-        if not is_crisis(data.get("text", "")) and self._limited("resonate", user):
+        text = data.get("text", "")
+        event = data.get("event")
+        crisis = is_crisis(text)
+        # Policy pre-gate: when cooldown/budget already forbids surfacing, don't spend
+        # the LLM calls the decision would suppress. Crisis text NEVER takes this exit —
+        # the safety card must always render, whatever the policy state.
+        if event and not crisis:
+            pre = POLICY.precheck(user, event)
+            if not pre["surface"]:
+                self._send(200, {"user_id": user, "deliveries": [],
+                                 "series_memory": ENGINE.memory.patterns(user),
+                                 "context": {"history_messages": len(data.get("history") or []),
+                                             "themes": []},
+                                 "rendered": {}, "policy": pre})
+                return
+        # crisis text is also exempt from rate limiting — help must ALWAYS render
+        if not crisis and self._limited("resonate", user):
             return
         history = data.get("history") or []
         if not isinstance(history, list):
             history = []
         history = [str(h)[:2000] for h in history][-5:]
-        result = ENGINE.resonate(data.get("text", ""), user, history=history)
+        result = ENGINE.resonate(text, user, history=history)
         # Chat surfaces (they pass an 'event') get at most ONE verse per message — a
         # two-beat message must not stack two panels. Transcripts (playground, no event)
         # keep every beat. Safety holds always survive the cut.

@@ -32,14 +32,38 @@
   let current = null; // last delivered verse payload
 
   // --- voice state (persisted) ---
-  const VOICES = ["bella", "isabella", "george", "browser"];
-  const VOICE_LABEL = { bella: "Bella", isabella: "Isabella", george: "George", browser: "Browser" };
+  // Defaults mirror the engine's built-ins; the live list is fetched from /voices at
+  // startup (resonate/tts.py is the single source of truth), so a newly tuned Kokoro
+  // voice appears here without an extension update. "browser" is always appended.
+  let VOICES = ["bella", "isabella", "george", "browser"];
+  let VOICE_LABEL = { bella: "Bella", isabella: "Isabella", george: "George", browser: "Browser" };
   // button initials — "Br" keeps Browser distinguishable from Bella's "B"
-  const VOICE_INITIAL = { bella: "B", isabella: "I", george: "G", browser: "Br" };
+  let VOICE_INITIAL = { bella: "B", isabella: "I", george: "G", browser: "Br" };
   let voiceId = "bella";
   let autoSpeak = false; // "play by default" — an option, off until chosen
   let audioEl = null;
   let speaking = false;
+
+  function rebuildVoices(list) {
+    const ids = [], labels = {}, initials = {}, used = new Set();
+    for (const v of list.concat([{ id: "browser", label: "Browser" }])) {
+      if (!v || !v.id || ids.includes(v.id)) continue;
+      const label = String(v.label || v.id).split("—")[0].trim() || v.id;
+      let ini = label[0].toUpperCase();
+      if (used.has(ini)) ini = label.slice(0, 2); // Bella takes "B", Browser becomes "Br"
+      used.add(ini);
+      ids.push(v.id); labels[v.id] = label; initials[v.id] = ini;
+    }
+    if (ids.length < 2) return; // keep the defaults over a degenerate list
+    VOICES = ids; VOICE_LABEL = labels; VOICE_INITIAL = initials;
+    if (!VOICES.includes(voiceId)) voiceId = VOICES[0];
+  }
+  try {
+    chrome.runtime.sendMessage({ type: "voices" }, (resp) => {
+      if (!chrome.runtime.lastError && resp && resp.ok && resp.data && resp.data.ok &&
+          Array.isArray(resp.data.voices)) rebuildVoices(resp.data.voices);
+    });
+  } catch (e) {}
   try {
     if (chrome.storage && chrome.storage.sync)
       chrome.storage.sync.get({ autoSpeak: false, voiceId: "bella" }, (r) => {

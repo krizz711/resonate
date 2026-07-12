@@ -768,6 +768,62 @@ class TestLiveFallbacks(unittest.TestCase):
             self.assertIn("Matthew 11:28", line)
 
 
+class TestPolicyPrecheck(unittest.TestCase):
+    """precheck() is the read-only half of decide(): the server uses it to skip the
+    whole LLM pipeline when silence is already certain (cooldown/budget/non-seam),
+    so it must never consume budget or stamp state."""
+
+    def _p(self):
+        cfg = PolicyConfig(seams={"message"}, cooldown_seconds=90, max_per_session=2)
+        t = {"now": 1000.0}
+        return DeliveryPolicy(cfg, clock=lambda: t["now"]), t
+
+    def test_precheck_never_mutates(self):
+        p, _ = self._p()
+        for _ in range(5):
+            self.assertTrue(p.precheck("u", "message")["surface"])
+        u = p._u("u")
+        self.assertEqual((u.decisions, u.session_count), (0, 0))
+        # a real decide afterwards behaves exactly as the first decision of the session
+        self.assertTrue(p.decide("u", "message", confidence=0.9)["surface"])
+
+    def test_precheck_honours_cooldown_and_budget(self):
+        p, t = self._p()
+        self.assertTrue(p.decide("u", "message", confidence=0.9)["surface"])   # stamps cooldown
+        self.assertFalse(p.precheck("u", "message")["surface"])                # within cooldown
+        t["now"] += 91
+        self.assertTrue(p.precheck("u", "message")["surface"])                 # cooldown passed
+        self.assertTrue(p.decide("u", "message", confidence=0.9)["surface"])   # session cap hit (2)
+        t["now"] += 91
+        self.assertFalse(p.precheck("u", "message")["surface"])                # cap enforced
+
+    def test_precheck_rejects_non_seams_allows_manual(self):
+        p, _ = self._p()
+        self.assertFalse(p.precheck("u", "typing")["surface"])
+        self.assertTrue(p.precheck("u", "manual")["surface"])
+
+
+class TestPanelPreviewSync(unittest.TestCase):
+    """web/panel-preview.html is a hand-kept snapshot of the extension panel. Its
+    user-facing copy must match content.js — it drifted once ('processed locally ·
+    nothing stored' survived a privacy-copy rewrite) and this pins it."""
+
+    def test_footer_copy_matches_content_js(self):
+        import re
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        with open(os.path.join(root, "integrations", "chatgpt-extension", "content.js"),
+                  encoding="utf-8") as f:
+            js = f.read()
+        with open(os.path.join(root, "web", "panel-preview.html"), encoding="utf-8") as f:
+            html = f.read()
+        real = [m.replace("\\'", "'") for m in re.findall(r'class="foot">([^<]+)</div>', js)]
+        shown = re.findall(r'class="foot">([^<]+)</div>', html)
+        self.assertTrue(real, "no footer strings found in content.js")
+        self.assertGreaterEqual(len(shown), 2, "panel-preview lost its footer lines")
+        for s in shown:
+            self.assertIn(s, real, "panel-preview footer drifted from content.js: %r" % s)
+
+
 class TestPlainText(unittest.TestCase):
     def test_story_markdown_is_stripped_but_paragraphs_survive(self):
         from resonate.textutil import plain_text
