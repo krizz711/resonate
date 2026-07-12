@@ -51,11 +51,37 @@ class LiveYouVersion:
     platform.youversion.com before it can be fetched; /v1/bibles listing requires
     language_ranges[] (ISO 639-3, literal brackets) and hides non-provisioned
     versions unless all_available=true. Verse text is HTML unless format=text.
-    Fetched texts are cached in-memory for the process lifetime."""
+    Fetched texts are cached in memory AND on disk (data/.yv-cache.json), keyed by
+    bible_id+usfm, so a verse is fetched from YouVersion at most once ever — repeat
+    calls (and every call after a restart) are instant, which keeps Ezra responsive."""
 
     def __init__(self, config):
         self.config = config
         self._cache = {}
+        # Disk persistence is opt-in (config.yv_cache_persist) so tests/eval stay hermetic —
+        # the live server turns it on, exactly like memory_persist.
+        self._persist_on = getattr(config, "yv_cache_persist", False)
+        self._disk = DATA_DIR / ".yv-cache.json"
+        if self._persist_on:
+            try:
+                self._cache = json.loads(self._disk.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                self._cache = {}
+
+    def _key(self, usfm):
+        return "%s:%s" % (self.config.bible_id, usfm)
+
+    def _persist(self):
+        if not self._persist_on:
+            return
+        try:
+            tmp = str(self._disk) + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(self._cache, f, ensure_ascii=False)
+            import os
+            os.replace(tmp, str(self._disk))
+        except OSError:
+            pass
 
     def _get(self, usfm):
         import httpx
@@ -77,8 +103,9 @@ class LiveYouVersion:
 
     def fetch(self, usfm, translation=None):
         translation = translation or self.config.translation
-        if usfm in self._cache:
-            return self._cache[usfm]
+        key = self._key(usfm)
+        if key in self._cache:
+            return self._cache[key]
         r = self._get(usfm)
         if r.status_code >= 400 and "-" in usfm:
             # some deployments reject full-range refs — fall back to the first verse
@@ -90,5 +117,17 @@ class LiveYouVersion:
             text = _strip_html(text)
         out = {"usfm": usfm, "translation": data.get("abbreviation", translation),
                "text": text.strip(), "source": "youversion"}
-        self._cache[usfm] = out
+        self._cache[key] = out
+        self._persist()
         return out
+
+    def warm(self, usfms):
+        """Pre-fetch a batch of references (the curated corpus) so the first live call
+        for each is already cached. Best-effort; failures are skipped silently."""
+        for u in usfms:
+            if self._key(u) in self._cache:
+                continue
+            try:
+                self.fetch(u)
+            except Exception:
+                pass

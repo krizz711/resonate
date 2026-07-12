@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Connect Resonate to your assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Space+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#efe9df; --paper2:#e9e1d3; --paper3:#e3d7c4;
+    --ink:#211d17; --ink-soft:#6b6358; --faded:#a89c8a;
+    --clay:#a65b43; --clay-deep:#8a4a35; --gold:#b98f35;
+    --serif:'Cormorant Garamond',Georgia,serif; --sans:'Space Grotesk',ui-sans-serif,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;background:linear-gradient(180deg,#e4d7c6,#ddcdb8 60%,#d5c4ac);
+    color:var(--ink);font-family:var(--sans);padding-bottom:70px}
+  .wrap{width:min(820px,94vw);margin:0 auto}
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:24px 0 8px}
+  header .brand{font-family:var(--serif);font-weight:600;font-size:24px}
+  header .brand .cross{color:var(--clay);margin-right:6px}
+  header nav a{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--clay);
+    text-decoration:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:5px 12px;margin-left:8px}
+  header nav a:hover{background:rgba(166,91,67,.1)}
+
+  .eyebrow{margin-top:20px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--faded)}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,5.5vw,46px);margin-top:8px;line-height:1.05}
+  .lede{margin-top:14px;font-family:var(--serif);font-size:clamp(17px,2.4vw,21px);color:var(--ink-soft);
+    line-height:1.5;max-width:60ch}
+  .lede b{color:var(--ink);font-weight:600}
+
+  /* the "what happens" band */
+  .flow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:26px 0 8px;
+    font-family:var(--serif);font-size:16px;color:var(--ink)}
+  .flow .node{padding:9px 15px;border-radius:12px;background:linear-gradient(177deg,#fbf7ec,var(--paper2));
+    border:1px solid rgba(33,29,23,.16);box-shadow:0 6px 18px rgba(96,76,44,.1)}
+  .flow .node b{color:var(--clay)}
+  .flow .arr{color:var(--clay);font-size:18px}
+
+  h2{font-family:var(--serif);font-weight:600;font-size:26px;margin:38px 0 4px}
+  .sect-sub{font-size:13px;color:var(--ink-soft);margin-bottom:14px}
+
+  /* host tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .tab{font-family:var(--sans);font-size:11px;letter-spacing:.08em;color:var(--ink-soft);cursor:pointer;
+    background:linear-gradient(178deg,#f4eede,#ece4d3);border:1px solid rgba(33,29,23,.18);
+    border-radius:999px;padding:8px 16px}
+  .tab.on{color:#efe9df;background:linear-gradient(160deg,var(--clay),var(--clay-deep));border-color:transparent}
+  .tab:hover:not(.on){background:#f6f0e2}
+
+  .panel{display:none}
+  .panel.on{display:block;animation:fade .35s ease both}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .step{display:flex;gap:14px;margin:16px 0}
+  .step .n{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;
+    font-family:var(--serif);font-weight:600;color:#efe9df;background:radial-gradient(circle at 36% 30%,#c8825f,#8a4a35)}
+  .step .body{flex:1;min-width:0}
+  .step .body h3{font-family:var(--sans);font-size:13.5px;font-weight:500;color:var(--ink);margin-bottom:2px}
+  .step .body p{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+
+  .code{position:relative;margin-top:10px;background:#211d17;border-radius:12px;padding:16px 16px 15px;
+    overflow-x:auto;border:1px solid rgba(0,0,0,.3)}
+  .code pre{font-family:var(--mono);font-size:12px;line-height:1.65;color:#e9e1d3;white-space:pre;margin:0}
+  .code .k{color:#cfa952}.code .s{color:#c9b98a}.code .c{color:#8a8172;font-style:italic}
+  .copy{position:absolute;top:9px;right:9px;font-family:var(--sans);font-size:9px;letter-spacing:.12em;
+    text-transform:uppercase;color:#e9e1d3;background:rgba(166,91,67,.5);border:1px solid rgba(233,225,211,.3);
+    border-radius:7px;padding:4px 9px;cursor:pointer}
+  .copy:hover{background:rgba(166,91,67,.8)}
+  .copy.done{background:#5a7052}
+
+  .tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:22px}
+  .tool{background:linear-gradient(177deg,#fbf7ec,var(--paper2));border:1px solid rgba(33,29,23,.14);
+    border-radius:14px;padding:16px}
+  .tool .tn{font-family:var(--mono);font-size:12px;color:var(--clay);font-weight:500}
+  .tool p{margin-top:6px;font-size:12px;color:var(--ink-soft);line-height:1.5}
+
+  .note{margin-top:26px;padding:16px 18px;border-radius:12px;background:rgba(185,143,53,.08);
+    border:1px solid rgba(185,143,53,.3);font-size:13px;color:var(--ink-soft);line-height:1.6}
+  .note b{color:var(--ink)}
+  footer{margin-top:48px;text-align:center;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faded)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="cross">†</span>Resonate</div>
+    <nav>
+      <a href="/guide.html" title="Talk with Ezra">☎ Ezra</a>
+      <a href="/reels.html" title="Reels for you">▷ Reels</a>
+      <a href="/" title="Home">home</a>
+    </nav>
+  </header>
+
+  <div class="eyebrow">Connect · Model Context Protocol</div>
+  <h1>Give your AI assistant<br>a sense of Scripture.</h1>
+  <p class="lede">Resonate runs as an <b>MCP server</b> — a small tool your assistant can call.
+    Add it once, and Claude, ChatGPT, Gemini, Cursor or any MCP-speaking app can reach for a
+    <b>verified verse</b>, weave a <b>story</b>, or pull <b>reels</b> — mid-conversation, on its own.
+    You don't change your chat app; you hand it a new sense.</p>
+
+  <div class="flow">
+    <span class="node">You type a real moment</span>
+    <span class="arr">→</span>
+    <span class="node">Your assistant calls <b>Resonate</b></span>
+    <span class="arr">→</span>
+    <span class="node">A verified verse comes back <b>(never invented)</b></span>
+  </div>
+
+  <h2>Add it to your assistant</h2>
+  <div class="sect-sub">Pick your app. Everything runs locally — your words never leave your machine.</div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab on" data-t="claude">Claude Desktop</div>
+    <div class="tab" data-t="code">Claude Code</div>
+    <div class="tab" data-t="chatgpt">ChatGPT</div>
+    <div class="tab" data-t="cursor">Cursor / VS Code</div>
+  </div>
+
+  <div class="panel on" data-p="claude">
+    <div class="step"><div class="n">1</div><div class="body"><h3>Open the config</h3>
+      <p>Claude Desktop → Settings → Developer → <b>Edit Config</b>. It opens <span style="font-family:var(--mono)">claude_desktop_config.json</span>.</p></div></div>
+    <div class="step"><div class="n">2</div><div class="body"><h3>Add the Resonate server</h3>
+      <p>Paste this inside <span style="font-family:var(--mono)">mcpServers</span> (use the full path to the file on your machine):</p>
+      <div class="code"><button class="copy">copy</button><pre><span class="k">"mcpServers"</span>: {
+  <span class="k">"resonate"</span>: {
+    <span class="k">"command"</span>: <span class="s">"python"</span>,
+    <span class="k">"args"</span>: [<span class="s">"C:/path/to/resonate/integrations/mcp/resonate_mcp.py"</span>]
+  }
+}</pre></div></div>
+    <div class="step"><div class="n">3</div><div class="body"><h3>Restart Claude</h3>
+      <p>You'll see a 🔨 tool icon. Now say <i>"I'm exhausted and losing hope"</i> — Claude will call
+      <span style="font-family:var(--mono)">resonate_verse</span> and answer with a real, cited verse.</p></div></div>
+  </div>
+
+  <div class="panel" data-p="code">
+    <div class="step"><div class="n">1</div><div class="body"><h3>One command</h3>
+      <p>From any terminal:</p>
+      <div class="code"><button class="copy">copy</button><pre>claude mcp add resonate -- python C:/path/to/resonate/integrations/mcp/resonate_mcp.py</pre></div></div>
+    <div class="step"><div class="n">2</div><div class="body"><h3>Confirm</h3>
+      <p><span style="font-family:var(--mono)">claude mcp list</span> should show <b>resonate</b>. Ezra's tools are now inside Claude Code.</p></div></div>
+  </div>
+
+  <div class="panel" data-p="chatgpt">
+    <div class="step"><div class="n">1</div><div class="body"><h3>Enable developer mode</h3>
+      <p>ChatGPT → Settings → <b>Connectors</b> → enable developer/MCP connectors (Plus/Pro).</p></div></div>
+    <div class="step"><div class="n">2</div><div class="body"><h3>Add the server</h3>
+      <p>Point it at your Resonate MCP endpoint. Locally, expose it over MCP-remote; a one-click hosted
+      endpoint is coming so no install is needed.</p></div></div>
+    <div class="step"><div class="n">3</div><div class="body"><h3>Or use the browser extension</h3>
+      <p>Prefer zero setup? The <b>Resonate extension</b> quietly surfaces a verse beside your ChatGPT
+      chat — no config at all. <a href="/" style="color:var(--clay)">See the extension →</a></p></div></div>
+  </div>
+
+  <div class="panel" data-p="cursor">
+    <div class="step"><div class="n">1</div><div class="body"><h3>Edit mcp.json</h3>
+      <p>Cursor → Settings → MCP (or <span style="font-family:var(--mono)">.cursor/mcp.json</span>). VS Code MCP extensions use the same shape:</p>
+      <div class="code"><button class="copy">copy</button><pre>{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"resonate"</span>: {
+      <span class="k">"command"</span>: <span class="s">"python"</span>,
+      <span class="k">"args"</span>: [<span class="s">"C:/path/to/resonate/integrations/mcp/resonate_mcp.py"</span>]
+    }
+  }
+}</pre></div></div>
+    <div class="step"><div class="n">2</div><div class="body"><h3>Reload</h3>
+      <p>Reload the window; the Resonate tools appear in the MCP panel.</p></div></div>
+  </div>
+
+  <h2>What your assistant can now do</h2>
+  <div class="sect-sub">Four tools, the same guarantees as everywhere else — safety first, verses verbatim, nothing stored.</div>
+  <div class="tools">
+    <div class="tool"><div class="tn">resonate_verse</div><p>A moment → one verified verse, or an honest silence. Crisis → help, never a verse.</p></div>
+    <div class="tool"><div class="tn">generate_story</div><p>Weaves the moment into a vetted biblical narrative, labeled — ending on a verbatim verse.</p></div>
+    <div class="tool"><div class="tn">reel_groups</div><p>Prioritized sets of story reels for the moment and the threads you return to.</p></div>
+    <div class="tool"><div class="tn">fetch_passage</div><p>Verbatim licensed passage text by reference, straight from YouVersion.</p></div>
+  </div>
+
+  <div class="note">
+    <b>Why a tool, not a chatbot?</b> Because a billion people already pour their real lives into an
+    AI — not a Bible app. Resonate meets them <i>there</i>: it teaches the assistant they already
+    trust to reach for Scripture at the right moment, with the words verified and a human-help card
+    when it hears darkness. That's the whole idea — Scripture, where you already are.
+  </div>
+
+  <footer>Resonate · MCP · verses licensed via YouVersion · reasoning by Gloo AI · nothing stored</footer>
+</div>
+
+<script>
+(function () {
+  // host tabs
+  document.getElementById("tabs").addEventListener("click", (e) => {
+    const t = e.target.closest(".tab"); if (!t) return;
+    document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("on", x === t));
+    document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("on", p.dataset.p === t.dataset.t));
+  });
+  // copy buttons
+  document.querySelectorAll(".copy").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const code = btn.parentElement.querySelector("pre").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = "copied ✓"; btn.classList.add("done");
+        setTimeout(() => { btn.textContent = "copy"; btn.classList.remove("done"); }, 1600);
+      }).catch(() => {});
+    });
+  });
+})();
+</script>
+</body>
+</html>

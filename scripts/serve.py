@@ -46,6 +46,10 @@ from resonate import tts  # noqa: E402
 
 _CFG = EngineConfig()
 _CFG.memory_persist = True  # the live server remembers recurring themes across sessions
+_CFG.yv_cache_persist = True  # and caches verse text to disk so grounding never waits on YouVersion
+# guardian alerts on by default now that there's a registration UI — still a no-op unless a
+# person has registered consenting guardians AND SMTP/Twilio creds exist (else it just logs).
+_CFG.guardian_enabled = True
 ENGINE = Engine(_CFG)
 # Chat-tuned restraint: each message is a candidate "seam". The real restraint comes from the
 # engine staying silent on non-resonant text + the safety gate + confidence; the short cooldown
@@ -57,6 +61,23 @@ POLICY = DeliveryPolicy(PolicyConfig(
 REELS = ReelStore()
 WEAVER = StoryWeaver(ENGINE.gloo)
 GUIDE = ScriptureGuide(ENGINE)
+
+
+def _read_guardians():
+    try:
+        with open(ENGINE.config.guardian_file, encoding="utf-8") as f:
+            return json.load(f).get("users", {})
+    except (OSError, ValueError):
+        return {}
+
+
+def _write_guardians(users):
+    path = ENGINE.config.guardian_file
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump({"users": users}, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, path)
 # fairness on a shared engine: per-user windows for the endpoints that cost
 # real resources (Gloo credit, the Kokoro worker). Context isolation itself is
 # free — every memory/graph read-write is already keyed by user_id.
@@ -159,6 +180,17 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/reels.html":  # "Reels for you" — same standalone treatment
             self._send_html(os.path.join(SRC_WEB_DIR, "reels.html"))
             return
+        if path == "/connect.html":  # "Connect to your assistant" (MCP onboarding)
+            self._send_html(os.path.join(SRC_WEB_DIR, "connect.html"))
+            return
+        if path == "/guardians.html":  # consent-first guardian registration
+            self._send_html(os.path.join(SRC_WEB_DIR, "guardians.html"))
+            return
+        if path == "/guardians":  # GET current registration for a uid (their own data)
+            uid = (q.get("uid") or [""])[0]
+            reg = _read_guardians().get(uid, {}) if uid else {}
+            self._send(200, {"ok": True, "registration": reg})
+            return
 
         # Serve any static file that exists in site/dist — covers JS, CSS, GLB, images, fonts, etc.
         # Strip leading slash, resolve safely (no path traversal)
@@ -204,7 +236,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = self.path.split("?")[0]
-        if path not in ("/resonate", "/story", "/guide", "/reel-groups"):
+        if path not in ("/resonate", "/story", "/guide", "/reel-groups", "/guardians"):
             self._send(404, {"error": "not found"})
             return
         length = int(self.headers.get("Content-Length", 0))
@@ -215,6 +247,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/reel-groups":
             self._handle_reel_groups(data)
+            return
+        if path == "/guardians":
+            self._handle_guardians_save(data)
             return
         if path == "/guide":
             user = data.get("user_id", "guide_web")
@@ -283,6 +318,39 @@ class Handler(BaseHTTPRequestHandler):
         groups = REELS.groups_for(ENGINE.verses, themes, [], ENGINE.config.translation)
         self._send(200, {"ok": True, "groups": groups, "basis": basis, "themes": themes})
 
+    def _handle_guardians_save(self, data):
+        """Save a person's own guardian registration (consent-first). This is the person
+        editing their OWN entry on their OWN engine — the alert itself never shares what
+        they typed; guardians only get a 'reach out to them' nudge (see resonate/guardian.py)."""
+        uid = (data.get("user_id") or "").strip()
+        if not uid:
+            self._send(400, {"ok": False, "error": "user_id required"})
+            return
+        raw = data.get("guardians") or []
+        guardians = []
+        for g in raw[:5]:
+            name = str(g.get("name", "")).strip()[:60]
+            channel = "whatsapp" if g.get("channel") == "whatsapp" else "email"
+            address = str(g.get("address", "")).strip()[:120]
+            ok = ("@" in address) if channel == "email" else address.replace("+", "").replace(" ", "").isdigit()
+            if name and address and ok:
+                guardians.append({"name": name, "channel": channel, "address": address})
+        users = _read_guardians()
+        if not guardians:                       # empty save = withdraw consent / remove
+            users.pop(uid, None)
+        else:
+            users[uid] = {"consent": bool(data.get("consent")),
+                          "display_name": str(data.get("display_name", "")).strip()[:40] or "someone",
+                          "guardians": guardians}
+        try:
+            _write_guardians(users)
+        except OSError as e:
+            self._send(500, {"ok": False, "error": str(e)[:120]})
+            return
+        entry = users.get(uid, {})
+        self._send(200, {"ok": True, "count": len(entry.get("guardians", [])),
+                         "consent": entry.get("consent", False)})
+
     def _handle_story(self, data):
         """'Your story' — weave the user's moment + the just-delivered verse into one
         vetted biblical narrative. The panel passes the delivery it already holds, so
@@ -322,6 +390,10 @@ def main():
     host = os.getenv("RESONATE_HOST", "127.0.0.1")
     port = int(os.getenv("RESONATE_PORT") or os.getenv("PORT") or "8765")
     tts.warm()  # load the Kokoro model in the background — first spoken reply lands fast
+    if hasattr(ENGINE.yv, "warm"):  # pre-fetch corpus verse text so grounding never waits on YouVersion
+        import threading as _th
+        _th.Thread(target=lambda: ENGINE.yv.warm([v["usfm"] for v in ENGINE.verses.verses]),
+                   daemon=True).start()
     print("Resonate engine running on http://%s:%d  (mode=%s)" % (host, port, ENGINE.config.provider_mode))
     print("Press Ctrl+C to stop.")
     ThreadingHTTPServer((host, port), Handler).serve_forever()

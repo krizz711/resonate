@@ -18,6 +18,7 @@ export default function Nav() {
         <li><a href="#voices">Voices</a></li>
         <li><a href="#mcp">MCP</a></li>
         {/* live surfaces — served by the engine alongside this site */}
+        <li><a href="/connect.html">Connect</a></li>
         <li><a href="/reels.html">Reels</a></li>
         <li><a href="/guide.html">Ezra</a></li>
       </ul>

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Your guardians — Resonate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#efe9df; --paper2:#e9e1d3; --paper3:#e3d7c4;
+    --ink:#211d17; --ink-soft:#6b6358; --faded:#a89c8a;
+    --clay:#a65b43; --clay-deep:#8a4a35; --gold:#b98f35;
+    --serif:'Cormorant Garamond',Georgia,serif; --sans:'Space Grotesk',ui-sans-serif,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;background:linear-gradient(180deg,#e4d7c6,#ddcdb8 60%,#d5c4ac);
+    color:var(--ink);font-family:var(--sans);padding-bottom:70px}
+  .wrap{width:min(680px,94vw);margin:0 auto}
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:24px 0 8px}
+  header .brand{font-family:var(--serif);font-weight:600;font-size:24px}
+  header .brand .cross{color:var(--clay);margin-right:6px}
+  header nav a{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--clay);
+    text-decoration:none;border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:5px 12px;margin-left:8px}
+  header nav a:hover{background:rgba(166,91,67,.1)}
+
+  .eyebrow{margin-top:20px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--faded)}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,5vw,40px);margin-top:8px;line-height:1.06}
+  .lede{margin-top:12px;font-family:var(--serif);font-size:17px;color:var(--ink-soft);line-height:1.5;max-width:58ch}
+  .lede b{color:var(--ink)}
+
+  .card{margin-top:24px;background:linear-gradient(178deg,#fbf7ec,var(--paper2));
+    border:1px solid rgba(33,29,23,.16);border-radius:18px;padding:22px;box-shadow:0 14px 40px rgba(96,76,44,.12)}
+  label{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px}
+  input,select{width:100%;font-family:var(--sans);font-size:13.5px;color:var(--ink);
+    background:linear-gradient(178deg,#f5efe3,#efe7d7);border:1px solid rgba(33,29,23,.22);
+    border-radius:10px;padding:10px 13px;outline:none}
+  input:focus,select:focus{border-color:rgba(166,91,67,.55)}
+  .field{margin-bottom:16px}
+
+  .g{display:grid;grid-template-columns:1fr 120px 1.4fr auto;gap:10px;align-items:end;margin-bottom:10px}
+  .g .rm{font-family:var(--sans);font-size:16px;color:var(--faded);background:none;border:none;cursor:pointer;padding:0 4px 8px}
+  .g .rm:hover{color:var(--clay)}
+  @media (max-width:600px){ .g{grid-template-columns:1fr 1fr;} .g .addr{grid-column:1/-1} }
+  .addbtn{font-family:var(--sans);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--clay);
+    background:none;border:1px dashed rgba(166,91,67,.5);border-radius:10px;padding:9px 14px;cursor:pointer;width:100%}
+  .addbtn:hover{background:rgba(166,91,67,.07)}
+
+  .consent{display:flex;gap:11px;align-items:flex-start;margin-top:18px;padding:14px 16px;
+    background:rgba(185,143,53,.08);border:1px solid rgba(185,143,53,.3);border-radius:12px}
+  .consent input{width:18px;height:18px;flex:0 0 auto;margin-top:1px;accent-color:var(--clay)}
+  .consent label{font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--ink-soft);line-height:1.55;margin:0}
+  .consent label b{color:var(--ink)}
+
+  .actions{display:flex;align-items:center;gap:14px;margin-top:20px}
+  .save{font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#efe9df;
+    background:linear-gradient(160deg,var(--clay),var(--clay-deep));border:none;border-radius:999px;
+    padding:11px 24px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 4px 14px rgba(138,74,53,.32)}
+  .save:hover{filter:brightness(1.06)}
+  .msg{font-size:12px;color:var(--ink-soft)}
+  .msg.ok{color:#5a7052}.msg.err{color:var(--clay)}
+
+  .how{margin-top:26px;font-size:12.5px;color:var(--ink-soft);line-height:1.65}
+  .how b{color:var(--ink)}
+  footer{margin-top:40px;text-align:center;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faded)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="cross">†</span>Resonate</div>
+    <nav>
+      <a href="/guide.html" title="Talk with Ezra">☎ Ezra</a>
+      <a href="/" title="Home">home</a>
+    </nav>
+  </header>
+
+  <div class="eyebrow">Security · guardian alerts</div>
+  <h1>People who should know<br>if you're not okay.</h1>
+  <p class="lede">If Resonate ever hears a moment of real crisis in what you write, it can quietly
+    reach the people you trust — by WhatsApp or email. They're only told to <b>check on you</b>;
+    <b>what you wrote is never shared</b>. This is yours to set, and yours to turn off.</p>
+
+  <div class="card">
+    <div class="field">
+      <label for="dn">Your name (how guardians recognise you)</label>
+      <input id="dn" placeholder="e.g. Kunal" maxlength="40" />
+    </div>
+
+    <label>Your guardians</label>
+    <div id="rows"></div>
+    <button class="addbtn" id="add">+ add another guardian</button>
+
+    <div class="consent">
+      <input type="checkbox" id="consent" />
+      <label for="consent"><b>I consent</b> to Resonate notifying these people if it detects I may be
+        in crisis. I've told them, and I understand they'll receive a gentle "please reach out to them"
+        message — never the content of my conversations. I can remove this any time.</label>
+    </div>
+
+    <div class="actions">
+      <button class="save" id="save">Save</button>
+      <span class="msg" id="msg"></span>
+    </div>
+  </div>
+
+  <div class="how">
+    <b>How it works.</b> Crisis text is caught on your raw input before anything else and answered with
+    human help lines — never a verse. Only then, and only if you've consented above, your guardians are
+    notified once (with a 24-hour cool-down so a hard night never becomes a flood). Everything is stored
+    locally on this engine. Leaving all fields empty and saving removes your registration entirely.
+  </div>
+
+  <footer>Resonate · consent-first · your words are never shared · nothing leaves your device without your say</footer>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const qp = new URLSearchParams(location.search);
+  let uid = qp.get("uid") || localStorage.getItem("resonate_uid") || localStorage.getItem("guide_uid");
+  if (!uid) { uid = "res_" + Math.random().toString(36).slice(2, 10); }
+  localStorage.setItem("resonate_uid", uid);
+
+  function rowHtml(g) {
+    g = g || { name: "", channel: "email", address: "" };
+    const div = document.createElement("div");
+    div.className = "g";
+    div.innerHTML =
+      '<div><label>Name</label><input class="gn" maxlength="60" placeholder="Mom" value="' + esc(g.name) + '"></div>' +
+      '<div><label>Reach by</label><select class="gc">' +
+        '<option value="email"' + (g.channel !== "whatsapp" ? " selected" : "") + '>Email</option>' +
+        '<option value="whatsapp"' + (g.channel === "whatsapp" ? " selected" : "") + '>WhatsApp</option></select></div>' +
+      '<div class="addr"><label>Email or phone (+countrycode)</label><input class="ga" maxlength="120" placeholder="mom@example.com" value="' + esc(g.address) + '"></div>' +
+      '<button class="rm" title="remove">✕</button>';
+    div.querySelector(".rm").onclick = () => div.remove();
+    return div;
+  }
+  function esc(s){ return (s||"").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+  function addRow(g){ $("rows").appendChild(rowHtml(g)); }
+
+  function collect() {
+    return Array.from(document.querySelectorAll(".g")).map((r) => ({
+      name: r.querySelector(".gn").value.trim(),
+      channel: r.querySelector(".gc").value,
+      address: r.querySelector(".ga").value.trim(),
+    })).filter((g) => g.name && g.address);
+  }
+
+  // load any existing registration for this uid
+  fetch("/guardians?uid=" + encodeURIComponent(uid)).then((r) => r.json()).then((d) => {
+    const reg = (d && d.registration) || {};
+    $("dn").value = reg.display_name && reg.display_name !== "someone" ? reg.display_name : "";
+    $("consent").checked = !!reg.consent;
+    (reg.guardians && reg.guardians.length ? reg.guardians : [null]).forEach(addRow);
+  }).catch(() => addRow());
+
+  $("add").onclick = () => addRow();
+  $("save").onclick = () => {
+    const guardians = collect();
+    const consent = $("consent").checked;
+    if (guardians.length && !consent) {
+      $("msg").textContent = "Please tick consent, or clear the fields to remove.";
+      $("msg").className = "msg err"; return;
+    }
+    $("msg").textContent = "saving…"; $("msg").className = "msg";
+    fetch("/guardians", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: uid, display_name: $("dn").value.trim(), consent, guardians }),
+    }).then((r) => r.json()).then((d) => {
+      if (!d.ok) throw new Error(d.error || "save failed");
+      $("msg").textContent = d.count
+        ? "Saved — " + d.count + " guardian" + (d.count > 1 ? "s" : "") + (d.consent ? " will be alerted in a crisis." : " saved (consent off).")
+        : "Registration removed.";
+      $("msg").className = "msg ok";
+    }).catch((e) => { $("msg").textContent = "Couldn't save — " + e.message; $("msg").className = "msg err"; });
+  };
+
+  window.__guardians = { collect, uid }; // verification hook
+})();
+</script>
+</body>
+</html>

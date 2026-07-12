@@ -137,9 +137,22 @@ class TestSegmentationAndSafety(unittest.TestCase):
         beats = self.g.segment("Honestly I don't want to live anymore.")
         self.assertTrue(any(self.g.safety(b) for b in beats))
 
+    def test_safety_detects_crisis_variants(self):
+        from resonate.providers.gloo import is_crisis
+        for phrase in ["I don't want to be alive anymore", "I dont want to be alive",
+                       "I want to be dead", "there's no reason to be here",
+                       "I just want to disappear", "I can't want to live like this"]:
+            self.assertTrue(is_crisis(phrase), "missed crisis phrase: %r" % phrase)
+
     def test_safety_no_false_positive(self):
         for b in self.g.segment("I'm so grateful and full of joy today."):
             self.assertFalse(self.g.safety(b))
+        # non-crisis phrasings that must stay clear (over-catching "live" is an accepted,
+        # SAFE failure mode — a help card instead of a verse — so we don't test those).
+        from resonate.providers.gloo import is_crisis
+        for ok in ["I want to go on a trip", "let's keep this project alive and fun",
+                   "I'm dead tired but happy"]:
+            self.assertFalse(is_crisis(ok), "false positive on: %r" % ok)
 
 
 class TestDelivery(unittest.TestCase):

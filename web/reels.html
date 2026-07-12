@@ -41,6 +41,13 @@
     border-radius:999px;padding:0 20px;cursor:pointer}
   .ask button:hover{filter:brightness(1.06)}
 
+  /* mood filter chips — like Spotify's genre pills */
+  .moods{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0 4px}
+  .mood{font-family:var(--sans);font-size:11px;letter-spacing:.03em;color:var(--ink-soft);cursor:pointer;
+    background:linear-gradient(178deg,#f4eede,#ece4d3);border:1px solid rgba(33,29,23,.16);
+    border-radius:999px;padding:7px 15px;transition:background .18s,color .18s,transform .18s}
+  .mood:hover{transform:translateY(-1px);background:#f7f1e3}
+  .mood.on{color:#efe9df;background:linear-gradient(160deg,var(--clay),var(--clay-deep));border-color:transparent}
   .group{margin-top:34px}
   .group .gtitle{display:flex;align-items:baseline;gap:12px}
   .group .gtitle .pri{font-family:var(--serif);font-size:15px;color:var(--gold)}
@@ -76,6 +83,7 @@
     <div class="brand"><span class="cross">†</span>Resonate</div>
     <nav>
       <a href="/guide.html" title="Talk with Ezra, the Scripture Guide">☎ talk to Ezra</a>
+      <a href="/connect.html" title="Add Resonate to your AI assistant">⚡ connect</a>
       <a href="/" title="Resonate home">home</a>
     </nav>
   </header>
@@ -88,6 +96,8 @@
     <input id="q" autocomplete="off" placeholder="What's on your heart today? (refreshes your reels)" />
     <button type="submit">Find reels</button>
   </form>
+
+  <div class="moods" id="moods"></div>
 
   <div id="groups"></div>
   <div class="empty" id="empty" style="display:none">
@@ -170,6 +180,7 @@
         under.className = "under";
         under.textContent = r.kind === "story" && r.title ? r.title : (r.note || "");
         a.append(art, under);
+        a.addEventListener("click", () => trackWatch(r));
         row.appendChild(a);
       });
       sec.appendChild(row);
@@ -177,11 +188,16 @@
     });
   }
 
-  function load(text) {
+  function load(text, themes) {
+    activeMood = themes && themes[0] || null;
+    document.querySelectorAll(".mood").forEach((m) => m.classList.toggle("on", m.dataset.m === (activeMood || "for-you")));
     $("basis").textContent = "gathering your shelves…";
+    const body = { user_id: uid };
+    if (themes && themes.length) body.themes = themes;
+    else if (text) body.text = text;
     fetch("/reel-groups", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(text ? { user_id: uid, text } : { user_id: uid }),
+      body: JSON.stringify(body),
     })
       .then((r) => r.json())
       .then((d) => {
@@ -192,8 +208,65 @@
           return;
         }
         render(d);
+        renderRecent();
       })
       .catch(() => { $("basis").textContent = "engine offline — start it with: python scripts/serve.py"; });
+  }
+
+  // ---- mood chips: quick re-query by theme, like Spotify's genre pills ----
+  const MOODS = [
+    { m: "for-you", label: "For you" },
+    { m: "comfort", label: "Comfort" }, { m: "hope", label: "Hope" },
+    { m: "anxiety", label: "Peace over anxiety" }, { m: "fear", label: "Courage" },
+    { m: "grief", label: "Grief" }, { m: "weariness", label: "Rest" },
+    { m: "provision", label: "Provision" }, { m: "guilt", label: "Grace" },
+    { m: "joy", label: "Joy" }, { m: "purpose", label: "Purpose" },
+  ];
+  let activeMood = null;
+  (function renderMoods() {
+    $("moods").innerHTML = "";
+    MOODS.forEach((mo) => {
+      const c = document.createElement("div");
+      c.className = "mood"; c.dataset.m = mo.m; c.textContent = mo.label;
+      c.onclick = () => (mo.m === "for-you" ? load("") : load("", [mo.m]));
+      $("moods").appendChild(c);
+    });
+  })();
+
+  // ---- recently opened (client-side, private): a "jump back in" shelf ----
+  function trackWatch(r) {
+    try {
+      let seen = JSON.parse(localStorage.getItem("resonate_watched") || "[]");
+      seen = seen.filter((x) => x.reference !== r.reference);
+      seen.unshift({ reference: r.reference, url: r.url, kind: r.kind, title: r.title || "", note: r.note || "" });
+      localStorage.setItem("resonate_watched", JSON.stringify(seen.slice(0, 8)));
+    } catch (e) {}
+  }
+  function renderRecent() {
+    let seen = [];
+    try { seen = JSON.parse(localStorage.getItem("resonate_watched") || "[]"); } catch (e) {}
+    const old = document.getElementById("recent-shelf");
+    if (old) old.remove();
+    if (!seen.length) return;
+    const sec = document.createElement("section");
+    sec.className = "group"; sec.id = "recent-shelf";
+    sec.innerHTML = '<div class="gtitle"><span class="pri">↺</span><h2>Jump back in</h2></div>' +
+      '<div class="gsub">Reels you opened recently — yours only, kept on this device.</div>';
+    const row = document.createElement("div"); row.className = "row";
+    seen.forEach((r) => {
+      const a = document.createElement("a");
+      a.className = "card"; a.href = r.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.title = (r.kind === "story" ? "Watch: " + (r.title || r.reference) : "Read " + r.reference);
+      a.innerHTML = '<div class="art" style="background:' + sceneFor(r.note, r.reference) + '">' +
+        '<span class="play">' + (r.kind === "story" ? "▶" : "❧") + "</span>" +
+        '<div class="ref">' + r.reference + '</div>' +
+        '<div class="kind">opened recently</div></div>' +
+        '<div class="under">' + (r.kind === "story" && r.title ? r.title : (r.note || "")) + "</div>";
+      a.addEventListener("click", () => trackWatch(r));
+      row.appendChild(a);
+    });
+    sec.appendChild(row);
+    $("groups").insertBefore(sec, $("groups").firstChild);
   }
 
   $("ask").onsubmit = (e) => { e.preventDefault(); load($("q").value.trim()); };

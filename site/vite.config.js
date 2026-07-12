@@ -11,6 +11,8 @@ const ENGINE = 'http://127.0.0.1:8765'
 const engineRoutes = [
   '/guide',       // POST /guide  +  GET /guide.html
   '/reels.html',
+  '/connect.html',
+  '/guardians',   // POST/GET /guardians  +  GET /guardians.html
   '/reel-groups',
   '/resonate',
   '/story',

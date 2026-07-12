@@ -63,15 +63,35 @@
   .transcript{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:20px 2px}
   .transcript::-webkit-scrollbar{width:6px}
   .transcript::-webkit-scrollbar-thumb{background:rgba(166,91,67,.35);border-radius:3px}
-  .bub{max-width:84%;padding:12px 16px;border-radius:14px;font-size:14px;line-height:1.6}
+  .bub{max-width:84%;padding:12px 16px;border-radius:14px;font-size:14px;line-height:1.6;
+    animation:bubIn .5s cubic-bezier(.22,.68,.28,1) both}
+  @keyframes bubIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
   .bub.me{align-self:flex-end;background:linear-gradient(160deg,var(--clay),var(--clay-deep));
     color:#f3e4d5;border-bottom-right-radius:4px}
   .bub.guide{align-self:flex-start;color:var(--ink);border-bottom-left-radius:4px;
     background:linear-gradient(177deg,var(--paper),var(--paper2));border:1px solid rgba(33,29,23,.16);
     font-family:var(--serif);font-size:16px}
   .bub.guide.help{border-color:rgba(166,91,67,.55);background:linear-gradient(177deg,#f6ece2,var(--paper2))}
+  .bub.guide.saying{box-shadow:0 0 0 1px rgba(166,91,67,.28), 0 6px 22px rgba(166,91,67,.14)}
   .bub .who{font-family:var(--sans);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;
-    color:var(--clay);margin-bottom:5px}
+    color:var(--clay);margin-bottom:5px;display:flex;align-items:center;gap:7px}
+  /* live voice bars beside "Ezra" while he's actually speaking */
+  .bub .who .vbars{display:none;align-items:flex-end;gap:2px;height:9px}
+  .bub.guide.saying .who .vbars{display:inline-flex}
+  .bub .who .vbars i{width:2px;height:100%;background:var(--clay);border-radius:2px;transform-origin:bottom;
+    animation:vbar .9s ease-in-out infinite}
+  .bub .who .vbars i:nth-child(2){animation-delay:.15s}
+  .bub .who .vbars i:nth-child(3){animation-delay:.3s}
+  .bub .who .vbars i:nth-child(4){animation-delay:.45s}
+  @keyframes vbar{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+  /* typing indicator (Ezra composing while the model thinks) */
+  .bub.typing{display:flex;gap:5px;align-items:center;padding:15px 18px}
+  .bub.typing i{width:7px;height:7px;border-radius:50%;background:var(--clay);opacity:.5;
+    animation:dot 1.1s ease-in-out infinite}
+  .bub.typing i:nth-child(2){animation-delay:.18s}
+  .bub.typing i:nth-child(3){animation-delay:.36s}
+  @keyframes dot{0%,100%{opacity:.32;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+  @media (prefers-reduced-motion:reduce){ .bub,.bub.typing i,.vbars i{animation:none!important} }
   .refs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .refchip{font-family:var(--sans);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;
     color:var(--ink-soft);border:1px solid rgba(33,29,23,.2);border-radius:999px;padding:2px 9px}
@@ -99,6 +119,8 @@
   <div class="brand"><span class="cross">†</span>Ezra<span class="role">the Scripture Guide</span></div>
   <nav>
     <a href="/reels.html" title="Story reels picked for you">▷ reels for you</a>
+    <a href="/connect.html" title="Add Resonate to your AI assistant">⚡ connect</a>
+    <a href="/guardians.html" title="People who should know if you're not okay">♥ guardians</a>
     <a href="/" title="Resonate home">home</a>
   </nav>
 </header>
@@ -166,7 +188,9 @@
   function bubble(role, text, refs, help) {
     const b = document.createElement("div");
     b.className = "bub " + (role === "user" ? "me" : "guide" + (help ? " help" : ""));
-    if (role !== "user") b.innerHTML = '<div class="who">Ezra</div>';
+    if (role !== "user") {
+      b.innerHTML = '<div class="who">Ezra<span class="vbars"><i></i><i></i><i></i><i></i></span></div>';
+    }
     const t = document.createElement("div");
     t.textContent = text;
     b.appendChild(t);
@@ -185,13 +209,27 @@
     }
     log.appendChild(b);
     log.scrollTop = log.scrollHeight;
+    return b;
   }
+
+  // Ezra "typing" while the model composes — turns the ~thinking gap into human pacing.
+  let typingEl = null, sayingEl = null;
+  function showTyping() {
+    if (typingEl) return;
+    typingEl = document.createElement("div");
+    typingEl.className = "bub guide typing";
+    typingEl.innerHTML = "<i></i><i></i><i></i>";
+    log.appendChild(typingEl);
+    log.scrollTop = log.scrollHeight;
+  }
+  function clearTyping() { if (typingEl) { typingEl.remove(); typingEl = null; } }
+  function markSaying(el, on) { sayingEl = on ? el : null; if (el) el.classList.toggle("saying", on); }
 
   // ---------- speaking (Ezra's voice) ----------
   const norm = (s) => (s || "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
   let speakingText = ""; // normalized text of what Ezra is saying — the echo guard
 
-  function speakBrowser(text, done) {
+  function speakBrowser(text, done, onStart) {
     try {
       const u = new SpeechSynthesisUtterance(text);
       u.rate = 0.95; u.pitch = 0.96;
@@ -199,6 +237,7 @@
       const pick = ["Google UK English Female", "Microsoft Aria", "Samantha", "Google US English"]
         .map((n) => vs.find((v) => v.name && v.name.includes(n))).find(Boolean);
       if (pick) u.voice = pick;
+      u.onstart = () => onStart && onStart();
       u.onend = done; u.onerror = done;
       speechSynthesis.speak(u);
     } catch (e) { done(); }
@@ -219,11 +258,13 @@
     return chunks;
   }
 
-  function speak(text, done) {
+  function speak(text, done, onStart) {
     const sess = ++speakSession;
     speakingText = norm(text);
+    let began = false;
+    const begin = () => { if (!began && sess === speakSession) { began = true; onStart && onStart(); } };
     const finish = () => { if (sess !== speakSession) return; speakingText = ""; done && done(); };
-    if (voice === "browser") return speakBrowser(text, finish);
+    if (voice === "browser") return speakBrowser(text, finish, begin);
 
     const chunks = splitSpoken(text);
     lastChunks = chunks.length;
@@ -243,6 +284,7 @@
           const rejected = await new Promise((res) => {
             const url = URL.createObjectURL(blob);
             audioEl = new Audio(url);
+            audioEl.onplay = begin;                 // voice cue fires exactly when sound starts
             audioEl.onended = () => { URL.revokeObjectURL(url); res(false); };
             audioEl.onerror = () => { URL.revokeObjectURL(url); res(false); };
             audioEl.play().catch(() => res(true));
@@ -251,7 +293,7 @@
         }
         finish();
       } catch (e) {
-        if (sess === speakSession) speakBrowser(text, finish);
+        if (sess === speakSession) speakBrowser(text, finish, begin);
       }
     })();
   }
@@ -273,29 +315,62 @@
   let pending = "";        // accumulated final transcript of the person's turn
   let silenceTimer = null; // fires when they've stopped talking
 
-  function isEcho(chunk) {
-    const c = norm(chunk);
-    return c.length < 3 || (speakingText && speakingText.includes(c.slice(0, 24)));
+  // Word-level echo handling. The mic hears Ezra on speakers, so we can't just take
+  // whatever the recognizer returns — we compare it against what Ezra is CURRENTLY
+  // saying. Words that aren't in his speech are the person genuinely talking.
+  const STOP = new Set(("the a an to of is are am and or but so it its i you he she we they me my "
+    + "your his her our their that this for on in at with as be was were will would can could do "
+    + "does did not no yes if then there here what how why when who a about just like").split(" "));
+  const BARGE = new Set("stop wait hold no hey ezra sorry actually pause enough hang".split(" "));
+  const words = (s) => norm(s).split(" ").filter(Boolean);
+  const content = (s) => words(s).filter((w) => w.length >= 3 && !STOP.has(w));
+  function freshWords(str) {
+    const spoken = new Set(words(speakingText));
+    return content(str).filter((w) => !spoken.has(w));
   }
 
   function heard(interim, finals) {
-    if (state === "thinking") return; // their words during processing are dropped, shown by status
+    if (state === "thinking") return; // can't interrupt a network round-trip; words here are dropped
     const anything = (interim + " " + finals).trim();
-    if (!anything || isEcho(anything)) return;
+    if (!anything) return;
+    const fresh = freshWords(anything);
+    const isCommand = words(anything).some((w) => BARGE.has(w));
 
-    // barge-in: Ezra yields the moment real speech arrives while he's speaking
-    if (state === "speaking" && anything.length >= 6) {
-      stopAudio();
-      setState("listening", "go on — <b>I'm listening</b>");
+    // BARGE-IN: real speech over Ezra -> he stops mid-word and listens. A short command
+    // ("stop", "wait") or >=2 genuinely-new words counts; pure echo of himself does not.
+    if (state === "speaking") {
+      if (isCommand || fresh.length >= 2) {
+        stopAudio();                 // clears speakingText -> capture below is now echo-free
+        markSaying(sayingEl, false);
+        setState("listening", "go on — <b>I'm listening</b>");
+      } else {
+        return;                      // just the mic hearing Ezra — ignore
+      }
     }
-    if (finals && !isEcho(finals)) pending = (pending + " " + finals).trim();
-    if (interim && !isEcho(interim)) status.innerHTML = "hearing: <b>" + interim.slice(-46) + "</b>";
+
+    // listening (barged, or Ezra already done): accumulate the person's turn
+    if (finals && content(finals).length) pending = (pending + " " + finals).trim();
+    if (interim && content(interim).length) status.innerHTML = "hearing: <b>" + interim.slice(-46) + "</b>";
 
     clearTimeout(silenceTimer);
-    silenceTimer = setTimeout(() => {           // they finished — take the turn
-      if (pending && state !== "thinking") { const t = pending; pending = ""; turn(t, true); }
-    }, 900);
+    silenceTimer = setTimeout(() => {           // a gap of quiet closes their turn
+      if (pending && state !== "thinking") { const t = pending.trim(); pending = ""; turn(t, true); }
+    }, 850);
   }
+
+  // A guaranteed manual interrupt — no VAD can be perfect over loudspeakers, so tapping
+  // the transcript or pressing space/esc always stops Ezra and hands the floor back.
+  function manualInterrupt() {
+    if (state !== "speaking") return false;
+    stopAudio(); markSaying(sayingEl, false);
+    setState("listening", "go on — <b>I'm listening</b>");
+    return true;
+  }
+  log.addEventListener("click", manualInterrupt);
+  document.addEventListener("keydown", (e) => {
+    if ((e.code === "Space" || e.code === "Escape") && state === "speaking"
+        && document.activeElement !== $("ta")) { e.preventDefault(); manualInterrupt(); }
+  });
 
   function startRecognition() {
     if (!SR) { $("unsupported").style.display = "block"; return; }
@@ -330,28 +405,38 @@
   // ---------- a conversation turn (typed or spoken) ----------
   function turn(text, spoken) {
     bubble("user", text);
+    const voicing = !!(live || spoken);
     setState("thinking", "Ezra is thinking…");
+    if (voicing) showTyping();     // composing dots fill the model-wait so it never feels frozen
     fetch("/guide", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, user_id: uid, history: history.slice(-8), voice: !!(live || spoken) }),
+      body: JSON.stringify({ text, user_id: uid, history: history.slice(-8), voice: voicing }),
     })
       .then((r) => r.json())
       .then((d) => {
         if (!d.ok) throw new Error(d.error || "guide error");
+        clearTyping();
         history.push({ role: "user", content: text });
         history.push({ role: "assistant", content: d.reply });
-        bubble("assistant", d.reply, d.refs, d.safety);
+        const el = bubble("assistant", d.reply, d.refs, d.safety);   // text lands first, readable at once
         if (live) {
-          setState("speaking", "Ezra is speaking — <b>interrupt any time</b>");
-          speak(d.reply, () => {
-            if (d.safety) { endCall(true); return; } // a crisis ends the call with care
-            if (live && state === "speaking") setState("listening", "your turn — <b>I'm listening</b>");
-          });
+          setState("speaking", "Ezra is finding his voice…");        // honest cue during TTS render
+          speak(d.reply,
+            () => { // done
+              markSaying(el, false);
+              if (d.safety) { endCall(true); return; }
+              if (live && state === "speaking") setState("listening", "your turn — <b>I'm listening</b>");
+            },
+            () => { // onStart — sound actually begins now
+              if (state === "speaking") { markSaying(el, true);
+                setState("speaking", "Ezra is speaking — <b>tap or press space to interrupt</b>"); }
+            });
         } else {
           setState("idle", "replied — type again, or tap the seal to talk");
         }
       })
       .catch(() => {
+        clearTyping();
         setState(live ? "listening" : "idle", "line hiccup — <b>try that again?</b>");
       });
   }
@@ -365,8 +450,10 @@
     seal.title = "On the line — tap to end";
     setState("speaking", "picking up…");
     startRecognition();               // ears open from the first second — even the greeting can be interrupted
-    bubble("assistant", GREETING);
-    speak(GREETING, () => { if (live && state === "speaking") setState("listening", "your turn — <b>I'm listening</b>"); });
+    const el = bubble("assistant", GREETING);
+    speak(GREETING,
+      () => { markSaying(el, false); if (live && state === "speaking") setState("listening", "your turn — <b>I'm listening</b>"); },
+      () => { if (state === "speaking") { markSaying(el, true); setState("speaking", "Ezra is speaking — <b>tap or press space to interrupt</b>"); } });
   }
 
   function endCall(spoken) {

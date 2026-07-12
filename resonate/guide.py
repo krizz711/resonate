@@ -87,11 +87,18 @@ class ScriptureGuide:
         if voice:
             # head position + repetition: a mid-prompt "keep it short" loses to the
             # model's helpfulness; leading with the channel constraint holds (live-tested)
-            system = ("LIVE VOICE CALL. Your reply is spoken aloud: MAXIMUM 3 short "
-                      "sentences (a quoted verse counts as one). Absolutely no lists, "
-                      "bullet points, asterisks, headers, or markdown — spoken prose "
-                      "only. End with warmth, not homework.\n\n" + system +
-                      "\n\nRemember: at most 3 spoken sentences, no lists.")
+            system = ("LIVE VOICE CALL. The person's words were captured by speech-to-text "
+                      "and MAY be mis-transcribed — reason about their most likely intended "
+                      "meaning before replying, especially faith words a recognizer garbles: "
+                      "'pictures'/'scripture pictures'->'Scriptures', 'versus'/'verse is'->'verses', "
+                      "'sam'/'some'->'psalm', 'geezes'->'Jesus', 'core inthians'->'Corinthians'. "
+                      "If a pivotal word seems misheard, gently reflect what you understood "
+                      "('I think you're asking for a Scripture — ') and continue; don't nitpick "
+                      "small errors. Your reply is spoken aloud: MAXIMUM 3 short sentences (a "
+                      "quoted verse counts as one). Absolutely no lists, bullets, asterisks, "
+                      "headers, or markdown — spoken prose only. End with warmth, not homework."
+                      "\n\n" + system + "\n\nRemember: infer intent past transcription errors; "
+                      "at most 3 spoken sentences, no lists.")
         msgs = [{"role": m.get("role", "user"), "content": str(m.get("content", ""))[:1500]}
                 for m in (history or [])[-8:] if m.get("content")]
         msgs.append({"role": "user", "content": text})

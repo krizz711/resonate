@@ -55,6 +55,9 @@ function Mcp() {
             <span className="chip">reel_groups</span>
             <span className="chip">fetch_passage</span>
           </div>
+          <a className="btn primary" href="/connect.html" data-magnetic style={{ marginTop: '22px' }}>
+            ⚡ Connect your assistant
+          </a>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>

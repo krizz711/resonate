@@ -25,6 +25,14 @@ out/
 data/.memory.json
 *.memory.json*
 
+# guardian registrations — PERSONAL CONTACT DATA, never commit (see data/guardians.example.json)
+data/guardians.json
+data/guardians.json.log
+
+# cached YouVersion verse text (derived; re-warms itself on boot)
+data/.yv-cache.json
+data/.yv-cache.json.tmp
+
 # generated audio (voice cache + tuning lab renders)
 data/.tts-cache/
 data/voice-lab/

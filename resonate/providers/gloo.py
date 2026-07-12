@@ -60,12 +60,15 @@ EMOTION = {
 # Crisis detection as a robust regex (handles "don't"/"do not" variants, -ing forms, etc.).
 # Checked on the RAW text independently of theme segmentation, so a crisis is never missed.
 _CRISIS_RE = re.compile(
-    r"(?:\b(?:do\s*n[o']?t|never|no\s+longer|stop)\s+want(?:ing)?\s+to\s+(?:live|be\s+here|exist|wake\s+up)\b)"
-    r"|(?:\b(?:want|wanna|going|plan(?:ning)?)\s+to\s+(?:die|kill\s+myself|end\s+(?:it\s+all|it|my\s+life|things))\b)"
+    r"(?:\b(?:do\s*n[o']?t|never|no\s+longer|stop|can[o']?t)\s+want(?:ing)?\s+to\s+"
+    r"(?:live|be\s+here|be\s+alive|stay\s+alive|exist|wake\s+up)\b)"
+    r"|(?:\b(?:want|wanna|going|plan(?:ning)?)\s+to\s+"
+    r"(?:die|be\s+dead|kill\s+myself|end\s+(?:it\s+all|it|my\s+life|things))\b)"
     r"|(?:\b(?:kill|hurt|harm|cut)(?:ing)?\s+myself\b)"
     r"|(?:\b(?:end|ending|take|taking)\s+my(?:\s+own)?\s+life\b)"
     r"|(?:\bself[\s-]?harm\b)"
-    r"|(?:\b(?:better\s+off\s+dead|no\s+reason\s+to\s+live|suicidal|suicide)\b)",
+    r"|(?:\b(?:better\s+off\s+dead|no\s+reason\s+to\s+(?:live|be\s+here|go\s+on)|"
+    r"do\s*n[o']?t\s+want\s+to\s+be\s+alive|suicidal|suicide|want\s+to\s+disappear)\b)",
     re.IGNORECASE,
 )
 

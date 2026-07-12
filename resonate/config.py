@@ -63,6 +63,9 @@ class EngineConfig:
     yv_app_key: str = field(default_factory=lambda: os.getenv("YOUVERSION_APP_KEY", ""))
     yv_base_url: str = field(default_factory=lambda: os.getenv("YOUVERSION_BASE_URL", "https://api.youversion.com/v1"))
     bible_id: str = field(default_factory=lambda: os.getenv("RESONATE_BIBLE_ID", ""))  # numeric id; resolve via scripts/live_check.py
+    # persist fetched YouVersion text to disk (data/.yv-cache.json) so verses are fetched
+    # at most once ever. OFF by default (tests stay hermetic); the server turns it on.
+    yv_cache_persist: bool = field(default_factory=lambda: os.getenv("RESONATE_YV_CACHE", "0") == "1")
 
     # --- guardian alerts (security module; consent-first, see resonate/guardian.py) ---
     guardian_enabled: bool = field(default_factory=lambda: os.getenv("RESONATE_GUARDIAN", "0") == "1")
