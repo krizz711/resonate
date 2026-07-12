@@ -79,6 +79,14 @@ def is_crisis(text):
 _INTENSITY_CUES = ["so ", "really", "completely", "totally", "can't", "cant", "never",
                    "always", "everyone", "no one", "nobody", "every", "nothing", "honestly"]
 
+# Objectively heavy life events read as high-intensity even when stated flatly —
+# "My dad died last week." carries no amplifier words, but a comfort-tone verse
+# (intensity_fit floor 0.6) must not lose to a brighter one because the sentence
+# was quiet. Grief speaks quietly.
+_GRAVITY_CUES = ["died", "death", "passed away", "funeral", "buried", "grave",
+                 "miscarriage", "stillborn", "terminal", "hospice", "cancer",
+                 "diagnos", "divorce", "abuse", "assault", "barely breathe"]
+
 
 def _intensity(sentence: str) -> float:
     s = sentence.lower()
@@ -88,6 +96,8 @@ def _intensity(sentence: str) -> float:
             score += 0.07
     score += 0.06 * s.count("!")
     score += 0.07 * sum(1 for w in sentence.split() if len(w) > 2 and w.isupper())
+    if any(c in s for c in _GRAVITY_CUES):
+        score = max(score, 0.72)
     return max(0.2, min(0.97, score))
 
 
@@ -135,6 +145,25 @@ def _json_array(raw):
     raise ValueError("no JSON array in model output")
 
 
+def template_bridge(beat, verse):
+    """Tone-matched one-liner linking the person's words to the verse. The mock's
+    bridge, and the live provider's safety net when the network drops mid-request —
+    a plainer sentence beats a dropped connection."""
+    snippet = beat.text.strip()
+    if len(snippet) > 80:
+        snippet = snippet[:77] + "..."
+    ref = verse["reference"]
+    templates = {
+        "comfort": 'When you said "%s", you don\'t have to carry it alone — %s meets you right there.' % (snippet, ref),
+        "assurance": 'You said "%s". Hold onto this: %s.' % (snippet, ref),
+        "hope": 'After "%s", here\'s something to hold onto: %s.' % (snippet, ref),
+        "challenge": 'You said "%s". A nudge to keep going: %s.' % (snippet, ref),
+        "celebration": '"%s" — worth celebrating with %s.' % (snippet, ref),
+        "conviction": '"%s" — a gentle truth to sit with: %s.' % (snippet, ref),
+    }
+    return templates.get(verse.get("tone", "hope"), templates["hope"])
+
+
 class MockGloo:
     def __init__(self, config):
         self.config = config
@@ -154,19 +183,7 @@ class MockGloo:
         return chosen, rationale
 
     def bridge(self, beat, verse, verse_text):
-        snippet = beat.text.strip()
-        if len(snippet) > 80:
-            snippet = snippet[:77] + "..."
-        ref = verse["reference"]
-        templates = {
-            "comfort": 'When you said "%s", you don\'t have to carry it alone — %s meets you right there.' % (snippet, ref),
-            "assurance": 'You said "%s". Hold onto this: %s.' % (snippet, ref),
-            "hope": 'After "%s", here\'s something to hold onto: %s.' % (snippet, ref),
-            "challenge": 'You said "%s". A nudge to keep going: %s.' % (snippet, ref),
-            "celebration": '"%s" — worth celebrating with %s.' % (snippet, ref),
-            "conviction": '"%s" — a gentle truth to sit with: %s.' % (snippet, ref),
-        }
-        return templates.get(verse.get("tone", "hope"), templates["hope"])
+        return template_bridge(beat, verse)
 
     def story(self, user_text, emotion, narrative, verse, memory_note=None):
         """Mock 'Your story': an honest template that mirrors the user's words, retells
@@ -336,8 +353,13 @@ class LiveGloo:
     def bridge(self, beat, verse, verse_text):
         sys_p = ("Write ONE warm sentence linking the person's words to the verse. "
                  "Output only that sentence — no preamble, no quotes around it.")
-        return self._chat(sys_p, 'Their words: "%s"\nVerse %s: "%s"' % (beat.text, verse["reference"], verse_text),
-                          temperature=0.6, model=self.config.gloo_model_structured).strip()
+        try:
+            return self._chat(sys_p, 'Their words: "%s"\nVerse %s: "%s"' % (beat.text, verse["reference"], verse_text),
+                              temperature=0.6, model=self.config.gloo_model_structured).strip()
+        except Exception as e:
+            import sys as _sys
+            _sys.stderr.write("live bridge -> template fallback (%s)\n" % str(e)[:120])
+            return template_bridge(beat, verse)
 
     def story(self, user_text, emotion, narrative, verse, memory_note=None):
         sys_p = (

@@ -37,6 +37,17 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     return true;
   }
 
+  if (msg && msg.type === "handoff") {
+    // "Ask Ezra about this" — park the moment engine-side (single-read, short TTL) so
+    // the guide page can pick it up without the words ever riding in a URL.
+    fetch(BASE + "/handoff", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: msg.userId, text: msg.text }),
+    }).catch(() => {});
+    return false; // fire-and-forget
+  }
+
   if (msg && msg.type === "tts") {
     // Fetch the Kokoro voice as bytes and hand them to the content script as base64
     // (messages must be JSON-serializable). 503 => tell the panel to use Web Speech.

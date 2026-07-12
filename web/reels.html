@@ -154,11 +154,13 @@
     const groups = data.groups || [];
     $("empty").style.display = groups.length ? "none" : "block";
     const roman = ["", "I", "II", "III"];
-    groups.forEach((g) => {
+    groups.forEach((g, gi) => {
       const sec = document.createElement("section");
       sec.className = "group";
+      // number by render order, not by fixed priority — when the memory shelf is
+      // absent (new visitor) the page must read I, II — never I, III
       sec.innerHTML =
-        '<div class="gtitle"><span class="pri">' + (roman[g.priority] || g.priority) + "</span>" +
+        '<div class="gtitle"><span class="pri">' + (roman[gi + 1] || gi + 1) + "</span>" +
         "<h2>" + g.title + "</h2></div>" +
         '<div class="gsub">' + g.subtitle + "</div>";
       const row = document.createElement("div");

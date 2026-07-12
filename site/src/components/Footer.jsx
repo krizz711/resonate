@@ -21,8 +21,8 @@ export default function Footer() {
           <span className="em">“Scripture in New Frontiers”</span><br />
           Powered by the <b>YouVersion Platform API</b> (every verse verbatim &amp; licensed) and{' '}
           <b>Gloo AI Studio</b> (values-aligned reasoning) · MIT licensed<br />
-          Privacy: reads only your own message, processes locally, stores nothing · Crisis input is
-          answered with human help, never verses
+          Privacy: reads only your own message, keeps no transcript — only theme patterns, on your
+          machine · Crisis input is answered with human help, never verses
         </div>
       </div>
     </section>

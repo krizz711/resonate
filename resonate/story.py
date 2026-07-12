@@ -17,6 +17,7 @@ from collections import defaultdict, deque
 
 from .config import DATA_DIR
 from .providers.gloo import is_crisis
+from .textutil import plain_text
 
 
 class StoryWeaver:
@@ -53,7 +54,9 @@ class StoryWeaver:
             raise ValueError("stories are never composed for crisis input")
         if narrative is None:
             raise ValueError("no fitting narrative")
-        text = self.gloo.story(user_text, emotion or "", narrative, verse, memory_note)
+        # the story is displayed as plain text and read aloud — markdown must not survive
+        text = plain_text(self.gloo.story(user_text, emotion or "", narrative, verse,
+                                          memory_note), keep_newlines=True)
         self._recent[user_id].append(narrative["id"])
         return {
             "title": narrative["title"],

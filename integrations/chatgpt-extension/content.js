@@ -34,6 +34,8 @@
   // --- voice state (persisted) ---
   const VOICES = ["bella", "isabella", "george", "browser"];
   const VOICE_LABEL = { bella: "Bella", isabella: "Isabella", george: "George", browser: "Browser" };
+  // button initials — "Br" keeps Browser distinguishable from Bella's "B"
+  const VOICE_INITIAL = { bella: "B", isabella: "I", george: "G", browser: "Br" };
   let voiceId = "bella";
   let autoSpeak = false; // "play by default" — an option, off until chosen
   let audioEl = null;
@@ -215,9 +217,14 @@
     wrap.className = "wrap";
     card = document.createElement("div");
     card.className = "card hidden";
+    // a quiet companion announces itself quietly: polite live region, named dialog
+    card.setAttribute("role", "dialog");
+    card.setAttribute("aria-label", "Resonate — a verse for this moment");
+    card.setAttribute("aria-live", "polite");
     seal = document.createElement("button");
     seal.className = "seal hidden";
     seal.title = "Resonate — open the verse";
+    seal.setAttribute("aria-label", "Resonate — open the verse");
     seal.textContent = "R";
     seal.onclick = unfold;
     wrap.append(card, seal);
@@ -289,30 +296,39 @@
     const reelTitle = reel && reel.kind === "story" ? "Watch this verse's story reel"
                                                     : "Read this verse on YouVersion";
     card.innerHTML =
-      '<button class="x" title="Dismiss">×</button>' +
+      '<button class="x" title="Dismiss" aria-label="Dismiss">×</button>' +
       '<div class="ref">' + esc(d.reference) + ' <span class="tr">' + esc(d.translation) + "</span></div>" +
       '<div class="verse">' + esc(d.verse_text) + "</div>" +
       '<div class="bridge">' + esc(d.bridge) + "</div>" +
       (d.memory_note ? '<div class="mem">' + esc(d.memory_note) + "</div>" : "") +
       '<div class="icons">' +
-        '<button class="ico listen" title="Listen — read this verse aloud">♪</button>' +
-        '<button class="ico voice" title="Voice: ' + esc(VOICE_LABEL[voiceId]) + ' — click to change">' +
-          esc(VOICE_LABEL[voiceId][0]) + "</button>" +
+        '<button class="ico listen" title="Listen — read this verse aloud" aria-label="Listen — read this verse aloud">♪</button>' +
+        '<button class="ico voice" title="Voice: ' + esc(VOICE_LABEL[voiceId]) + ' — click to change" ' +
+          'aria-label="Change voice (now ' + esc(VOICE_LABEL[voiceId]) + ')">' +
+          esc(VOICE_INITIAL[voiceId]) + "</button>" +
         '<button class="ico auto' + (autoSpeak ? " on" : "") + '" title="Auto-play every verse aloud (' +
-          (autoSpeak ? "on" : "off") + ') — click to toggle">⟳</button>' +
+          (autoSpeak ? "on" : "off") + ') — click to toggle" aria-label="Auto-play every verse aloud, now ' +
+          (autoSpeak ? "on" : "off") + '">⟳</button>' +
         (reel ? '<a class="ico reelico" href="' + esc(reel.url) +
-                '" target="_blank" rel="noopener noreferrer" title="' + reelTitle + '">▷</a>' : "") +
-        '<a class="ico" href="' + esc("http://127.0.0.1:8765/guide.html?uid=" + encodeURIComponent(USER_ID) +
-            "&q=" + encodeURIComponent(lastText.slice(0, 600))) +
+                '" target="_blank" rel="noopener noreferrer" title="' + reelTitle +
+                '" aria-label="' + reelTitle + '">▷</a>' : "") +
+        '<a class="ico ezra" href="' + esc("http://127.0.0.1:8765/guide.html?uid=" + encodeURIComponent(USER_ID)) +
             '" target="_blank" rel="noopener noreferrer" ' +
-            'title="Ask Ezra — carry this moment into a deeper conversation (you choose to share it)">☎</a>' +
+            'title="Ask Ezra — carry this moment into a deeper conversation (you choose to share it)" ' +
+            'aria-label="Ask Ezra about this moment">☎</a>' +
       "</div>" +
-      '<button class="story">✦ Your story</button>' +
-      '<div class="foot">Resonate · processed locally · nothing stored</div>';
+      '<button class="story" aria-label="Your story — a reflection woven for you">✦ Your story</button>' +
+      '<div class="foot">Resonate · nothing you write is stored</div>';
 
     card.querySelector(".listen").onclick = () => {
       if (speaking) stopSpeak();
       else speak(d.verse_text);
+    };
+    const ezra = card.querySelector(".ezra");
+    if (ezra) ezra.onclick = () => {
+      // hand the moment over engine-side (single-read, short-lived) so the person's
+      // words never travel in the URL — history and logs stay clean
+      try { chrome.runtime.sendMessage({ type: "handoff", userId: USER_ID, text: lastText.slice(0, 600) }); } catch (e) {}
     };
     card.querySelector(".story").onclick = (e) => {
       const btn = e.currentTarget;
@@ -334,7 +350,7 @@
     };
     card.querySelector(".voice").onclick = (e) => {
       voiceId = VOICES[(VOICES.indexOf(voiceId) + 1) % VOICES.length];
-      e.currentTarget.textContent = VOICE_LABEL[voiceId][0];
+      e.currentTarget.textContent = VOICE_INITIAL[voiceId];
       e.currentTarget.title = "Voice: " + VOICE_LABEL[voiceId] + " — click to change";
       persistVoice();
       if (speaking) { stopSpeak(false); speak(d.verse_text); } // hear the new voice at once
@@ -357,15 +373,15 @@
     clearTimeout(foldTimer); // long-form reading — never fold mid-story
     freshCard("verse");
     card.innerHTML =
-      '<button class="x" title="Dismiss">×</button>' +
+      '<button class="x" title="Dismiss" aria-label="Dismiss">×</button>' +
       '<div class="ref">Your story · ' + esc(story.title) + ' <span class="tr">' + esc(story.reference) + "</span></div>" +
       '<div class="storytext">' + esc(story.text) + "</div>" +
       '<div class="label">' + esc(story.label) + "</div>" +
       '<div class="icons">' +
-        '<button class="ico listen" title="Listen — read this story aloud">♪</button>' +
+        '<button class="ico listen" title="Listen — read this story aloud" aria-label="Listen — read this story aloud">♪</button>' +
         '<button class="backlink">← back to the verse</button>' +
       "</div>" +
-      '<div class="foot">Resonate · woven for you · nothing stored</div>';
+      '<div class="foot">Resonate · woven for you · your words aren\'t stored</div>';
     card.querySelector(".listen").onclick = () => {
       if (speaking) stopSpeak();
       else speak(story.text);
@@ -380,7 +396,7 @@
     freshCard("help");
     const g = (hold && hold.guardian) || {};
     card.innerHTML =
-      '<button class="x" title="Dismiss">×</button>' +
+      '<button class="x" title="Dismiss" aria-label="Dismiss">×</button>' +
       '<div class="ref">A pause, not a verse</div>' +
       '<div class="verse">' + esc(hold && hold.message ? hold.message : "") + "</div>" +
       (g.dispatched ? '<div class="mem" title="You registered your guardians and consented to this — what you wrote stays private.">' +

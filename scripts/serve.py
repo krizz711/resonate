@@ -82,12 +82,34 @@ def _write_guardians(users):
 # real resources (Gloo credit, the Kokoro worker). Context isolation itself is
 # free — every memory/graph read-write is already keyed by user_id.
 LIMITS = RateLimiter({
+    "resonate": (20, 60),    # panel lookups / minute / user (each costs Gloo + YouVersion)
     "guide": (8, 60),        # conversation turns / minute / user
     "guide_day": (240, 86400),
     "tts": (30, 60),         # sentence renders / minute / user (streaming uses several per reply)
     "reels": (12, 60),
     "story": (6, 60),
 })
+
+# "Carry this moment to Ezra" hand-off: the popup POSTs the moment here and the guide
+# page collects it ONCE — so the person's words never ride in a URL (browser history,
+# server logs). In-memory only, single-read, short-lived.
+_HANDOFF = {}          # uid -> (text, expires_at)
+_HANDOFF_TTL = 180.0
+
+
+def _handoff_put(uid, text):
+    import time
+    now = time.time()
+    for k in [k for k, (_, exp) in _HANDOFF.items() if exp < now]:
+        _HANDOFF.pop(k, None)
+    if uid and text:
+        _HANDOFF[uid] = (text[:1200], now + _HANDOFF_TTL)
+
+
+def _handoff_take(uid):
+    import time
+    text, exp = _HANDOFF.pop(uid, (None, 0))
+    return text if exp >= time.time() else None
 _PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(_PROJ, "site", "dist")
 SRC_WEB_DIR = os.path.join(_PROJ, "web")
@@ -163,6 +185,7 @@ class Handler(BaseHTTPRequestHandler):
         # API endpoints first
         if path == "/health":
             self._send(200, {"ok": True, "mode": ENGINE.config.provider_mode,
+                             "translation": ENGINE.config.translation,
                              "targets": list(TARGETS), "tts": tts.available()})
             return
         if path == "/voices":
@@ -190,6 +213,13 @@ class Handler(BaseHTTPRequestHandler):
             uid = (q.get("uid") or [""])[0]
             reg = _read_guardians().get(uid, {}) if uid else {}
             self._send(200, {"ok": True, "registration": reg})
+            return
+        if path == "/handoff":  # single-read pickup of a moment the popup handed over
+            self._send(200, {"ok": True, "text": _handoff_take((q.get("uid") or [""])[0])})
+            return
+        if path in ("/resonate", "/story", "/guide", "/reel-groups"):
+            # POST-only API paths: answer plainly instead of falling through to the SPA
+            self._send(405, {"error": "use POST", "path": path})
             return
 
         # Serve any static file that exists in site/dist — covers JS, CSS, GLB, images, fonts, etc.
@@ -235,8 +265,23 @@ class Handler(BaseHTTPRequestHandler):
         self._send_file(str(wav), "audio/wav")
 
     def do_POST(self):
+        # Umbrella: a bug or a network outage inside any handler must surface as a JSON
+        # error the panel can show — never a dropped connection (observed live when the
+        # machine's DNS blipped mid-pipeline).
+        try:
+            self._do_POST()
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            try:
+                self._send(502, {"ok": False, "error": "engine hiccup: %s" % str(e)[:160],
+                                 "retryable": True})
+            except OSError:
+                pass  # client already gone
+
+    def _do_POST(self):
         path = self.path.split("?")[0]
-        if path not in ("/resonate", "/story", "/guide", "/reel-groups", "/guardians"):
+        if path not in ("/resonate", "/story", "/guide", "/reel-groups", "/guardians", "/handoff"):
             self._send(404, {"error": "not found"})
             return
         length = int(self.headers.get("Content-Length", 0))
@@ -244,6 +289,10 @@ class Handler(BaseHTTPRequestHandler):
             data = json.loads(self.rfile.read(length) or b"{}")
         except Exception as e:
             self._send(400, {"error": "bad json: %s" % e})
+            return
+        if path == "/handoff":
+            _handoff_put(str(data.get("user_id") or ""), str(data.get("text") or ""))
+            self._send(200, {"ok": True})
             return
         if path == "/reel-groups":
             self._handle_reel_groups(data)
@@ -267,11 +316,23 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_story(data)
             return
         user = data.get("user_id", "default")
+        # crisis text is exempt from rate limiting — the help card must ALWAYS render
+        if not is_crisis(data.get("text", "")) and self._limited("resonate", user):
+            return
         history = data.get("history") or []
         if not isinstance(history, list):
             history = []
         history = [str(h)[:2000] for h in history][-5:]
         result = ENGINE.resonate(data.get("text", ""), user, history=history)
+        # Chat surfaces (they pass an 'event') get at most ONE verse per message — a
+        # two-beat message must not stack two panels. Transcripts (playground, no event)
+        # keep every beat. Safety holds always survive the cut.
+        if data.get("event"):
+            delivered = [d for d in result["deliveries"] if d["status"] == "delivered"]
+            if len(delivered) > 1:
+                best = max(delivered, key=lambda d: d["confidence"])
+                result["deliveries"] = [d for d in result["deliveries"]
+                                        if d["status"] != "delivered" or d is best]
         for d in result["deliveries"]:
             if d["status"] == "delivered":  # story-reel action for the panel
                 d["reel"] = REELS.resolve(d.get("usfm", ""), d.get("translation", "KJV"))
@@ -327,14 +388,25 @@ class Handler(BaseHTTPRequestHandler):
             self._send(400, {"ok": False, "error": "user_id required"})
             return
         raw = data.get("guardians") or []
-        guardians = []
+        guardians, problems = [], []
         for g in raw[:5]:
             name = str(g.get("name", "")).strip()[:60]
             channel = "whatsapp" if g.get("channel") == "whatsapp" else "email"
             address = str(g.get("address", "")).strip()[:120]
+            if not (name and address):
+                continue  # a blank row is just an unused row
             ok = ("@" in address) if channel == "email" else address.replace("+", "").replace(" ", "").isdigit()
-            if name and address and ok:
-                guardians.append({"name": name, "channel": channel, "address": address})
+            if not ok:
+                # A typo here must NEVER silently become "no guardians" — for a safety
+                # feature, tell the person exactly which entry to fix.
+                problems.append("%s: %s" % (name, "email needs an @" if channel == "email"
+                                            else "phone must be digits with +countrycode"))
+                continue
+            guardians.append({"name": name, "channel": channel, "address": address})
+        if problems:
+            self._send(400, {"ok": False, "error": "check " + "; ".join(problems),
+                             "invalid": problems})
+            return
         users = _read_guardians()
         if not guardians:                       # empty save = withdraw consent / remove
             users.pop(uid, None)

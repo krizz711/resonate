@@ -476,9 +476,13 @@
     turn(v, false);
   };
 
-  // a handed-off question (the popup's "ask Ezra about this") starts the chat at once
-  const handoff = (qp.get("q") || "").trim();
-  if (handoff) setTimeout(() => turn(handoff.slice(0, 1200), false), 350);
+  // a handed-off moment (the popup's "ask Ezra about this") starts the chat at once.
+  // Collected from the engine (single-read, short-lived) — never from the URL, so the
+  // person's words stay out of browser history and server logs.
+  fetch("/handoff?uid=" + encodeURIComponent(uid)).then((r) => r.json()).then((d) => {
+    const handoff = ((d && d.text) || "").trim();
+    if (handoff) setTimeout(() => turn(handoff.slice(0, 1200), false), 350);
+  }).catch(() => {});
 
   // debug/verification hooks (the preview harness has no mic or audio)
   window.__guideSend = (t) => turn(String(t), false);

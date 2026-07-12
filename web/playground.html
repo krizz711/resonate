@@ -158,7 +158,12 @@ TARGETS.forEach(([id,name])=>{
   toggles.appendChild(l);
 });
 
-fetch("/health").then(r=>r.json()).then(h=>{$("#mode").textContent="engine: "+h.mode;}).catch(()=>{$("#mode").textContent="engine: offline";});
+fetch("/health").then(r=>r.json()).then(h=>{
+  $("#mode").textContent="engine: "+h.mode;
+  // the dropdown mirrors the engine's ACTIVE translation (set via RESONATE_TRANSLATION),
+  // so what you pick here is what you actually get
+  if(h.translation){$("#translation").innerHTML="<option>"+esc(h.translation)+"</option>";}
+}).catch(()=>{$("#mode").textContent="engine: offline";});
 
 $("#reset").onclick=()=>{USER="web_"+Date.now();$("#memory").innerHTML='<div class="mem-empty">New session — memory cleared.</div>';$("#results").innerHTML="";};
 

@@ -178,7 +178,7 @@ function Safety() {
             quietly reaches them by WhatsApp or email — consent-first, never sharing what you
             wrote. Restraint and rate-limiting keep it quiet; privacy by design keeps it local.
           </p>
-          <div className="meta"><span className="chip">safety recall · 100%</span><span className="chip">guardian alerts · opt-in</span><span className="chip">stores nothing</span></div>
+          <div className="meta"><span className="chip">safety recall · 100%</span><span className="chip">guardian alerts · opt-in</span><span className="chip">no transcript kept</span></div>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>

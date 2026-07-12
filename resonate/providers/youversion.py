@@ -106,12 +106,27 @@ class LiveYouVersion:
         key = self._key(usfm)
         if key in self._cache:
             return self._cache[key]
-        r = self._get(usfm)
-        if r.status_code >= 400 and "-" in usfm:
-            # some deployments reject full-range refs — fall back to the first verse
-            r = self._get(usfm.split("-")[0])
-        r.raise_for_status()
-        data = r.json()
+        try:
+            r = self._get(usfm)
+            if r.status_code >= 400 and "-" in usfm:
+                # The platform 404s the long range form (PHP.4.6-PHP.4.7) but accepts the
+                # short one (PHP.4.6-7) — translate before giving up, so multi-verse
+                # passages arrive WHOLE, not truncated to their first verse.
+                a, b = usfm.split("-", 1)
+                if "." in b:
+                    b = b.rsplit(".", 1)[-1]
+                r = self._get("%s-%s" % (a, b))
+            if r.status_code >= 400 and "-" in usfm:
+                r = self._get(usfm.split("-")[0])  # last resort: the first verse
+            r.raise_for_status()
+            data = r.json()
+        except Exception as e:
+            # Network trouble must degrade, not drop the request: fall back to the
+            # public-domain sample text (clearly labelled), or a placeholder. The verse
+            # is NOT cached, so the next healthy call fetches the licensed words.
+            import sys as _sys
+            _sys.stderr.write("live yv fetch -> offline fallback (%s)\n" % str(e)[:120])
+            return self._offline(usfm, translation)
         text = data.get("content") or data.get("text") or ""
         if "<" in text:
             text = _strip_html(text)
@@ -120,6 +135,20 @@ class LiveYouVersion:
         self._cache[key] = out
         self._persist()
         return out
+
+    def _offline(self, usfm, translation):
+        if not hasattr(self, "_samples"):
+            p = DATA_DIR / "sample_texts.json"
+            try:
+                self._samples = json.loads(p.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                self._samples = {}
+        entry = self._samples.get(usfm)
+        if entry:
+            return {"usfm": usfm, "translation": entry.get("translation", "KJV"),
+                    "text": entry["text"], "source": "offline-sample"}
+        return {"usfm": usfm, "translation": translation, "source": "placeholder",
+                "text": "[%s %s] — the verified text arrives when the connection returns." % (translation, usfm)}
 
     def warm(self, usfms):
         """Pre-fetch a batch of references (the curated corpus) so the first live call

@@ -53,7 +53,7 @@ standard library alone (mock providers + local memory) — clone and run:
 git clone https://github.com/krizz711/resonate && cd resonate
 python scripts/demo.py                         # 1. end-to-end engine demo (creator transcript)
 python scripts/policy_demo.py                  # 2. the Delivery Policy staying quiet at the right times
-python -m unittest discover -s tests           # 3. 64 tests (incl. the eval regression guard)
+python -m unittest discover -s tests           # 3. 86 tests (incl. the eval regression guard)
 python eval/run_eval.py                        # 4. 32-scenario evaluation harness
 python scripts/serve.py                        # 5. local engine  ->  http://127.0.0.1:8765
 python integrations/mcp/smoke_client.py        # 6. MCP surface: real stdio session, all 3 tools
@@ -104,7 +104,7 @@ data/            verses.json (131 refs+tags, no text) · sample_texts.json (KJV 
 scripts/         demo.py · policy_demo.py · serve.py (local engine server)
 web/             control-panel playground served by the engine
 eval/            dataset.json + run_eval.py (metrics)
-tests/           test_resonate.py (64 cases incl. the eval guard)
+tests/           test_resonate.py (86 cases incl. the eval guard)
 docs/            video script · writeup · cover · competitiveness review
 ```
 

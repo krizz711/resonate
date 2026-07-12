@@ -16,10 +16,13 @@
   --ease:cubic-bezier(.22,.61,.30,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;scroll-padding-top:86px;-webkit-font-smoothing:antialiased}
+/* overflow-x:clip on BOTH roots: body{hidden} alone lets wide decorative type widen
+   the mobile layout viewport (page pans sideways at 375px); clip crops without
+   creating a scroll container, so Lenis keeps sole charge of scrolling */
+html{scroll-behavior:smooth;scroll-padding-top:86px;-webkit-font-smoothing:antialiased;overflow-x:clip}
 body{
   background:linear-gradient(180deg,#e4d7c6 0%,#ddcdb8 55%,#d5c4ac 100%);
-  color:var(--ink); font-family:var(--sans); line-height:1.65; overflow-x:hidden;
+  color:var(--ink); font-family:var(--sans); line-height:1.65; overflow-x:clip;
   min-height:100vh;
 }
 ::selection{background:rgba(166,91,67,.22)}

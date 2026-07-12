@@ -470,7 +470,7 @@ class TestLiveProviders(unittest.TestCase):
         yv.fetch("ISA.43.5")  # second hit -> cache, no new call
         self.assertEqual(len(calls), 1)
 
-    def test_fetch_range_falls_back_to_first_verse(self):
+    def test_fetch_range_retries_short_form_then_first_verse(self):
         from resonate.providers.youversion import LiveYouVersion
         cfg = EngineConfig(); cfg.bible_id = "1"; cfg.yv_app_key = "k"
 
@@ -484,12 +484,22 @@ class TestLiveProviders(unittest.TestCase):
             def json(self): return {"content": "Be careful for nothing...", "abbreviation": "KJV"}
             def raise_for_status(self): pass
 
+        # the platform rejects the LONG range form but accepts the SHORT one — the
+        # fetch must land on PHP.4.6-7 so multi-verse passages arrive whole
         yv = LiveYouVersion(cfg)
         seen = []
-        yv._get = lambda usfm: (seen.append(usfm), Bad() if "-" in usfm else Good())[1]
+        yv._get = lambda usfm: (seen.append(usfm), Bad() if usfm == "PHP.4.6-PHP.4.7" else Good())[1]
         out = yv.fetch("PHP.4.6-PHP.4.7")
-        self.assertEqual(seen, ["PHP.4.6-PHP.4.7", "PHP.4.6"])
+        self.assertEqual(seen, ["PHP.4.6-PHP.4.7", "PHP.4.6-7"])
         self.assertIn("Be careful", out["text"])
+
+        # and when even the short form fails, the first verse is the last resort
+        yv2 = LiveYouVersion(cfg)
+        seen2 = []
+        yv2._get = lambda usfm: (seen2.append(usfm), Bad() if "-" in usfm else Good())[1]
+        out2 = yv2.fetch("PHP.4.6-PHP.4.7")
+        self.assertEqual(seen2, ["PHP.4.6-PHP.4.7", "PHP.4.6-7", "PHP.4.6"])
+        self.assertIn("Be careful", out2["text"])
 
     def test_config_live_defaults(self):
         cfg = EngineConfig()
@@ -664,6 +674,115 @@ class TestRateLimiter(unittest.TestCase):
         self.assertFalse(rl.allow("b", "u1"))        # third hit inside the window blocks
         self.assertTrue(rl.allow("b", "u2"))         # other users unaffected
         self.assertGreater(rl.retry_after("b", "u1"), 0)
+
+
+class TestRefParse(unittest.TestCase):
+    """Human references -> USFM: the path that lets Ezra answer 'quote me X'."""
+
+    def _one(self, text):
+        from resonate.refparse import find_references
+        got = find_references(text)
+        self.assertEqual(len(got), 1, "expected exactly one reference in %r" % text)
+        return got[0]
+
+    def test_common_forms(self):
+        self.assertEqual(self._one("What does John 3:16 say?")["usfm"], "JHN.3.16")
+        self.assertEqual(self._one("Read me Philippians 4:6-7")["usfm"], "PHP.4.6-PHP.4.7")
+        self.assertEqual(self._one("Quote Psalm 23 verse 1")["usfm"], "PSA.23.1")
+        self.assertEqual(self._one("psalm 23, please")["usfm"], "PSA.23")
+
+    def test_numbered_books_and_roman_numerals(self):
+        self.assertEqual(self._one("1 Peter 5:7")["usfm"], "1PE.5.7")
+        self.assertEqual(self._one("I Peter 5:7")["usfm"], "1PE.5.7")
+        self.assertEqual(self._one("1st John 4:18")["usfm"], "1JN.4.18")
+
+    def test_aliases(self):
+        self.assertEqual(self._one("Ps. 23:1")["usfm"], "PSA.23.1")
+        self.assertEqual(self._one("Matt 6:34")["usfm"], "MAT.6.34")
+        self.assertEqual(self._one("Song of Songs 2:1")["usfm"], "SNG.2.1")
+
+    def test_multiple_and_dedup(self):
+        from resonate.refparse import find_references
+        got = find_references("compare 1 Peter 5:7 with Matt 6:34 and 1 Peter 5:7 again")
+        self.assertEqual([g["usfm"] for g in got], ["1PE.5.7", "MAT.6.34"])
+
+    def test_fake_books_and_plain_text_yield_nothing(self):
+        from resonate.refparse import find_references
+        self.assertEqual(find_references("the book of hezekiah 4 and 2 opinions 3:5"), [])
+        self.assertEqual(find_references("no scripture here, just a hard week"), [])
+
+
+class TestGuideDirectQuote(unittest.TestCase):
+    """'What does John 3:16 say?' must ground and quote — never refuse (the one
+    request a Scripture guide cannot fumble)."""
+
+    def setUp(self):
+        from resonate.guide import ScriptureGuide
+        self.guide = ScriptureGuide(Engine(EngineConfig()))
+
+    def test_direct_request_grounds_the_exact_verse(self):
+        out = self.guide.reply("What does John 3:16 say?", user_id="t_quote")
+        self.assertTrue(out["ok"])
+        refs = [r["reference"] for r in out["refs"]]
+        self.assertIn("John 3:16", refs)
+        jhn = next(r for r in out["refs"] if r["reference"] == "John 3:16")
+        self.assertIn("loved the world", jhn["text"])   # verbatim wording is in context
+        self.assertIn("John 3:16", out["reply"])        # and the reply cites it
+
+    def test_unverified_wording_never_enters_the_context(self):
+        # a reference we have no licensed/sample text for -> placeholder -> excluded,
+        # so the model can never 'quote' scaffolding text
+        out = self.guide.reply("What does Habakkuk 3:17 say?", user_id="t_quote")
+        self.assertTrue(out["ok"])
+        for r in out["refs"]:
+            self.assertNotIn("[", r["text"])
+
+    def test_emotional_grounding_still_works_alongside(self):
+        out = self.guide.reply("I'm anxious — what does 1 Peter 5:7 say?", user_id="t_quote")
+        refs = [r["reference"] for r in out["refs"]]
+        self.assertIn("1 Peter 5:7", refs)
+
+
+class TestLiveFallbacks(unittest.TestCase):
+    """Network loss must degrade (labelled fallback text), never drop the request."""
+
+    def test_live_youversion_falls_back_offline(self):
+        from resonate.providers.youversion import LiveYouVersion
+        cfg = EngineConfig()
+        cfg.yv_base_url = "http://127.0.0.1:9"       # closed port = instant refusal
+        yv = LiveYouVersion(cfg)
+        out = yv.fetch("JHN.3.16")
+        self.assertEqual(out["source"], "offline-sample")   # public-domain sample text
+        self.assertIn("loved the world", out["text"])
+        out2 = yv.fetch("HAB.3.17")                  # nothing sampled -> honest placeholder
+        self.assertEqual(out2["source"], "placeholder")
+
+    def test_template_bridge_covers_every_tone(self):
+        from resonate.providers.gloo import template_bridge
+        from resonate.models import Beat
+        beat = Beat(index=0, text="I can't keep up", themes=["weariness"],
+                    emotion="exhausted", intensity=0.7)
+        for tone in ("comfort", "assurance", "hope", "challenge", "celebration",
+                     "conviction", "unknown-tone"):
+            line = template_bridge(beat, {"reference": "Matthew 11:28", "tone": tone})
+            self.assertIn("Matthew 11:28", line)
+
+
+class TestPlainText(unittest.TestCase):
+    def test_story_markdown_is_stripped_but_paragraphs_survive(self):
+        from resonate.textutil import plain_text
+        s = plain_text("You are **worn** and *weary*.\n\nRest — `selah`.", keep_newlines=True)
+        self.assertNotIn("*", s)
+        self.assertNotIn("`", s)
+        self.assertIn("\n\n", s)
+
+    def test_gravity_of_flat_grief_sentences(self):
+        # "My dad died last week." carries no amplifier words — the gravity cue must
+        # still read it as high-intensity so comfort-tone verses stay in range.
+        from resonate.providers.gloo import lexicon_segment
+        beats = lexicon_segment("My dad died last week.")
+        self.assertTrue(beats)
+        self.assertGreaterEqual(beats[0].intensity, 0.7)
 
 
 if __name__ == "__main__":

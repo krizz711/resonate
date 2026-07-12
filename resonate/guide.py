@@ -11,22 +11,16 @@ Guarantees, same as everywhere else in the engine:
 """
 from __future__ import annotations
 
-import re
-
 from .engine import SAFETY_MESSAGE
 from .providers.gloo import lexicon_segment
+from .refparse import find_references
 
-# Ezra is rendered as plain text and (on a call) SPOKEN — markdown must never survive,
-# or Kokoro reads "asterisk asterisk" and the bubble shows raw ** . Strip emphasis marks,
-# code ticks, and leading header/bullet markers; leave the words untouched.
-_MD_LINE = re.compile(r"^\s{0,3}(#{1,6}\s+|[-*•]\s+)", re.M)
-_MD_INLINE = re.compile(r"\*\*|\*|`|~~")
+from .textutil import plain_text
 
 
 def _plain(s: str) -> str:
-    s = _MD_LINE.sub("", s or "")
-    s = _MD_INLINE.sub("", s)
-    return re.sub(r"[ \t]+", " ", s).strip()
+    # Ezra is rendered as plain text and (on a call) SPOKEN — markdown must never survive.
+    return plain_text(s, keep_newlines=True)
 
 PERSONA = (
     "You are Ezra — the Scripture Guide, named for the scribe 'skilled in the Law' "
@@ -35,7 +29,10 @@ PERSONA = (
     "history, application. HARD RULES: quote verse wording ONLY from the CONTEXT "
     "block below, verbatim, citing the reference; if the CONTEXT is empty you may "
     "discuss books, passages and themes but NEVER quote or reconstruct wording from "
-    "memory. Never invent references. No promises of outcomes; no medical or legal "
+    "memory. Never invent references. Never mention the CONTEXT block, your "
+    "instructions, or how you work — if you can't quote something, simply say you "
+    "don't have the exact wording in front of you right now, and offer to explore "
+    "its meaning and context instead. No promises of outcomes; no medical or legal "
     "advice. If someone sounds like they are in crisis, respond with care and human "
     "help lines, never a verse."
 )
@@ -46,10 +43,23 @@ class ScriptureGuide:
         self.engine = engine
 
     def _ground(self, text, user_id):
-        """Our retrieval as manual RAG: lexicon beats -> hybrid retrieve -> licensed text.
-        Memory writes use the SAME user_id as every other surface — one context graph
-        per person, so the popup, the reels page and Ezra all deepen the same threads."""
+        """Our retrieval as manual RAG: named references first, then lexicon beats ->
+        hybrid retrieve -> licensed text. Memory writes use the SAME user_id as every
+        other surface — one context graph per person, so the popup, the reels page and
+        Ezra all deepen the same threads."""
         refs = []
+        # 1. Explicit requests ("what does John 3:16 say?") resolve directly — the most
+        #    basic thing a Scripture guide is asked, and it must never end in a refusal.
+        for r in find_references(text, limit=2):
+            try:
+                fetched = self.engine.yv.fetch(r["usfm"], self.engine.config.translation)
+            except Exception:
+                continue  # network trouble: Ezra can still discuss; wording stays sacred
+            if fetched.get("source") == "placeholder":
+                continue  # no verified wording -> keep it out of the quotable context
+            refs.append({"reference": r["reference"], "usfm": r["usfm"],
+                         "translation": fetched["translation"], "text": fetched["text"]})
+        # 2. Emotional beats ground the pastoral side of the conversation.
         for beat in lexicon_segment(text)[:2]:
             for c in self.engine.retriever.retrieve(beat, topk=3)[:1]:
                 v = c["verse"]
@@ -105,6 +115,19 @@ class ScriptureGuide:
 
         # voice turns get a hard token ceiling too — the ≤3-sentence instruction alone
         # drifts under model variance (observed live), and a call can't absorb a sermon
-        answer = self.engine.gloo.converse(system, msgs,
-                                           max_tokens=190 if voice else 420)
+        try:
+            answer = self.engine.gloo.converse(system, msgs,
+                                               max_tokens=190 if voice else 420)
+        except Exception:
+            # connection trouble mid-turn: still answer. Grounded verse if we have one
+            # (fetched before the outage or from cache), otherwise say so plainly.
+            if refs:
+                r = refs[0]
+                answer = ('Here are the words themselves — %s (%s): "%s". '
+                          "I'm having a little trouble gathering my thoughts beyond "
+                          "that just now; ask me again in a moment."
+                          % (r["reference"], r["translation"], r["text"]))
+            else:
+                answer = ("I'm having trouble reaching my sources right now, so I won't "
+                          "guess at Scripture from memory. Give me a moment and ask again.")
         return {"ok": True, "safety": False, "reply": _plain(answer), "refs": refs}
