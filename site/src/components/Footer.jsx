@@ -28,8 +28,9 @@ export default function Footer() {
         <p className="lede reveal" style={{ margin: '16px auto 0' }}>
           Resonate runs as an <b>MCP server</b> — paste this block into your assistant&apos;s MCP
           config (Claude Desktop: <span className="mono-inline">Settings → Developer → Edit Config</span>),
-          use the real path on your machine, restart — and Claude, ChatGPT, Gemini or Cursor can
-          reach for a verified verse, weave a story, or pull reels, mid-conversation.
+          use the real path on your machine, restart — and <b>Claude, Gemini, ChatGPT, Copilot,
+          Cursor, Antigravity, Windsurf</b> — any MCP-speaking app — can reach for a verified
+          verse, weave a story, or pull reels, mid-conversation.
         </p>
 
         <div className="mcp-card reveal">

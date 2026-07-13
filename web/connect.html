@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Connect Resonate to your assistant</title>
+<title>Connect Resonate to your AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Space+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
@@ -17,7 +17,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   body{min-height:100vh;background:linear-gradient(180deg,#e4d7c6,#ddcdb8 60%,#d5c4ac);
     color:var(--ink);font-family:var(--sans);padding-bottom:70px}
-  .wrap{width:min(820px,94vw);margin:0 auto}
+  .wrap{width:min(860px,94vw);margin:0 auto}
   header{display:flex;align-items:baseline;justify-content:space-between;padding:24px 0 8px}
   header .brand{font-family:var(--serif);font-weight:600;font-size:24px}
   header .brand .cross{color:var(--clay);margin-right:6px}
@@ -28,7 +28,7 @@
   .eyebrow{margin-top:20px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--faded)}
   h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,5.5vw,46px);margin-top:8px;line-height:1.05}
   .lede{margin-top:14px;font-family:var(--serif);font-size:clamp(17px,2.4vw,21px);color:var(--ink-soft);
-    line-height:1.5;max-width:60ch}
+    line-height:1.5;max-width:62ch}
   .lede b{color:var(--ink);font-weight:600}
 
   /* the "what happens" band */
@@ -40,35 +40,40 @@
   .flow .arr{color:var(--clay);font-size:18px}
 
   h2{font-family:var(--serif);font-weight:600;font-size:26px;margin:38px 0 4px}
-  .sect-sub{font-size:13px;color:var(--ink-soft);margin-bottom:14px}
+  .sect-sub{font-size:13px;color:var(--ink-soft);margin-bottom:14px;max-width:70ch}
 
   /* host tabs */
   .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
   .tab{font-family:var(--sans);font-size:11px;letter-spacing:.08em;color:var(--ink-soft);cursor:pointer;
     background:linear-gradient(178deg,#f4eede,#ece4d3);border:1px solid rgba(33,29,23,.18);
-    border-radius:999px;padding:8px 16px}
+    border-radius:999px;padding:8px 15px;user-select:none}
   .tab.on{color:#efe9df;background:linear-gradient(160deg,var(--clay),var(--clay-deep));border-color:transparent}
   .tab:hover:not(.on){background:#f6f0e2}
 
   .panel{display:none}
   .panel.on{display:block;animation:fade .35s ease both}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .step{display:flex;gap:14px;margin:16px 0}
+  .step{display:flex;gap:14px;margin:16px 0;align-items:flex-start}
   .step .n{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;
     font-family:var(--serif);font-weight:600;color:#efe9df;background:radial-gradient(circle at 36% 30%,#c8825f,#8a4a35)}
   .step .body{flex:1;min-width:0}
   .step .body h3{font-family:var(--sans);font-size:13.5px;font-weight:500;color:var(--ink);margin-bottom:2px}
   .step .body p{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+  .step .body p b{color:var(--ink)}
+  .step .body a{color:var(--clay)}
+  .m{font-family:var(--mono);font-size:.95em}
 
-  .code{position:relative;margin-top:10px;background:#211d17;border-radius:12px;padding:16px 16px 15px;
-    overflow-x:auto;border:1px solid rgba(0,0,0,.3)}
-  .code pre{font-family:var(--mono);font-size:12px;line-height:1.65;color:#e9e1d3;white-space:pre;margin:0}
-  .code .k{color:#cfa952}.code .s{color:#c9b98a}.code .c{color:#8a8172;font-style:italic}
-  .copy{position:absolute;top:9px;right:9px;font-family:var(--sans);font-size:9px;letter-spacing:.12em;
-    text-transform:uppercase;color:#e9e1d3;background:rgba(166,91,67,.5);border:1px solid rgba(233,225,211,.3);
-    border-radius:7px;padding:4px 9px;cursor:pointer}
-  .copy:hover{background:rgba(166,91,67,.8)}
-  .copy.done{background:#5a7052}
+  /* code cards — parchment, like the rest of the product (no dark consoles) */
+  .code{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;
+    background:linear-gradient(177deg,#fbf7ec,var(--paper2));border:1px solid rgba(33,29,23,.18);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.55), 0 6px 18px rgba(96,76,44,.08)}
+  .code pre{font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--ink-soft);
+    white-space:pre;margin:0;padding:14px 86px 14px 16px;overflow-x:auto}
+  .copy{position:absolute;top:8px;right:8px;font-family:var(--sans);font-size:9px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--clay);background:rgba(166,91,67,.07);
+    border:1px solid rgba(166,91,67,.45);border-radius:7px;padding:4px 9px;cursor:pointer}
+  .copy:hover{background:rgba(166,91,67,.14)}
+  .copy.done{color:#4c6245;border-color:rgba(76,98,69,.5);background:rgba(90,112,82,.1)}
 
   .tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:22px}
   .tool{background:linear-gradient(177deg,#fbf7ec,var(--paper2));border:1px solid rgba(33,29,23,.14);
@@ -79,6 +84,7 @@
   .note{margin-top:26px;padding:16px 18px;border-radius:12px;background:rgba(185,143,53,.08);
     border:1px solid rgba(185,143,53,.3);font-size:13px;color:var(--ink-soft);line-height:1.6}
   .note b{color:var(--ink)}
+  .note a{color:var(--clay)}
   footer{margin-top:48px;text-align:center;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faded)}
 </style>
 </head>
@@ -96,9 +102,9 @@
   <div class="eyebrow">Connect · Model Context Protocol</div>
   <h1>Give your AI assistant<br>a sense of Scripture.</h1>
   <p class="lede">Resonate runs as an <b>MCP server</b> — a small tool your assistant can call.
-    Add it once, and Claude, ChatGPT, Gemini, Cursor or any MCP-speaking app can reach for a
-    <b>verified verse</b>, weave a <b>story</b>, or pull <b>reels</b> — mid-conversation, on its own.
-    You don't change your chat app; you hand it a new sense.</p>
+    Add it once, and <b>Claude, Gemini, ChatGPT, Copilot, Cursor, Antigravity, Windsurf</b> — any
+    app that speaks MCP — can reach for a <b>verified verse</b>, weave a <b>story</b>, or pull
+    <b>reels</b> — mid-conversation, on its own. You don't change your chat app; you hand it a new sense.</p>
 
   <div class="flow">
     <span class="node">You type a real moment</span>
@@ -109,63 +115,18 @@
   </div>
 
   <h2>Add it to your assistant</h2>
-  <div class="sect-sub">Pick your app. The engine runs on your machine, keeps no transcript, and stores only theme patterns — never what you wrote.</div>
+  <div class="sect-sub">Pick your app — it's one block of config, the same shape everywhere.
+    The engine runs on your machine, keeps no transcript, and stores only theme patterns — never what you wrote.</div>
 
-  <div class="tabs" id="tabs">
-    <div class="tab on" data-t="claude">Claude Desktop</div>
-    <div class="tab" data-t="code">Claude Code</div>
-    <div class="tab" data-t="chatgpt">ChatGPT</div>
-    <div class="tab" data-t="cursor">Cursor / VS Code</div>
-  </div>
+  <div class="tabs" id="tabs"></div>
+  <div id="panels"></div>
 
-  <div class="panel on" data-p="claude">
-    <div class="step"><div class="n">1</div><div class="body"><h3>Open the config</h3>
-      <p>Claude Desktop → Settings → Developer → <b>Edit Config</b>. It opens <span style="font-family:var(--mono)">claude_desktop_config.json</span>.</p></div></div>
-    <div class="step"><div class="n">2</div><div class="body"><h3>Add the Resonate server</h3>
-      <p>Paste this inside <span style="font-family:var(--mono)">mcpServers</span> (use the full path to the file on your machine):</p>
-      <div class="code"><button class="copy">copy</button><pre><span class="k">"mcpServers"</span>: {
-  <span class="k">"resonate"</span>: {
-    <span class="k">"command"</span>: <span class="s">"python"</span>,
-    <span class="k">"args"</span>: [<span class="s">"C:/path/to/resonate/integrations/mcp/resonate_mcp.py"</span>]
-  }
-}</pre></div></div>
-    <div class="step"><div class="n">3</div><div class="body"><h3>Restart Claude</h3>
-      <p>You'll see a 🔨 tool icon. Now say <i>"I'm exhausted and losing hope"</i> — Claude will call
-      <span style="font-family:var(--mono)">resonate_verse</span> and answer with a real, cited verse.</p></div></div>
-  </div>
-
-  <div class="panel" data-p="code">
-    <div class="step"><div class="n">1</div><div class="body"><h3>One command</h3>
-      <p>From any terminal:</p>
-      <div class="code"><button class="copy">copy</button><pre>claude mcp add resonate -- python C:/path/to/resonate/integrations/mcp/resonate_mcp.py</pre></div></div>
-    <div class="step"><div class="n">2</div><div class="body"><h3>Confirm</h3>
-      <p><span style="font-family:var(--mono)">claude mcp list</span> should show <b>resonate</b>. Ezra's tools are now inside Claude Code.</p></div></div>
-  </div>
-
-  <div class="panel" data-p="chatgpt">
-    <div class="step"><div class="n">1</div><div class="body"><h3>Enable developer mode</h3>
-      <p>ChatGPT → Settings → <b>Connectors</b> → enable developer/MCP connectors (Plus/Pro).</p></div></div>
-    <div class="step"><div class="n">2</div><div class="body"><h3>Add the server</h3>
-      <p>Point it at your Resonate MCP endpoint. Locally, expose it over MCP-remote; a one-click hosted
-      endpoint is coming so no install is needed.</p></div></div>
-    <div class="step"><div class="n">3</div><div class="body"><h3>Or use the browser extension</h3>
-      <p>Prefer zero setup? The <b>Resonate extension</b> quietly surfaces a verse beside your ChatGPT
-      chat — no config at all. <a href="/" style="color:var(--clay)">See the extension →</a></p></div></div>
-  </div>
-
-  <div class="panel" data-p="cursor">
-    <div class="step"><div class="n">1</div><div class="body"><h3>Edit mcp.json</h3>
-      <p>Cursor → Settings → MCP (or <span style="font-family:var(--mono)">.cursor/mcp.json</span>). VS Code MCP extensions use the same shape:</p>
-      <div class="code"><button class="copy">copy</button><pre>{
-  <span class="k">"mcpServers"</span>: {
-    <span class="k">"resonate"</span>: {
-      <span class="k">"command"</span>: <span class="s">"python"</span>,
-      <span class="k">"args"</span>: [<span class="s">"C:/path/to/resonate/integrations/mcp/resonate_mcp.py"</span>]
-    }
-  }
-}</pre></div></div>
-    <div class="step"><div class="n">2</div><div class="body"><h3>Reload</h3>
-      <p>Reload the window; the Resonate tools appear in the MCP panel.</p></div></div>
+  <div class="note" id="webnote">
+    <b>On Grok, DeepSeek, or a chat that lives only in a browser tab?</b> A web page can't launch
+    tools on your machine, so pure web chats can't host a local MCP server. Three good paths:
+    use that model's desktop / CLI / IDE client above (Gemini CLI, Copilot, Cursor, Windsurf all
+    run any model family), meet Resonate inside ChatGPT with the
+    <a href="/">browser extension</a> (zero config), or invite the Discord bot to your server.
   </div>
 
   <h2>What your assistant can now do</h2>
@@ -189,21 +150,86 @@
 
 <script>
 (function () {
-  // host tabs
-  document.getElementById("tabs").addEventListener("click", (e) => {
-    const t = e.target.closest(".tab"); if (!t) return;
-    document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("on", x === t));
-    document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("on", p.dataset.p === t.dataset.t));
-  });
-  // copy buttons
-  document.querySelectorAll(".copy").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const code = btn.parentElement.querySelector("pre").innerText;
-      navigator.clipboard.writeText(code).then(() => {
-        btn.textContent = "copied ✓"; btn.classList.add("done");
-        setTimeout(() => { btn.textContent = "copy"; btn.classList.remove("done"); }, 1600);
-      }).catch(() => {});
+  // One path placeholder, one JSON shape — rendered per app so the markup can
+  // never drift or mis-nest again (the old hand-written panels once did).
+  var P = "C:/path/to/resonate/integrations/mcp/resonate_mcp.py";
+  var MCP_JSON = '{\n  "mcpServers": {\n    "resonate": {\n      "command": "python",\n      "args": ["' + P + '"]\n    }\n  }\n}';
+  var VSCODE_JSON = '{\n  "servers": {\n    "resonate": {\n      "type": "stdio",\n      "command": "python",\n      "args": ["' + P + '"]\n    }\n  }\n}';
+
+  var APPS = [
+    { id: "claude", label: "Claude Desktop", steps: [
+      { t: "Open the config", p: 'Claude Desktop → Settings → Developer → <b>Edit Config</b>. It opens <span class="m">claude_desktop_config.json</span>.' },
+      { t: "Add the Resonate server", p: 'Merge this in (use the full path to the file on your machine):', code: MCP_JSON },
+      { t: "Restart Claude", p: 'You’ll see a 🔨 tool icon. Now say <i>"I’m exhausted and losing hope"</i> — Claude calls <span class="m">resonate_verse</span> and answers with a real, cited verse.' },
+    ]},
+    { id: "code", label: "Claude Code", steps: [
+      { t: "One command", p: "From any terminal:", code: "claude mcp add resonate -- python " + P },
+      { t: "Confirm", p: '<span class="m">claude mcp list</span> should show <b>resonate</b>. Ezra’s tools are now inside Claude Code.' },
+    ]},
+    { id: "gemini", label: "Gemini CLI", steps: [
+      { t: "Open the settings file", p: 'Edit <span class="m">~/.gemini/settings.json</span> (create it if it’s new).' },
+      { t: "Add the server", p: "Same universal shape:", code: MCP_JSON },
+      { t: "Restart the CLI", p: '<span class="m">/mcp</span> lists the Resonate tools. (Gemini in the browser can’t run local tools — the CLI and IDE integrations can.)' },
+    ]},
+    { id: "chatgpt", label: "ChatGPT", steps: [
+      { t: "Zero-setup path: the extension", p: 'The <b>Resonate browser extension</b> quietly surfaces a verse beside your ChatGPT chat — voices, stories, reels, no config at all. <a href="/">See the extension →</a>' },
+      { t: "Or: developer-mode connectors", p: 'ChatGPT → Settings → <b>Connectors</b> → enable developer mode (Plus/Pro), then add your Resonate MCP endpoint. Local stdio servers need a remote bridge (e.g. <span class="m">mcp-remote</span>); a hosted endpoint is on the roadmap.' },
+    ]},
+    { id: "copilot", label: "VS Code · Copilot", steps: [
+      { t: "Create .vscode/mcp.json", p: 'In your workspace (VS Code 1.99+, Copilot agent mode):', code: VSCODE_JSON },
+      { t: "Start it", p: 'A <b>Start</b> code-lens appears atop the file; run it, open Copilot Chat in <b>agent mode</b>, and the Resonate tools are listed under 🔧.' },
+    ]},
+    { id: "cursor", label: "Cursor", steps: [
+      { t: "Edit mcp.json", p: 'Cursor → Settings → <b>MCP</b> → Add server (or edit <span class="m">~/.cursor/mcp.json</span>):', code: MCP_JSON },
+      { t: "Reload", p: "Reload the window; Resonate appears in the MCP panel, tools ready in chat." },
+    ]},
+    { id: "antigravity", label: "Antigravity", steps: [
+      { t: "Open MCP settings", p: 'In Google’s Antigravity IDE: agent panel → <b>MCP servers</b> → add server (it edits the same <span class="m">mcpServers</span> config).' },
+      { t: "Paste the block", p: "Universal shape, full path on your machine:", code: MCP_JSON },
+      { t: "Let the agent reach for it", p: "Agents pick the tools up on the next run — ask for a verse for a real moment and watch it cite one, verbatim." },
+    ]},
+    { id: "windsurf", label: "Windsurf", steps: [
+      { t: "Edit the MCP config", p: 'Windsurf → Settings → Cascade → <b>MCP</b> (file: <span class="m">~/.codeium/windsurf/mcp_config.json</span>):', code: MCP_JSON },
+      { t: "Refresh", p: "Refresh the MCP list in Cascade; the four Resonate tools appear." },
+    ]},
+    { id: "any", label: "Any MCP app", steps: [
+      { t: "The universal block", p: '<b>Cline, Zed, JetBrains AI, LM Studio, Warp</b> — every MCP host takes the same server definition, usually under a key named <span class="m">mcpServers</span> (or <span class="m">servers</span>):', code: MCP_JSON },
+      { t: "Requirements", p: 'Python 3.11+ on PATH and this repo on disk — the server is one stdlib file, <span class="m">integrations/mcp/resonate_mcp.py</span>. No pip install, no keys needed in mock mode.' },
+    ]},
+  ];
+
+  var tabs = document.getElementById("tabs"), panels = document.getElementById("panels");
+  APPS.forEach(function (app, i) {
+    var t = document.createElement("div");
+    t.className = "tab" + (i === 0 ? " on" : ""); t.dataset.t = app.id; t.textContent = app.label;
+    tabs.appendChild(t);
+    var p = document.createElement("div");
+    p.className = "panel" + (i === 0 ? " on" : ""); p.dataset.p = app.id;
+    app.steps.forEach(function (s, j) {
+      var step = document.createElement("div"); step.className = "step";
+      var body = '<div class="n">' + (j + 1) + '</div><div class="body"><h3></h3><p>' + s.p + "</p>";
+      if (s.code) body += '<div class="code"><button class="copy">copy</button><pre></pre></div>';
+      step.innerHTML = body + "</div>";
+      step.querySelector("h3").textContent = s.t;
+      if (s.code) step.querySelector("pre").textContent = s.code;
+      p.appendChild(step);
     });
+    panels.appendChild(p);
+  });
+
+  tabs.addEventListener("click", function (e) {
+    var t = e.target.closest(".tab"); if (!t) return;
+    document.querySelectorAll(".tab").forEach(function (x) { x.classList.toggle("on", x === t); });
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.toggle("on", p.dataset.p === t.dataset.t); });
+  });
+  panels.addEventListener("click", function (e) {
+    var btn = e.target.closest(".copy"); if (!btn) return;
+    var code = btn.parentElement.querySelector("pre").innerText;
+    var done = function () {
+      btn.textContent = "copied ✓"; btn.classList.add("done");
+      setTimeout(function () { btn.textContent = "copy"; btn.classList.remove("done"); }, 1600);
+    };
+    try { navigator.clipboard.writeText(code).then(done, done); } catch (err) { done(); }
   });
 })();
 </script>

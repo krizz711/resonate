@@ -56,7 +56,7 @@ export default function Hero() {
           your daily AI conversations and workflows.
         </p>
         <div className="hero-ctas">
-          <a className="btn primary" href="/connect.html" data-magnetic>⚡ Add to Claude / ChatGPT</a>
+          <a className="btn primary" href="/connect.html" data-magnetic>⚡ Add to your AI assistant</a>
           <a className="btn ghost" href="#features" data-magnetic>📖 Explore the features</a>
         </div>
       </div>
