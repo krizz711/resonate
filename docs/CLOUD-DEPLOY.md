@@ -45,7 +45,10 @@ MCP note: the browser UI shows visitors HOW to connect (landing footer + `/conne
    - Service type: Web Service
    - Environment: Python
    - Plan: Free
-   - Build command: `pip install -r requirements.txt`
+   - Build command: `pip install -r requirements.txt && cd site && npm ci && npm run build`
+     (the site is BUILT ON RENDER — `site/dist` is deliberately not in git, so a
+     pip-only build command leaves the landing page 404ing with a
+     "site/dist not built" hint)
    - Start command: `python scripts/serve.py`
    - Health check path: `/health`
 
