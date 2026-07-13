@@ -20,15 +20,17 @@ Important free-tier limits:
 
 ## What Is Cloud-Ready Now
 
-- Landing page: `/`
-- Mock chat demo: `/mock-chat.html`
+- Landing page: `/` (its closing section carries the copy-paste MCP config)
+- Connect guide (per-app MCP setup): `/connect.html`
+- Ezra, the Scripture Guide: `/guide.html`
+- Reels for you: `/reels.html`
+- Guardian registration: `/guardians.html`
 - Panel preview: `/panel-preview.html`
-- Engine playground: `/playground.html`
 - Health check: `/health`
 - Resonate API: `POST /resonate`
 - Story API: `POST /story`
 
-MCP note: visitors do not access MCP through the browser UI. MCP is a separate stdio integration for AI clients such as Claude Desktop, Claude Code, or ChatGPT developer-mode clients. The cloud UI exposes the web demo and HTTP endpoints.
+MCP note: the browser UI shows visitors HOW to connect (landing footer + `/connect.html`), but MCP itself is a separate stdio integration run by AI clients such as Claude Desktop, Claude Code, or Cursor on the visitor's own machine.
 
 ## Deploy On Render
 
@@ -54,8 +56,9 @@ MCP note: visitors do not access MCP through the browser UI. MCP is a separate s
 Useful URLs after deploy:
 
 - `https://YOUR-SERVICE.onrender.com/`
-- `https://YOUR-SERVICE.onrender.com/mock-chat.html`
-- `https://YOUR-SERVICE.onrender.com/playground.html`
+- `https://YOUR-SERVICE.onrender.com/connect.html`
+- `https://YOUR-SERVICE.onrender.com/guide.html`
+- `https://YOUR-SERVICE.onrender.com/reels.html`
 - `https://YOUR-SERVICE.onrender.com/health`
 
 ## Add Live API Keys Later
@@ -91,12 +94,11 @@ For Kaggle, use the deployed URL as the public project link.
 
 Recommended demo path for judges:
 
-1. Open `/mock-chat.html`.
-2. Type: `I feel like I am failing everyone and I cannot keep up.`
-3. Show the verse panel.
-4. Type a neutral question and show Resonate staying silent.
-5. Type a crisis-style test message only in a controlled demo, then show the help card.
-6. Open `/playground.html` to show the engine response.
+1. Open `/` and scroll — the story, the metrics, and the copy-paste MCP block.
+2. Open `/guide.html` and ask Ezra: `I feel like I am failing everyone and I cannot keep up.`
+3. Ask Ezra `What does Psalm 23:1-3 say?` — verbatim, licensed wording via YouVersion.
+4. Open `/reels.html`, share a moment, watch the shelves re-rank.
+5. Connect a real assistant via `/connect.html` and say “I'm exhausted and losing hope.”
 
 ## Troubleshooting
 

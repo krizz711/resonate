@@ -37,8 +37,9 @@ Base `https://platform.ai.gloo.com/ai/v2/` · OAuth2 client-credentials (`scope=
 `data/guardians.json` with `consent:true`), privacy-first (never shares what was typed),
 24h cooldown, daemon-thread sends, `guardian` status in the safety_hold payload;
 extension help card shows "your guardians have been quietly notified."
-**Next**: registration UI (playground settings page writes guardians.json via serve.py
-endpoint); optionally a Gloo-classified severity tier before alerting.
+**Next**: ~~registration UI~~ DONE — `/guardians.html` writes guardians.json via the
+serve.py endpoint (consent-first, per-entry validation); optionally a Gloo-classified
+severity tier before alerting.
 
 ### 2. MCP for every assistant  ✅ tool added
 `integrations/mcp/resonate_mcp.py` — stdio JSON-RPC, works in Claude/ChatGPT/Gemini/Grok
@@ -85,8 +86,9 @@ product). n8n (self-hosted, free) stays off the live path: guardian alerts, sync
   ffmpeg now resolved robustly (WinGet path — PATH alone fails outside Git Bash).
 - Verified live e2e: money worry → Matthew 6:31-33 (NIV) verbatim; restlessness →
   Psalm 4:8; crisis → help lines + guardian status, call ends with care. 68 tests.
-**Next**: link "call" from the site/playground; optional Twilio trial number for the
-video's phone-shot; WhatsApp voice notes via self-hosted n8n.
+**Next**: ~~link "call" from the site~~ DONE (Features act VI + guide.html seal);
+optional Twilio trial number for the video's phone-shot; WhatsApp voice notes via
+self-hosted n8n.
 
 ### 5. Site copy  ✅ DONE — acts now tell the real story
 Gloo verification (Verses), guardian alerts (Safety), prioritized reel sets (Reels),

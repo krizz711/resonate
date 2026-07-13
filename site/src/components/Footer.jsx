@@ -1,18 +1,53 @@
+import { useState } from 'react'
+
+// The MCP server block — the one thing a visitor pastes to give their own
+// assistant Resonate's tools. Kept in the exact shape connect.html teaches.
+const MCP_SNIPPET = `"mcpServers": {
+  "resonate": {
+    "command": "python",
+    "args": ["C:/path/to/resonate/integrations/mcp/resonate_mcp.py"]
+  }
+}`
+
 export default function Footer() {
+  const [copied, setCopied] = useState(false)
+  const copy = () => {
+    const done = () => { setCopied(true); setTimeout(() => setCopied(false), 2200) }
+    try {
+      navigator.clipboard.writeText(MCP_SNIPPET).then(done, done)
+    } catch (e) { done() }
+  }
+
   return (
     <section id="try">
-      <div className="bg-word" aria-hidden="true"><span>TRY</span></div>
+      <div className="bg-word" aria-hidden="true"><span>CONNECT</span></div>
       <div className="wrap">
         <div className="folio reveal">· VII ·</div>
-        <div className="eyebrow reveal" style={{ justifyContent: 'center' }}><span className="tick" />See it move</div>
-        <h2 className="display reveal">Try it — live, right now.</h2>
+        <div className="eyebrow reveal" style={{ justifyContent: 'center' }}><span className="tick" />Enable your assistant</div>
+        <h2 className="display reveal">Give your assistant a sense of Scripture.</h2>
         <p className="lede reveal" style={{ margin: '16px auto 0' }}>
-          The engine is deployed and running. Open the playground, type a worry, a question, a
-          moment — and watch Scripture find its way in, or stay silent when it should.
+          Resonate runs as an <b>MCP server</b> — paste this block into your assistant&apos;s MCP
+          config (Claude Desktop: <span className="mono-inline">Settings → Developer → Edit Config</span>),
+          use the real path on your machine, restart — and Claude, ChatGPT, Gemini or Cursor can
+          reach for a verified verse, weave a story, or pull reels, mid-conversation.
         </p>
+
+        <div className="mcp-card reveal">
+          <div className="mcp-bar">
+            <span className="mcp-file">claude_desktop_config.json</span>
+            <button className="mcp-copy" onClick={copy} aria-live="polite">
+              {copied ? '✓ Copied' : '⧉ Copy'}
+            </button>
+          </div>
+          <pre><code>{MCP_SNIPPET}</code></pre>
+        </div>
+        <p className="mcp-after reveal">
+          Then say <i>“I’m exhausted and losing hope.”</i> — your assistant calls{' '}
+          <span className="mono-inline">resonate_verse</span> and answers with a real, cited verse.
+        </p>
+
         <div className="try-actions reveal">
-          <a className="btn primary" href="/playground.html" data-magnetic>Open the playground ↗</a>
-          <a className="btn ghost" href="/mock-chat.html" data-magnetic>Demo chat</a>
+          <a className="btn primary" href="/connect.html" data-magnetic>⚡ Full setup for your app ↗</a>
           <a className="btn ghost" href="/panel-preview.html" data-magnetic>Panel preview</a>
           <a className="btn ghost" href="https://github.com/krizz711/resonate" target="_blank" rel="noopener" data-magnetic>Source · GitHub</a>
         </div>

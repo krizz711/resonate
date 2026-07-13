@@ -50,7 +50,7 @@ the narration — mic'd close, like thought.*
 ## CLOSE — the bridge (2:20–2:55)
 | Time | Visual | Audio | On-screen text |
 |---|---|---|---|
-| 2:20 | Fast cuts: same engine in **VS Code** margins; the mock-chat panel on a phone-width window; the three voice names cycling on the card. | VO: "One engine. Your chat, your editor, your voice — Bella, Isabella, or George. You choose where Scripture meets you." | |
+| 2:20 | Fast cuts: same engine in **VS Code** margins; the panel on a phone-width chatgpt.com window; the three voice names cycling on the card. | VO: "One engine. Your chat, your editor, your voice — Bella, Isabella, or George. You choose where Scripture meets you." | |
 | 2:36 | Pull back from the glowing screen; the wax seal glows softly in the corner. | VO: "Two billion people live in these spaces. Resonate is the bridge — present, reverent, never intruding." | |
 | 2:46 | End card: **RESONATE** wordmark on parchment. | *(quiet)* "Scripture, where you already are." | Powered by YouVersion Platform + Gloo AI Studio · github.com/krizz711/resonate |
 
@@ -58,7 +58,8 @@ the narration — mic'd close, like thought.*
 
 ## Capture checklist
 - [ ] Live extension on chatgpt.com (after keys: `RESONATE_MODE=live`) — slide-in, fold-to-seal,
-      unfold, dismiss. Backup backdrop: `http://127.0.0.1:8765/mock-chat.html` (same pixels, no flake).
+      unfold, dismiss. (If a controlled no-flake backdrop is ever needed, restore
+      `web/mock-chat.html` from git history — removed from the public UI 2026-07-13.)
 - [ ] Voice takes from the engine itself: `http://127.0.0.1:8765/tts?voice=george&text=...`
       (repeat for bella/isabella) — save WAVs for the edit. Pick winners in `data/voice-lab/index.html`.
 - [ ] Restraint beat (neutral msg → silence), safety beat (help card — mild phrasing, blur).

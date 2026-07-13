@@ -113,7 +113,6 @@ def _handoff_take(uid):
 _PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(_PROJ, "site", "dist")
 SRC_WEB_DIR = os.path.join(_PROJ, "web")
-EXT_DIR = os.path.join(_PROJ, "integrations", "chatgpt-extension")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -193,9 +192,6 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/tts":
             self._handle_tts(q)
-            return
-        if path == "/ext/content.js":
-            self._send_file(os.path.join(EXT_DIR, "content.js"), "text/javascript; charset=utf-8")
             return
         if path == "/guide.html":  # the web call — standalone page, not part of the Vite build
             self._send_html(os.path.join(SRC_WEB_DIR, "guide.html"))
@@ -340,8 +336,8 @@ class Handler(BaseHTTPRequestHandler):
         history = [str(h)[:2000] for h in history][-5:]
         result = ENGINE.resonate(text, user, history=history)
         # Chat surfaces (they pass an 'event') get at most ONE verse per message — a
-        # two-beat message must not stack two panels. Transcripts (playground, no event)
-        # keep every beat. Safety holds always survive the cut.
+        # two-beat message must not stack two panels. Transcript callers (API, no
+        # event) keep every beat. Safety holds always survive the cut.
         if data.get("event"):
             delivered = [d for d in result["deliveries"] if d["status"] == "delivered"]
             if len(delivered) > 1:

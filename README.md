@@ -58,10 +58,11 @@ python eval/run_eval.py                        # 4. 32-scenario evaluation harne
 python scripts/serve.py                        # 5. local engine  ->  http://127.0.0.1:8765
 python integrations/mcp/smoke_client.py        # 6. MCP surface: real stdio session, all 3 tools
 ```
-With the server running, either open **http://127.0.0.1:8765/mock-chat.html** (a faithful
-ChatGPT stand-in running the real extension script — verse panel, wax-seal fold, voices, reels),
-or load `integrations/chatgpt-extension` at `chrome://extensions` → Developer mode → Load
-unpacked, and chat on chatgpt.com. The VS Code surface: open `integrations/vscode`, press F5.
+With the server running, open **http://127.0.0.1:8765** — the site's closing section (and
+**/connect.html**) gives the copy-paste MCP block that adds Resonate to Claude, ChatGPT, Gemini
+or Cursor. For the flagship surface, load `integrations/chatgpt-extension` at
+`chrome://extensions` → Developer mode → Load unpacked, and chat on chatgpt.com — verse panel,
+wax-seal fold, voices, reels. The VS Code surface: open `integrations/vscode`, press F5.
 
 **Optional voices** (Kokoro TTS): install [Kokoro-82M](https://github.com/hexgrad/kokoro) in any
 venv (`pip install kokoro soundfile`), set `RESONATE_KOKORO_PY` to that venv's python, have
@@ -102,7 +103,7 @@ resonate/        engine package — config, models, embeddings, verses, retrieva
 integrations/    chatgpt-extension/ · mcp/ · vscode/ · discord/   (delivery surfaces)
 data/            verses.json (131 refs+tags, no text) · sample_texts.json (KJV demo text)
 scripts/         demo.py · policy_demo.py · serve.py (local engine server)
-web/             control-panel playground served by the engine
+web/             engine-served pages: Ezra (guide) · reels · connect · guardians · panel preview
 eval/            dataset.json + run_eval.py (metrics)
 tests/           test_resonate.py (90 cases incl. the eval guard)
 docs/            video script · writeup · cover · competitiveness review

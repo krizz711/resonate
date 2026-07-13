@@ -44,9 +44,10 @@ local server, which runs the matching engine + safety gate + Delivery Policy.
    A quiet verse panel appears bottom-right. Try *"what's the capital of France?"* → silence.
    Try a crisis phrase → a gentle help card, never a verse.
 
-**No ChatGPT handy?** Open `http://127.0.0.1:8765/mock-chat.html` — a faithful stand-in for
-chatgpt.com's DOM that runs this very content script. Used for automated tests and as a
-controlled backdrop for filming.
+**No ChatGPT handy?** The panel's parchment skin (verse + crisis variants) is previewable at
+`http://127.0.0.1:8765/panel-preview.html`, and any MCP assistant gets the same engine via
+`/connect.html`. (A throwaway chatgpt.com stand-in for filming lives in git history as
+`web/mock-chat.html`, removed from the public UI on 2026-07-13.)
 
 **Tune the voices:** `python scripts/voice_lab.py` renders a matrix of speed/pitch variants per
 voice into `data/voice-lab/index.html` — pick the godliest by ear, adjust `resonate/tts.py`.

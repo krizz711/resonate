@@ -10,9 +10,9 @@ const TAGLINES = [
 ]
 
 // Page 1 — asymmetric split hero.
-// Left: the brand writes itself in letter by letter, rotating taglines
-// (same rotation as the deployed playground), the hook as sub-copy, CTAs.
-// Right: the 3D Christus stands clean against the cream, nothing over it.
+// Left: the brand writes itself in letter by letter, rotating taglines,
+// the hook as sub-copy, CTAs. Right: the 3D Christus stands clean against
+// the cream, nothing over it.
 export default function Hero() {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -56,7 +56,7 @@ export default function Hero() {
           your daily AI conversations and workflows.
         </p>
         <div className="hero-ctas">
-          <a className="btn primary" href="/playground.html" data-magnetic>⚡ Add to Claude / ChatGPT</a>
+          <a className="btn primary" href="/connect.html" data-magnetic>⚡ Add to Claude / ChatGPT</a>
           <a className="btn ghost" href="#features" data-magnetic>📖 Explore the features</a>
         </div>
       </div>

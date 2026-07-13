@@ -19,7 +19,7 @@ const engineRoutes = [
   '/tts',
   '/voices',
   '/health',
-  '/ext',         // /ext/content.js (extension script, for the mock chat)
+  '/handoff',     // the popup -> Ezra "carry this moment" single-read slot
   '/bg',          // /bg/athena.jpg — the standalone pages' background art (in web/)
 ]
 
