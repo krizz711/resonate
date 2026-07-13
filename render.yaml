@@ -3,7 +3,7 @@ services:
     name: resonate
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt && cd site && npm install && npm run build
+    buildCommand: pip install -r requirements.txt && cd site && npm ci && npm run build
     startCommand: python scripts/serve.py
     healthCheckPath: /health
     envVars:
@@ -11,3 +11,5 @@ services:
         value: mock
       - key: RESONATE_HOST
         value: 0.0.0.0
+      - key: NODE_VERSION
+        value: "20"

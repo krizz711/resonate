@@ -242,7 +242,10 @@ class Handler(BaseHTTPRequestHandler):
         if os.path.isfile(index):
             self._send_html(index)
         else:
-            self._send(404, {"error": "not found"})
+            import sys
+            print("[serve] site/dist not found at", WEB_DIR,
+                  "| exists:", os.path.exists(WEB_DIR), file=sys.stderr)
+            self._send(404, {"error": "not found", "hint": "site/dist not built — check build logs"})
 
     def _handle_tts(self, q):
         voice = (q.get("voice") or ["bella"])[0]
