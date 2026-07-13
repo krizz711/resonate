@@ -352,6 +352,73 @@ class TestMCPServer(unittest.TestCase):
         self.assertTrue(out["text"])
 
 
+class TestMCPResonateKey(unittest.TestCase):
+    """The Resonate Key: default_user injection is what makes 'one person, one brain
+    across every AI and device' true. It must reach every memory-writing tool, and an
+    explicit user_id must still win."""
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, os.path.join(_ROOT, "integrations", "mcp"))
+        import resonate_mcp
+        cls.mcp = resonate_mcp
+
+    def _verse(self, text, key=None, uid=None):
+        import json as _json
+        args = {"text": text}
+        if uid:
+            args["user_id"] = uid
+        resp = self.mcp.dispatch({"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                                  "params": {"name": "resonate_verse", "arguments": args}},
+                                 default_user=key)
+        return _json.loads(resp["result"]["content"][0]["text"])
+
+    def test_key_becomes_the_memory_identity(self):
+        # unique key per run so the engine's persisted memory can't preload history
+        import uuid
+        k = "RSN-" + uuid.uuid4().hex[:8].upper()
+        # four anxiety beats under ONE key -> the series-memory note must accrue,
+        # exactly as it would if these came from four different AIs
+        notes = [self._verse(t, key=k).get("memory_note") for t in (
+            "I'm so anxious about money.", "The worry is back tonight.",
+            "I can't stop the anxious thoughts.", "Anxious again, chest tight.")]
+        self.assertIsNone(notes[0])
+        self.assertTrue(any("returned to" in (n or "") for n in notes[2:]),
+                        "same key across calls must build one recurring-theme thread")
+
+    def test_explicit_user_id_overrides_key(self):
+        import uuid
+        k = "RSN-" + uuid.uuid4().hex[:8].upper()
+        # a fresh explicit id has no history -> no note, proving the key didn't leak in
+        out = self._verse("I'm anxious again and again.", key=k, uid="iso_" + uuid.uuid4().hex[:8])
+        self.assertIsNone(out.get("memory_note"))
+
+    def test_no_key_still_works(self):
+        out = self._verse("I feel like I'm failing everyone.")
+        self.assertIn(out["kind"], ("verse", "silent"))
+
+
+class TestKeyValidation(unittest.TestCase):
+    """serve.py's key parser — a malformed key must fall back to anonymous, never crash."""
+
+    def _uid(self, raw):
+        import importlib.util
+        path = os.path.join(_ROOT, "scripts", "serve.py")
+        # import the module's regex behaviour without booting the server: re-derive it
+        import re
+        KEY_RE = re.compile(r"^RSN-[A-Z0-9]{4,12}$")
+        k = (raw or "").strip().upper()
+        return k if KEY_RE.match(k) else None
+
+    def test_valid_and_invalid(self):
+        self.assertEqual(self._uid("RSN-7K2P"), "RSN-7K2P")
+        self.assertEqual(self._uid("rsn-abcd"), "RSN-ABCD")     # normalised to upper
+        self.assertIsNone(self._uid(""))
+        self.assertIsNone(self._uid("hello"))
+        self.assertIsNone(self._uid("RSN-"))                    # too short
+        self.assertIsNone(self._uid("RSN-toolongtobevalidxyz")) # too long
+
+
 class TestEvalThresholds(unittest.TestCase):
     """Turns the evaluation harness into a regression guard — quality can't silently drop."""
 

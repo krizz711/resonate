@@ -62,6 +62,26 @@ REELS = ReelStore()
 WEAVER = StoryWeaver(ENGINE.gloo)
 GUIDE = ScriptureGuide(ENGINE)
 
+# The MCP surface runs in-process here (imported, not sub-processed) and is bound to
+# THIS engine — so a hosted /mcp tool call and a browser-extension /resonate call for
+# the same Resonate Key touch the SAME memory graph. One person, one brain, whichever
+# AI they connect from. (Loading the module builds a throwaway engine; bind drops it.)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                "integrations", "mcp"))
+import resonate_mcp  # noqa: E402
+resonate_mcp.bind_engine(ENGINE, WEAVER, REELS)
+
+import re as _re  # noqa: E402
+# A Resonate Key is the person's portable identity: same key in ChatGPT, Claude, Cursor,
+# on a phone or a laptop -> same context graph. It is a bearer token, so it is opaque and
+# carries no personal data; RSN- prefix keeps it recognizable and away from other surfaces' ids.
+_KEY_RE = _re.compile(r"^RSN-[A-Z0-9]{4,12}$")
+
+
+def _uid_from_key(raw):
+    k = (raw or "").strip().upper()
+    return k if _KEY_RE.match(k) else None
+
 
 def _read_guardians():
     try:
@@ -88,6 +108,8 @@ LIMITS = RateLimiter({
     "tts": (30, 60),         # sentence renders / minute / user (streaming uses several per reply)
     "reels": (12, 60),
     "story": (6, 60),
+    "mcp": (60, 60),         # hosted MCP tool calls / minute / key
+    "rest": (30, 60),        # browsing-fallback GETs / minute / key
 })
 
 # "Carry this moment to Ezra" hand-off: the popup POSTs the moment here and the guide
@@ -110,6 +132,19 @@ def _handoff_take(uid):
     import time
     text, exp = _HANDOFF.pop(uid, (None, 0))
     return text if exp >= time.time() else None
+
+
+def _rest_to_text(out):
+    """Flatten a resonate_verse result to a short line a browsing model can just relay."""
+    kind = out.get("kind")
+    if kind == "verse":
+        return ('%s (%s): "%s"\n\n%s\n\n[Quote the verse exactly; it is licensed text.]'
+                % (out["reference"], out["translation"], out["verse_text"], out.get("bridge", "")))
+    if kind == "help":
+        return out.get("message", "")
+    if kind == "silent":
+        return "(Resonate stayed silent — no verse truly fits this moment.)"
+    return out.get("message", "(no response)")
 _PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(_PROJ, "site", "dist")
 SRC_WEB_DIR = os.path.join(_PROJ, "web")
@@ -129,9 +164,32 @@ class Handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(204)
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        # MCP-over-HTTP clients send these; browsing/REST clients send none of them
+        self.send_header("Access-Control-Allow-Headers",
+                         "Content-Type, Authorization, X-Resonate-Key, Mcp-Session-Id, MCP-Protocol-Version")
+        self.send_header("Access-Control-Expose-Headers", "Mcp-Session-Id")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.end_headers()
+
+    def _key_from_request(self, q):
+        """Resonate Key from (in order) ?key=, Authorization: Bearer, X-Resonate-Key."""
+        raw = (q.get("key") or [None])[0]
+        if not raw:
+            auth = self.headers.get("Authorization", "")
+            if auth[:7].lower() == "bearer ":
+                raw = auth[7:]
+        if not raw:
+            raw = self.headers.get("X-Resonate-Key")
+        return _uid_from_key(raw)
+
+    def _send_text(self, text, code=200):
+        body = text.encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def _limited(self, bucket, key) -> bool:
         """True (and a polite 429 already sent) when this user should slow down."""
@@ -190,6 +248,17 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/voices":
             self._send(200, {"ok": True, "available": tts.available(), "voices": tts.voices()})
             return
+        if path == "/mcp":
+            # Streamable-HTTP MCP is POST-only here (no server-initiated SSE stream).
+            self.send_response(405)
+            self.send_header("Allow", "POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        if path == "/api/resonate":
+            self._handle_rest_resonate(q)
+            return
         if path == "/tts":
             self._handle_tts(q)
             return
@@ -247,6 +316,79 @@ class Handler(BaseHTTPRequestHandler):
                   "| exists:", os.path.exists(WEB_DIR), file=sys.stderr)
             self._send(404, {"error": "not found", "hint": "site/dist not built — check build logs"})
 
+    def _send_mcp(self, obj):
+        """One JSON-RPC response (or batch), MCP-over-HTTP framing."""
+        body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Expose-Headers", "Mcp-Session-Id")
+        self.send_header("Mcp-Session-Id", "resonate-stateless")  # stateless: any id accepted back
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _handle_mcp(self, q):
+        """Hosted Model Context Protocol over Streamable HTTP. Reuses the exact stdio
+        dispatch (same four tools, same guarantees); the Resonate Key from the request
+        becomes the memory identity, so a person's brain follows them across AIs."""
+        key = self._key_from_request(q)  # None if absent/malformed -> anonymous shared default
+        length = int(self.headers.get("Content-Length", 0))
+        try:
+            payload = json.loads(self.rfile.read(length) or b"{}")
+        except Exception:
+            self._send_mcp({"jsonrpc": "2.0", "id": None,
+                            "error": {"code": -32700, "message": "parse error"}})
+            return
+        batch = isinstance(payload, list)
+        msgs = payload if batch else [payload]
+        out = []
+        for m in msgs:
+            if not isinstance(m, dict):
+                continue
+            # rate-limit tool calls per key (crisis text is never throttled — help must land);
+            # over-limit returns a JSON-RPC RESULT with an error kind, so MCP clients stay happy
+            if m.get("method") == "tools/call":
+                args = (m.get("params") or {}).get("arguments") or {}
+                text = args.get("text") if isinstance(args, dict) else ""
+                if not is_crisis(text or "") and not LIMITS.allow("mcp", key or self.client_address[0]):
+                    out.append(resonate_mcp._result(m.get("id"), {"content": [{"type": "text",
+                        "text": json.dumps({"kind": "error",
+                        "message": "Rate limit — a quiet pace keeps the line open. One moment."})}],
+                        "isError": True}))
+                    continue
+            resp = resonate_mcp.dispatch(m, default_user=key)
+            if resp is not None:
+                out.append(resp)
+        if not out:  # nothing but notifications -> 202 Accepted, empty body
+            self.send_response(202)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        self._send_mcp(out if batch else out[0])
+
+    def _handle_rest_resonate(self, q):
+        """Browsing-model fallback (Grok, ChatGPT-with-search): a plain GET a model can
+        fetch mid-chat. NOTE: the message rides in the URL here — fine for this opt-in
+        path, but the /mcp POST body is the private route and the one we lead with."""
+        key = self._key_from_request(q)
+        text = (q.get("text") or q.get("m") or [""])[0]
+        fmt = (q.get("format") or ["json"])[0]
+        if not text.strip():
+            self._send(400, {"error": "text required (?text=...)"})
+            return
+        if not is_crisis(text) and self._limited("rest", key or self.client_address[0]):
+            return
+        rpc = {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+               "params": {"name": "resonate_verse", "arguments": {"text": text}}}
+        resp = resonate_mcp.dispatch(rpc, default_user=key)
+        out = json.loads(resp["result"]["content"][0]["text"])
+        if fmt == "text":
+            self._send_text(_rest_to_text(out))
+        else:
+            self._send(200, out)
+
     def _handle_tts(self, q):
         voice = (q.get("voice") or ["bella"])[0]
         text = (q.get("text") or [""])[0]
@@ -279,7 +421,11 @@ class Handler(BaseHTTPRequestHandler):
                 pass  # client already gone
 
     def _do_POST(self):
-        path = self.path.split("?")[0]
+        raw_path, _, query = self.path.partition("?")
+        path = raw_path
+        if path == "/mcp":  # JSON-RPC transport — needs its own error shape, handle first
+            self._handle_mcp(urllib.parse.parse_qs(query))
+            return
         if path not in ("/resonate", "/story", "/guide", "/reel-groups", "/guardians", "/handoff"):
             self._send(404, {"error": "not found"})
             return

@@ -31,6 +31,28 @@
     line-height:1.5;max-width:62ch}
   .lede b{color:var(--ink);font-weight:600}
 
+  h2{font-family:var(--serif);font-weight:600;font-size:26px;margin:40px 0 4px}
+  h2 .num{color:var(--clay);font-size:.7em;vertical-align:2px;margin-right:8px}
+  .sect-sub{font-size:13px;color:var(--ink-soft);margin-bottom:14px;max-width:72ch;line-height:1.55}
+
+  /* ---- the Resonate Key ---- */
+  .keycard{margin-top:18px;border-radius:16px;padding:20px 22px;
+    background:radial-gradient(120% 130% at 100% 0%,rgba(185,143,53,.12),transparent 60%),linear-gradient(177deg,#fbf7ec,var(--paper2));
+    border:1px solid rgba(185,143,53,.4);box-shadow:0 16px 40px rgba(96,76,44,.14),inset 0 1px 0 rgba(255,255,255,.6)}
+  .keycard .kh{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+  .keyrow{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:10px}
+  .keyval{font-family:var(--mono);font-size:clamp(20px,4vw,28px);font-weight:500;color:var(--ink);
+    letter-spacing:.06em;background:rgba(33,29,23,.05);border-radius:10px;padding:6px 14px;border:1px dashed rgba(33,29,23,.25)}
+  .keybtn{font-family:var(--sans);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);
+    border:1px solid rgba(166,91,67,.45);border-radius:9px;padding:8px 13px;background:rgba(166,91,67,.06);cursor:pointer}
+  .keybtn:hover{background:rgba(166,91,67,.14)}
+  .keynote{margin-top:12px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+  .keynote b{color:var(--ink)}
+  .keyedit{margin-top:10px;display:none;gap:8px;flex-wrap:wrap}
+  .keyedit.on{display:flex}
+  .keyedit input{font-family:var(--mono);font-size:14px;padding:8px 12px;border-radius:9px;
+    border:1px solid rgba(33,29,23,.3);background:#fbf7ec;color:var(--ink);width:180px;text-transform:uppercase}
+
   /* the "what happens" band */
   .flow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:26px 0 8px;
     font-family:var(--serif);font-size:16px;color:var(--ink)}
@@ -39,11 +61,15 @@
   .flow .node b{color:var(--clay)}
   .flow .arr{color:var(--clay);font-size:18px}
 
-  h2{font-family:var(--serif);font-weight:600;font-size:26px;margin:38px 0 4px}
-  .sect-sub{font-size:13px;color:var(--ink-soft);margin-bottom:14px;max-width:70ch}
+  /* the hosted URL — the hero method */
+  .urlbox{position:relative;margin-top:12px;border-radius:12px;overflow:hidden;
+    background:linear-gradient(177deg,#fbf7ec,var(--paper2));border:1px solid rgba(33,29,23,.2);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 22px rgba(96,76,44,.1)}
+  .urlbox code{display:block;font-family:var(--mono);font-size:13px;color:var(--clay-deep);
+    padding:16px 92px 16px 18px;overflow-x:auto;white-space:nowrap;font-weight:500}
 
   /* host tabs */
-  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
   .tab{font-family:var(--sans);font-size:11px;letter-spacing:.08em;color:var(--ink-soft);cursor:pointer;
     background:linear-gradient(178deg,#f4eede,#ece4d3);border:1px solid rgba(33,29,23,.18);
     border-radius:999px;padding:8px 15px;user-select:none}
@@ -63,15 +89,15 @@
   .step .body a{color:var(--clay)}
   .m{font-family:var(--mono);font-size:.95em}
 
-  /* code cards — parchment, like the rest of the product (no dark consoles) */
+  /* code cards — parchment, never dark consoles */
   .code{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;
     background:linear-gradient(177deg,#fbf7ec,var(--paper2));border:1px solid rgba(33,29,23,.18);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.55), 0 6px 18px rgba(96,76,44,.08)}
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 6px 18px rgba(96,76,44,.08)}
   .code pre{font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--ink-soft);
     white-space:pre;margin:0;padding:14px 86px 14px 16px;overflow-x:auto}
   .copy{position:absolute;top:8px;right:8px;font-family:var(--sans);font-size:9px;letter-spacing:.12em;
     text-transform:uppercase;color:var(--clay);background:rgba(166,91,67,.07);
-    border:1px solid rgba(166,91,67,.45);border-radius:7px;padding:4px 9px;cursor:pointer}
+    border:1px solid rgba(166,91,67,.45);border-radius:7px;padding:5px 10px;cursor:pointer}
   .copy:hover{background:rgba(166,91,67,.14)}
   .copy.done{color:#4c6245;border-color:rgba(76,98,69,.5);background:rgba(90,112,82,.1)}
 
@@ -104,7 +130,30 @@
   <p class="lede">Resonate runs as an <b>MCP server</b> — a small tool your assistant can call.
     Add it once, and <b>Claude, Gemini, ChatGPT, Copilot, Cursor, Antigravity, Windsurf</b> — any
     app that speaks MCP — can reach for a <b>verified verse</b>, weave a <b>story</b>, or pull
-    <b>reels</b> — mid-conversation, on its own. You don't change your chat app; you hand it a new sense.</p>
+    <b>reels</b>, mid-conversation. You don't change your chat app; you hand it a new sense.</p>
+
+  <!-- ============ the Resonate Key ============ -->
+  <h2><span class="num">1</span>Your Resonate Key</h2>
+  <div class="sect-sub">One key is <b>you</b>. Use the same key in ChatGPT, in Claude, in Cursor,
+    on your phone and your laptop — and they all share <b>one context</b>: the same recurring themes,
+    the same “you've returned to this lately”. Different AIs, one individual. Save this key; carrying
+    it to a new device carries your whole history.</div>
+  <div class="keycard">
+    <div class="kh">◆ Your key</div>
+    <div class="keyrow">
+      <span class="keyval" id="keyval">RSN-------</span>
+      <button class="keybtn" id="copykey">⧉ Copy</button>
+      <button class="keybtn" id="newkey">↻ New key</button>
+      <button class="keybtn" id="usekey">⌨ Use existing</button>
+    </div>
+    <div class="keyedit" id="keyedit">
+      <input id="keyinput" placeholder="RSN-XXXXXX" maxlength="16" />
+      <button class="keybtn" id="savekey">Save</button>
+    </div>
+    <div class="keynote">Stored only in <b>this browser</b> — it's a bearer token, not an account,
+      and it holds no personal data. Anyone with the key shares that context, so treat it like a
+      private link.</div>
+  </div>
 
   <div class="flow">
     <span class="node">You type a real moment</span>
@@ -114,22 +163,39 @@
     <span class="node">A verified verse comes back <b>(never invented)</b></span>
   </div>
 
-  <h2>Add it to your assistant</h2>
-  <div class="sect-sub">Pick your app — it's one block of config, the same shape everywhere.
-    The engine runs on your machine, keeps no transcript, and stores only theme patterns — never what you wrote.</div>
+  <!-- ============ hosted URL — the no-install path ============ -->
+  <h2><span class="num">2</span>Add by URL — nothing to install</h2>
+  <div class="sect-sub">The fastest path, and it works from any device: your assistant connects to
+    the hosted Resonate server over the internet. Your key is already baked into this URL —
+    copy it, then follow your app below.</div>
+  <div class="urlbox"><button class="copy" data-copy="url">copy</button><code id="hostedurl">…</code></div>
 
-  <div class="tabs" id="tabs"></div>
-  <div id="panels"></div>
+  <div class="tabs" id="urltabs"></div>
+  <div id="urlpanels"></div>
 
-  <div class="note" id="webnote">
-    <b>On Grok, DeepSeek, or a chat that lives only in a browser tab?</b> A web page can't launch
-    tools on your machine, so pure web chats can't host a local MCP server. Three good paths:
-    use that model's desktop / CLI / IDE client above (Gemini CLI, Copilot, Cursor, Windsurf all
-    run any model family), meet Resonate inside ChatGPT with the
-    <a href="/">browser extension</a> (zero config), or invite the Discord bot to your server.
+  <!-- ============ local install — the offline / private path ============ -->
+  <h2><span class="num">3</span>Or run it on your machine</h2>
+  <div class="sect-sub">Prefer everything local — offline, nothing over the network? Clone the repo
+    (<span class="m">github.com/krizz711/resonate</span>, Python 3.11+) and point your app at the file.
+    The <span class="m">--key</span> ties this local copy to the same brain as everything above.</div>
+  <div class="tabs" id="localtabs"></div>
+  <div id="localpanels"></div>
+
+  <!-- ============ browsing chats ============ -->
+  <h2><span class="num">4</span>Grok, or any browsing chat</h2>
+  <div class="sect-sub">Chats that live only in a browser tab (Grok, DeepSeek, ChatGPT free) can't
+    host a tool — but if they can <b>browse the web</b>, paste this once at the top of a conversation.
+    It teaches the chat to fetch your Resonate line when you share a feeling.</div>
+  <div class="code"><button class="copy" data-copy="prompt">copy</button><pre id="promptbox">…</pre></div>
+  <div class="note" style="margin-top:12px">
+    <b>Heads-up on this path:</b> a browsing chat sends your words as part of a web address, so this
+    one is less private than the MCP URL above (which sends them in a request body). Use it for the
+    reach; use <b>Add by URL</b> when privacy matters. Browsing is also the model's choice each turn,
+    so it's helpful-but-imperfect, not a guaranteed connection.
   </div>
 
-  <h2>What your assistant can now do</h2>
+  <!-- ============ tools ============ -->
+  <h2><span class="num">5</span>What your assistant can now do</h2>
   <div class="sect-sub">Four tools, the same guarantees as everywhere else — safety first, verses verbatim, nothing stored.</div>
   <div class="tools">
     <div class="tool"><div class="tn">resonate_verse</div><p>A moment → one verified verse, or an honest silence. Crisis → help, never a verse.</p></div>
@@ -150,87 +216,164 @@
 
 <script>
 (function () {
-  // One path placeholder, one JSON shape — rendered per app so the markup can
-  // never drift or mis-nest again (the old hand-written panels once did).
-  var P = "C:/path/to/resonate/integrations/mcp/resonate_mcp.py";
-  var MCP_JSON = '{\n  "mcpServers": {\n    "resonate": {\n      "command": "python",\n      "args": ["' + P + '"]\n    }\n  }\n}';
-  var VSCODE_JSON = '{\n  "servers": {\n    "resonate": {\n      "type": "stdio",\n      "command": "python",\n      "args": ["' + P + '"]\n    }\n  }\n}';
+  // ---------- the key ----------
+  var ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no ambiguous O/0/I/1/L
+  function mint() {
+    var s = "RSN-";
+    for (var i = 0; i < 6; i++) s += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+    return s;
+  }
+  function valid(k) { return /^RSN-[A-Z0-9]{4,12}$/.test(k); }
+  var KEY = (localStorage.getItem("resonate_key") || "").toUpperCase();
+  if (!valid(KEY)) { KEY = mint(); localStorage.setItem("resonate_key", KEY); }
+  var ORIGIN = location.origin;
 
-  var APPS = [
-    { id: "claude", label: "Claude Desktop", steps: [
-      { t: "Open the config", p: 'Claude Desktop → Settings → Developer → <b>Edit Config</b>. It opens <span class="m">claude_desktop_config.json</span>.' },
-      { t: "Add the Resonate server", p: 'Merge this in (use the full path to the file on your machine):', code: MCP_JSON },
-      { t: "Restart Claude", p: 'You’ll see a 🔨 tool icon. Now say <i>"I’m exhausted and losing hope"</i> — Claude calls <span class="m">resonate_verse</span> and answers with a real, cited verse.' },
+  function hostedUrl() { return ORIGIN + "/mcp?key=" + KEY; }
+  function restUrl() { return ORIGIN + "/api/resonate?format=text&key=" + KEY + "&text=MESSAGE"; }
+  function urlJson() {
+    return '{\n  "mcpServers": {\n    "resonate": {\n      "url": "' + hostedUrl() + '"\n    }\n  }\n}';
+  }
+  function localJson() {
+    return '{\n  "mcpServers": {\n    "resonate": {\n      "command": "python",\n      "args": [\n        "C:/path/to/resonate/integrations/mcp/resonate_mcp.py",\n        "--key", "' + KEY + '"\n      ]\n    }\n  }\n}';
+  }
+  function promptText() {
+    return "You can call Resonate — a Scripture companion — when I share something emotional.\n" +
+      "When I express a real feeling, doubt, grief, or gratitude, fetch this URL, replacing MESSAGE\n" +
+      "with a URL-encoded version of what I just said:\n\n" + restUrl() + "\n\n" +
+      "Then share the verse it returns, quoted exactly, with its short bridge line. If it returns a\n" +
+      "crisis-help message, share that gently and do NOT add a verse. If it stays silent, don't force one.";
+  }
+
+  // ---------- app definitions ----------
+  // URL (hosted) path — how each app adds a REMOTE mcp server by URL
+  var URL_APPS = [
+    { id: "claude", label: "Claude", steps: [
+      { t: "Open connectors", p: 'Claude.ai (or Desktop) → Settings → <b>Connectors</b> → <b>Add custom connector</b>. (Custom connectors are on Pro/Team/Max.)' },
+      { t: "Paste the URL", p: 'Name it <b>Resonate</b>, paste your hosted URL above, save.' },
+      { t: "Use it", p: 'In a chat, enable the Resonate connector, then say <i>"I’m exhausted and losing hope."</i> Claude calls <span class="m">resonate_verse</span> and cites a real verse.' },
     ]},
-    { id: "code", label: "Claude Code", steps: [
-      { t: "One command", p: "From any terminal:", code: "claude mcp add resonate -- python " + P },
-      { t: "Confirm", p: '<span class="m">claude mcp list</span> should show <b>resonate</b>. Ezra’s tools are now inside Claude Code.' },
+    { id: "chatgpt-url", label: "ChatGPT", steps: [
+      { t: "Enable developer mode", p: 'ChatGPT → Settings → <b>Connectors</b> → turn on developer/MCP connectors (Plus/Pro/Enterprise).' },
+      { t: "Add the server", p: 'Add a connector, paste your hosted URL, save.' },
+      { t: "Zero-setup alternative", p: 'No Plus? The <a href="/">browser extension</a> surfaces a verse beside ChatGPT with no config at all.' },
     ]},
-    { id: "gemini", label: "Gemini CLI", steps: [
-      { t: "Open the settings file", p: 'Edit <span class="m">~/.gemini/settings.json</span> (create it if it’s new).' },
-      { t: "Add the server", p: "Same universal shape:", code: MCP_JSON },
-      { t: "Restart the CLI", p: '<span class="m">/mcp</span> lists the Resonate tools. (Gemini in the browser can’t run local tools — the CLI and IDE integrations can.)' },
+    { id: "cursor-url", label: "Cursor", steps: [
+      { t: "Add an MCP server", p: 'Cursor → Settings → <b>MCP</b> → Add, choose a URL/remote server, and paste your hosted URL (or use the JSON below).', code: "url_json" },
+      { t: "Reload", p: 'Reload; Resonate appears in the MCP panel, tools ready in chat.' },
     ]},
-    { id: "chatgpt", label: "ChatGPT", steps: [
-      { t: "Zero-setup path: the extension", p: 'The <b>Resonate browser extension</b> quietly surfaces a verse beside your ChatGPT chat — voices, stories, reels, no config at all. <a href="/">See the extension →</a>' },
-      { t: "Or: developer-mode connectors", p: 'ChatGPT → Settings → <b>Connectors</b> → enable developer mode (Plus/Pro), then add your Resonate MCP endpoint. Local stdio servers need a remote bridge (e.g. <span class="m">mcp-remote</span>); a hosted endpoint is on the roadmap.' },
+    { id: "copilot-url", label: "VS Code · Copilot", steps: [
+      { t: "Create .vscode/mcp.json", p: 'A remote server uses a URL entry (VS Code 1.99+, Copilot agent mode):', code: "vscode_url" },
+      { t: "Start & use", p: 'Click <b>Start</b> atop the file, open Copilot Chat in <b>agent mode</b>; Resonate is under 🔧.' },
     ]},
-    { id: "copilot", label: "VS Code · Copilot", steps: [
-      { t: "Create .vscode/mcp.json", p: 'In your workspace (VS Code 1.99+, Copilot agent mode):', code: VSCODE_JSON },
-      { t: "Start it", p: 'A <b>Start</b> code-lens appears atop the file; run it, open Copilot Chat in <b>agent mode</b>, and the Resonate tools are listed under 🔧.' },
+    { id: "gemini-url", label: "Gemini CLI", steps: [
+      { t: "Edit settings.json", p: 'In <span class="m">~/.gemini/settings.json</span>, add an httpUrl server:', code: "gemini_url" },
+      { t: "Restart", p: '<span class="m">/mcp</span> lists the Resonate tools.' },
     ]},
-    { id: "cursor", label: "Cursor", steps: [
-      { t: "Edit mcp.json", p: 'Cursor → Settings → <b>MCP</b> → Add server (or edit <span class="m">~/.cursor/mcp.json</span>):', code: MCP_JSON },
-      { t: "Reload", p: "Reload the window; Resonate appears in the MCP panel, tools ready in chat." },
-    ]},
-    { id: "antigravity", label: "Antigravity", steps: [
-      { t: "Open MCP settings", p: 'In Google’s Antigravity IDE: agent panel → <b>MCP servers</b> → add server (it edits the same <span class="m">mcpServers</span> config).' },
-      { t: "Paste the block", p: "Universal shape, full path on your machine:", code: MCP_JSON },
-      { t: "Let the agent reach for it", p: "Agents pick the tools up on the next run — ask for a verse for a real moment and watch it cite one, verbatim." },
-    ]},
-    { id: "windsurf", label: "Windsurf", steps: [
-      { t: "Edit the MCP config", p: 'Windsurf → Settings → Cascade → <b>MCP</b> (file: <span class="m">~/.codeium/windsurf/mcp_config.json</span>):', code: MCP_JSON },
-      { t: "Refresh", p: "Refresh the MCP list in Cascade; the four Resonate tools appear." },
-    ]},
-    { id: "any", label: "Any MCP app", steps: [
-      { t: "The universal block", p: '<b>Cline, Zed, JetBrains AI, LM Studio, Warp</b> — every MCP host takes the same server definition, usually under a key named <span class="m">mcpServers</span> (or <span class="m">servers</span>):', code: MCP_JSON },
-      { t: "Requirements", p: 'Python 3.11+ on PATH and this repo on disk — the server is one stdlib file, <span class="m">integrations/mcp/resonate_mcp.py</span>. No pip install, no keys needed in mock mode.' },
+    { id: "any-url", label: "Any MCP app", steps: [
+      { t: "The universal remote block", p: 'Windsurf, Antigravity, Cline, Zed, Warp — any MCP host takes a URL server. Paste the raw URL in its UI, or this JSON in its config:', code: "url_json" },
+      { t: "No install", p: 'Nothing to clone — the server is hosted. Your key ties every app to one context.' },
     ]},
   ];
 
-  var tabs = document.getElementById("tabs"), panels = document.getElementById("panels");
-  APPS.forEach(function (app, i) {
-    var t = document.createElement("div");
-    t.className = "tab" + (i === 0 ? " on" : ""); t.dataset.t = app.id; t.textContent = app.label;
-    tabs.appendChild(t);
-    var p = document.createElement("div");
-    p.className = "panel" + (i === 0 ? " on" : ""); p.dataset.p = app.id;
-    app.steps.forEach(function (s, j) {
-      var step = document.createElement("div"); step.className = "step";
-      var body = '<div class="n">' + (j + 1) + '</div><div class="body"><h3></h3><p>' + s.p + "</p>";
-      if (s.code) body += '<div class="code"><button class="copy">copy</button><pre></pre></div>';
-      step.innerHTML = body + "</div>";
-      step.querySelector("h3").textContent = s.t;
-      if (s.code) step.querySelector("pre").textContent = s.code;
-      p.appendChild(step);
+  // Local (stdio) path — clone + point at the file, with --key
+  var LOCAL_APPS = [
+    { id: "claude-l", label: "Claude Desktop", steps: [
+      { t: "Open the config", p: 'Settings → Developer → <b>Edit Config</b> (<span class="m">claude_desktop_config.json</span>).' },
+      { t: "Add the server", p: 'Merge this in — full path to the file on your machine:', code: "local_json" },
+      { t: "Restart", p: 'A 🔨 icon appears; ask for a verse for a real moment.' },
+    ]},
+    { id: "code-l", label: "Claude Code", steps: [
+      { t: "One command", p: 'From any terminal:', code: "cli" },
+      { t: "Confirm", p: '<span class="m">claude mcp list</span> shows <b>resonate</b>.' },
+    ]},
+    { id: "cursor-l", label: "Cursor / Windsurf", steps: [
+      { t: "Edit mcp.json", p: 'Cursor: <span class="m">~/.cursor/mcp.json</span>; Windsurf: <span class="m">~/.codeium/windsurf/mcp_config.json</span>. Same shape:', code: "local_json" },
+      { t: "Reload", p: 'Reload; the four tools appear.' },
+    ]},
+    { id: "any-l", label: "Any MCP app", steps: [
+      { t: "The universal local block", p: 'Every MCP host takes this command server. Requires Python 3.11+ and the repo on disk — the server is one stdlib file.', code: "local_json" },
+    ]},
+  ];
+
+  function codeFor(id) {
+    if (id === "url_json") return urlJson();
+    if (id === "local_json") return localJson();
+    if (id === "cli") return "claude mcp add resonate -- python C:/path/to/resonate/integrations/mcp/resonate_mcp.py --key " + KEY;
+    if (id === "vscode_url") return '{\n  "servers": {\n    "resonate": {\n      "type": "http",\n      "url": "' + hostedUrl() + '"\n    }\n  }\n}';
+    if (id === "gemini_url") return '{\n  "mcpServers": {\n    "resonate": {\n      "httpUrl": "' + hostedUrl() + '"\n    }\n  }\n}';
+    return "";
+  }
+
+  function renderTabs(apps, tabsEl, panelsEl) {
+    tabsEl.innerHTML = ""; panelsEl.innerHTML = "";
+    apps.forEach(function (app, i) {
+      var t = document.createElement("div");
+      t.className = "tab" + (i === 0 ? " on" : ""); t.dataset.t = app.id; t.textContent = app.label;
+      tabsEl.appendChild(t);
+      var p = document.createElement("div");
+      p.className = "panel" + (i === 0 ? " on" : ""); p.dataset.p = app.id;
+      app.steps.forEach(function (s, j) {
+        var step = document.createElement("div"); step.className = "step";
+        var body = '<div class="n">' + (j + 1) + '</div><div class="body"><h3></h3><p>' + s.p + "</p>";
+        if (s.code) body += '<div class="code"><button class="copy">copy</button><pre></pre></div>';
+        step.innerHTML = body + "</div>";
+        step.querySelector("h3").textContent = s.t;
+        if (s.code) step.querySelector("pre").textContent = codeFor(s.code);
+        p.appendChild(step);
+      });
+      panelsEl.appendChild(p);
     });
-    panels.appendChild(p);
+    tabsEl.onclick = function (e) {
+      var t = e.target.closest(".tab"); if (!t) return;
+      tabsEl.querySelectorAll(".tab").forEach(function (x) { x.classList.toggle("on", x === t); });
+      panelsEl.querySelectorAll(".panel").forEach(function (pp) { pp.classList.toggle("on", pp.dataset.p === t.dataset.t); });
+    };
+  }
+
+  // fill everything that depends on the key
+  function paint() {
+    document.getElementById("keyval").textContent = KEY;
+    document.getElementById("hostedurl").textContent = hostedUrl();
+    document.getElementById("promptbox").textContent = promptText();
+    renderTabs(URL_APPS, document.getElementById("urltabs"), document.getElementById("urlpanels"));
+    renderTabs(LOCAL_APPS, document.getElementById("localtabs"), document.getElementById("localpanels"));
+  }
+  paint();
+
+  // ---------- copy (event-delegated, whole page) ----------
+  function flash(btn) {
+    var old = btn.textContent; btn.textContent = "copied ✓"; btn.classList.add("done");
+    setTimeout(function () { btn.textContent = old; btn.classList.remove("done"); }, 1600);
+  }
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".copy"); if (!btn) return;
+    var text;
+    if (btn.dataset.copy === "url") text = hostedUrl();
+    else if (btn.dataset.copy === "prompt") text = promptText();
+    else { var pre = btn.parentElement.querySelector("pre"); text = pre ? pre.innerText : ""; }
+    try { navigator.clipboard.writeText(text).then(function () { flash(btn); }, function () { flash(btn); }); }
+    catch (err) { flash(btn); }
   });
 
-  tabs.addEventListener("click", function (e) {
-    var t = e.target.closest(".tab"); if (!t) return;
-    document.querySelectorAll(".tab").forEach(function (x) { x.classList.toggle("on", x === t); });
-    document.querySelectorAll(".panel").forEach(function (p) { p.classList.toggle("on", p.dataset.p === t.dataset.t); });
-  });
-  panels.addEventListener("click", function (e) {
-    var btn = e.target.closest(".copy"); if (!btn) return;
-    var code = btn.parentElement.querySelector("pre").innerText;
-    var done = function () {
-      btn.textContent = "copied ✓"; btn.classList.add("done");
-      setTimeout(function () { btn.textContent = "copy"; btn.classList.remove("done"); }, 1600);
-    };
-    try { navigator.clipboard.writeText(code).then(done, done); } catch (err) { done(); }
-  });
+  // ---------- key controls ----------
+  document.getElementById("copykey").onclick = function () {
+    try { navigator.clipboard.writeText(KEY); } catch (e) {}
+    flash(this);
+  };
+  document.getElementById("newkey").onclick = function () {
+    KEY = mint(); localStorage.setItem("resonate_key", KEY); paint();
+  };
+  var editRow = document.getElementById("keyedit");
+  document.getElementById("usekey").onclick = function () {
+    editRow.classList.toggle("on");
+    if (editRow.classList.contains("on")) document.getElementById("keyinput").focus();
+  };
+  document.getElementById("savekey").onclick = function () {
+    var v = document.getElementById("keyinput").value.trim().toUpperCase();
+    if (v && v.indexOf("RSN-") !== 0) v = "RSN-" + v;   // let people paste just the suffix
+    if (valid(v)) { KEY = v; localStorage.setItem("resonate_key", KEY); editRow.classList.remove("on"); paint(); }
+    else { document.getElementById("keyinput").style.borderColor = "#a65b43"; }
+  };
 })();
 </script>
 </body>

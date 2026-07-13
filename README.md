@@ -21,9 +21,16 @@ One engine, many native delivery surfaces (this is the architecture, not a sloga
 | Surface | What it is | Where |
 |---|---|---|
 | **ChatGPT extension** *(flagship)* | a quiet verse beside your AI chat — with voices, "your story", reels | [`integrations/chatgpt-extension`](integrations/chatgpt-extension) |
-| **MCP server** | Scripture as a native capability for ANY assistant (Claude, ChatGPT, Gemini…) | [`integrations/mcp`](integrations/mcp) |
+| **MCP server** | Scripture as a native capability for ANY assistant (Claude, ChatGPT, Gemini…) — stdio locally, or **hosted over HTTP at `/mcp`** so a URL is the whole install | [`integrations/mcp`](integrations/mcp) |
 | **VS Code companion** | Scripture in the margins where builders think | [`integrations/vscode`](integrations/vscode) |
 | **Discord bot** | Scripture as conversation, not broadcast | [`integrations/discord`](integrations/discord) |
+
+**One brain across every AI — the Resonate Key.** A person is one individual, not one
+account per chatbot. Generate a key on `/connect.html` (e.g. `RSN-7K2P`); carry it in the
+hosted URL (`…/mcp?key=RSN-7K2P`), the local `--key` flag, or the browsing prompt. Same key
+in ChatGPT, Claude, Cursor, on any device → the **same** temporal memory graph (recurring
+themes, "you've returned to this lately"). The extension, the MCP tools, and the web pages all
+write to that one graph when they share the key.
 
 ## How it works — a context engine between the two APIs
 - **Gloo AI Studio** reads the message → emotional *beats*, writes the one-line *bridge*, runs
@@ -53,7 +60,7 @@ standard library alone (mock providers + local memory) — clone and run:
 git clone https://github.com/krizz711/resonate && cd resonate
 python scripts/demo.py                         # 1. end-to-end engine demo (creator transcript)
 python scripts/policy_demo.py                  # 2. the Delivery Policy staying quiet at the right times
-python -m unittest discover -s tests           # 3. 90 tests (incl. the eval regression guard)
+python -m unittest discover -s tests           # 3. 94 tests (incl. the eval regression guard)
 python eval/run_eval.py                        # 4. 32-scenario evaluation harness
 python scripts/serve.py                        # 5. local engine  ->  http://127.0.0.1:8765
 python integrations/mcp/smoke_client.py        # 6. MCP surface: real stdio session, all 3 tools
@@ -105,7 +112,7 @@ data/            verses.json (131 refs+tags, no text) · sample_texts.json (KJV 
 scripts/         demo.py · policy_demo.py · serve.py (local engine server)
 web/             engine-served pages: Ezra (guide) · reels · connect · guardians · panel preview
 eval/            dataset.json + run_eval.py (metrics)
-tests/           test_resonate.py (90 cases incl. the eval guard)
+tests/           test_resonate.py (94 cases incl. the eval guard)
 docs/            video script · writeup · cover · competitiveness review
 ```
 

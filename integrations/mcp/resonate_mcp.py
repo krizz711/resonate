@@ -44,6 +44,20 @@ ENGINE = Engine(_cfg)
 WEAVER = StoryWeaver(ENGINE.gloo)
 REELS = ReelStore()
 
+
+def bind_engine(engine, weaver=None, reels=None):
+    """Share ONE engine across surfaces. When serve.py hosts this module over HTTP it
+    binds its OWN engine here, so the remote /mcp endpoint and the browser-extension
+    /resonate write to the SAME per-user memory graph — one person, one context,
+    whichever AI they connect from. Tool bodies read these module globals at call
+    time, so reassigning them takes effect immediately."""
+    global ENGINE, WEAVER, REELS
+    ENGINE = engine
+    if weaver is not None:
+        WEAVER = weaver
+    if reels is not None:
+        REELS = reels
+
 TOOLS = [
     {
         "name": "resonate_verse",
@@ -222,9 +236,14 @@ def _error(rid, code, message):
     return {"jsonrpc": "2.0", "id": rid, "error": {"code": code, "message": message}}
 
 
-def dispatch(req):
+def dispatch(req, default_user=None):
     """Handle one JSON-RPC request dict -> response dict, or None for notifications.
-    Pure function of the message (plus engine state) — unit-testable without stdio."""
+    Pure function of the message (plus engine state) — unit-testable without stdio.
+
+    default_user: the caller's Resonate Key (stdio --key, or the HTTP transport's
+    ?key=). Injected as user_id into every tool call that didn't set one, so the
+    same key means the same memory graph across AIs and devices. An explicit
+    user_id in the arguments still wins."""
     method = req.get("method", "")
     rid = req.get("id")
     is_notification = "id" not in req
@@ -245,8 +264,11 @@ def dispatch(req):
         fn = _TOOL_FNS.get(name)
         if fn is None:
             return _error(rid, -32602, "unknown tool: %s" % name)
+        args = params.get("arguments") or {}
+        if default_user and isinstance(args, dict) and not args.get("user_id"):
+            args = dict(args, user_id=default_user)
         try:
-            out = fn(params.get("arguments") or {})
+            out = fn(args)
         except Exception as e:  # tool failure -> structured MCP error content
             return _result(rid, {"content": [{"type": "text", "text": json.dumps(
                 {"kind": "error", "message": str(e)[:300]})}], "isError": True})
@@ -258,13 +280,26 @@ def dispatch(req):
     return _error(rid, -32601, "method not found: %s" % method)
 
 
+def _key_from_argv():
+    """A local stdio install can still share the one brain: pass --key RSN-XXXX
+    (or set RESONATE_KEY) and this process tags its memory with that same key."""
+    for i, a in enumerate(sys.argv):
+        if a == "--key" and i + 1 < len(sys.argv):
+            return sys.argv[i + 1]
+        if a.startswith("--key="):
+            return a.split("=", 1)[1]
+    return os.environ.get("RESONATE_KEY") or None
+
+
 def main():
     try:
         sys.stdout.reconfigure(encoding="utf-8")
         sys.stdin.reconfigure(encoding="utf-8")
     except Exception:
         pass
-    sys.stderr.write("resonate-mcp: ready (mode=%s)\n" % ENGINE.config.provider_mode)
+    key = _key_from_argv()
+    sys.stderr.write("resonate-mcp: ready (mode=%s, key=%s)\n"
+                     % (ENGINE.config.provider_mode, key or "none"))
     sys.stderr.flush()
     for line in sys.stdin:
         line = line.strip()
@@ -276,7 +311,7 @@ def main():
             sys.stdout.write(json.dumps(_error(None, -32700, "parse error")) + "\n")
             sys.stdout.flush()
             continue
-        resp = dispatch(req)
+        resp = dispatch(req, default_user=key)
         if resp is not None:
             sys.stdout.write(json.dumps(resp, ensure_ascii=False) + "\n")
             sys.stdout.flush()

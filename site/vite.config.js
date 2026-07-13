@@ -20,6 +20,8 @@ const engineRoutes = [
   '/voices',
   '/health',
   '/handoff',     // the popup -> Ezra "carry this moment" single-read slot
+  '/mcp',         // hosted Model Context Protocol over HTTP (any AI, any device)
+  '/api',         // /api/resonate — browsing-chat REST fallback
   '/bg',          // /bg/athena.jpg — the standalone pages' background art (in web/)
 ]
 
