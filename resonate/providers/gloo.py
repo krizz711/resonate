@@ -379,7 +379,14 @@ class LiveGloo:
                 % (user_text, emotion, mem, narrative["title"], narrative["reference"],
                    narrative["synopsis"], verse.get("reference", ""),
                    verse.get("translation", "KJV"), verse.get("verse_text", "")))
-        return self._chat(sys_p, user, temperature=0.6).strip()
+        try:
+            return self._chat(sys_p, user, temperature=0.6).strip()
+        except Exception as e:
+            # every other live call degrades instead of erroring — stories must too
+            # (a Gloo outage mid-demo should read as a plainer story, never a 502)
+            import sys as _sys
+            _sys.stderr.write("live story -> template fallback (%s)\n" % str(e)[:120])
+            return MockGloo(self.config).story(user_text, emotion, narrative, verse, memory_note)
 
     def safety(self, beat):
         # regex backstop + (optionally) a Gloo guardrail classification call

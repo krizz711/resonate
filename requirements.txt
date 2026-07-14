@@ -1,7 +1,12 @@
 # The engine core + offline demo run on the Python standard library ALONE (no installs).
 #
+# httpx is the ONE hosted-deploy dependency: it powers the live Gloo + YouVersion
+# providers (mode "live"/"auto"). Without it the engine still runs but every live
+# call falls back to the offline mocks — observed on Render 2026-07-15: health said
+# live/live yet text_source stayed offline-sample and /story degraded.
+httpx>=0.27
+
 # Optional upgrades, by phase:
-#   Phase 1 (real APIs):     httpx>=0.27
 #   Phase 2 (dense embeds):  sentence-transformers>=2.2     # better semantic retriever
 #   Phase 2 (Redis backend): redis>=5.0                     # vector index + semantic cache
 #   Phase 5 (web UI):        fastapi>=0.110  uvicorn>=0.29  jinja2>=3.1
