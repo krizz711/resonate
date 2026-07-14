@@ -261,9 +261,9 @@
       { t: "Use it", p: 'In a chat, enable the Resonate connector, then say <i>"I’m exhausted and losing hope."</i> Claude calls <span class="m">resonate_verse</span> and cites a real verse.' },
     ]},
     { id: "chatgpt-url", label: "ChatGPT", steps: [
-      { t: "Enable developer mode", p: 'ChatGPT → Settings → <b>Connectors</b> → turn on developer/MCP connectors (Plus/Pro/Enterprise).' },
-      { t: "Add the server", p: 'Add a connector, paste your hosted URL, save.' },
-      { t: "Zero-setup alternative", p: 'No Plus? The <a href="/">browser extension</a> surfaces a verse beside ChatGPT with no config at all.' },
+      { t: "Enable developer mode", p: 'ChatGPT → Settings → <b>Connectors</b> → <b>Advanced</b> → turn on <b>Developer mode</b>. Custom MCP connectors need <b>Plus, Pro, Team, or Enterprise</b> — on the <b>Free</b> plan there is no Connectors section, so use the extension below instead.' },
+      { t: "Add the server", p: 'Add a connector, paste your hosted URL above, save.' },
+      { t: "No Plus? Use the extension instead", p: 'Skip MCP entirely: <a href="/chatgpt-extension.zip">download the Resonate extension</a> and unzip it. In Chrome open <span class="m">chrome://extensions</span> → toggle <b>Developer mode</b> (top-right) → <b>Load unpacked</b> → select the unzipped folder. It calls the hosted server above — no Python to run — so a verse slips in beside ChatGPT when your words echo one.' },
     ]},
     { id: "cursor-url", label: "Cursor", steps: [
       { t: "Add an MCP server", p: 'Cursor → Settings → <b>MCP</b> → Add, choose a URL/remote server, and paste your hosted URL (or use the JSON below).', code: "url_json" },

@@ -31,7 +31,8 @@ ChatGPT page ──[data-message-author-role="user"]──► content.js (Mutati
  side panel ◄── verse / help card ◄── Delivery Policy decides surface/silence ◄────┘
 ```
 The engine never runs in the page (privacy + the page's CSP). The background worker calls the
-local server, which runs the matching engine + safety gate + Delivery Policy.
+engine — a **local server** (`scripts/serve.py`) when one is running, otherwise the **hosted
+Resonate server** — which runs the matching engine + safety gate + Delivery Policy.
 
 ## Run it
 1. **Start the engine** (from the repo root):
@@ -43,6 +44,12 @@ local server, which runs the matching engine + safety gate + Delivery Policy.
 3. Open **https://chatgpt.com**, send a message like *"I feel like I'm failing everyone."*
    A quiet verse panel appears bottom-right. Try *"what's the capital of France?"* → silence.
    Try a crisis phrase → a gentle help card, never a verse.
+
+**No local engine? (end users / no-Plus ChatGPT)** Skip step 1. When no local server answers on
+`127.0.0.1:8765`, the worker automatically falls back to the hosted Resonate server, so the
+extension works with only step 2 (Load unpacked). The one trade-off: hosted runs in mock mode, so
+voices fall back to the browser's Web Speech instead of the local Kokoro chapel voices. The connect
+page's ChatGPT tab offers this as a one-click `chatgpt-extension.zip` download.
 
 **No ChatGPT handy?** The panel's parchment skin (verse + crisis variants) is previewable at
 `http://127.0.0.1:8765/panel-preview.html`, and any MCP assistant gets the same engine via

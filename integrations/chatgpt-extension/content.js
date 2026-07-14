@@ -21,6 +21,16 @@
     }
   } catch (e) {}
 
+  // Which engine answered (local dev vs the hosted Render server) — the background worker
+  // decides; we mirror it so the "Ask Ezra" link opens the same server that received the
+  // hand-off. Defaults to hosted until the worker replies.
+  let ENGINE_BASE = "https://resonate-hg6j.onrender.com";
+  try {
+    chrome.runtime.sendMessage({ type: "base" }, (r) => {
+      if (!chrome.runtime.lastError && r && r.ok && r.base) ENGINE_BASE = r.base;
+    });
+  } catch (e) {}
+
   let lastText = "";
   let debounce = null;
   let host = null;
@@ -336,7 +346,7 @@
         (reel ? '<a class="ico reelico" href="' + esc(reel.url) +
                 '" target="_blank" rel="noopener noreferrer" title="' + reelTitle +
                 '" aria-label="' + reelTitle + '">▷</a>' : "") +
-        '<a class="ico ezra" href="' + esc("http://127.0.0.1:8765/guide.html?uid=" + encodeURIComponent(USER_ID)) +
+        '<a class="ico ezra" href="' + esc(ENGINE_BASE + "/guide.html?uid=" + encodeURIComponent(USER_ID)) +
             '" target="_blank" rel="noopener noreferrer" ' +
             'title="Ask Ezra — carry this moment into a deeper conversation (you choose to share it)" ' +
             'aria-label="Ask Ezra about this moment">☎</a>' +

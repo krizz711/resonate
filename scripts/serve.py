@@ -16,10 +16,12 @@ Endpoints:
   POST /resonate  {text, user_id?, history?, event?, targets?}
                                     -> {deliveries(+reel_url), context, policy?, rendered}
 """
+import io
 import json
 import os
 import sys
 import urllib.parse
+import zipfile
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -217,6 +219,28 @@ class Handler(BaseHTTPRequestHandler):
     def _send_html(self, path):
         self._send_file(path, "text/html; charset=utf-8")
 
+    def _send_extension_zip(self):
+        """Zip the ChatGPT extension folder on the fly so the connect page can offer a
+        one-click download. Chrome's 'Load unpacked' wants the unpacked folder, so we wrap
+        the files under a single top-level dir the user can point at after unzipping."""
+        ext_dir = os.path.join(_PROJ, "integrations", "chatgpt-extension")
+        names = ["manifest.json", "background.js", "content.js", "README.md"]
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+            for name in names:
+                fpath = os.path.join(ext_dir, name)
+                if os.path.isfile(fpath):
+                    z.write(fpath, arcname="resonate-chatgpt-extension/" + name)
+        body = buf.getvalue()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/zip")
+        self.send_header("Content-Disposition",
+                         'attachment; filename="resonate-chatgpt-extension.zip"')
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     _MIME = {
         "html": "text/html; charset=utf-8",
         "js": "text/javascript; charset=utf-8",
@@ -270,6 +294,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/connect.html":  # "Connect to your assistant" (MCP onboarding)
             self._send_html(os.path.join(SRC_WEB_DIR, "connect.html"))
+            return
+        if path == "/chatgpt-extension.zip":  # no-Plus path: download, then Chrome "Load unpacked"
+            self._send_extension_zip()
             return
         if path == "/guardians.html":  # consent-first guardian registration
             self._send_html(os.path.join(SRC_WEB_DIR, "guardians.html"))
