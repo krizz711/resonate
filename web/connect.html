@@ -190,16 +190,19 @@
   <div id="localpanels"></div>
 
   <!-- ============ browsing chats ============ -->
-  <h2><span class="num">4</span>Grok, or any browsing chat</h2>
-  <div class="sect-sub">Chats that live only in a browser tab (Grok, DeepSeek, ChatGPT free) can't
-    host a tool — but if they can <b>browse the web</b>, paste this once at the top of a conversation.
-    It teaches the chat to fetch your Resonate line when you share a feeling.</div>
+  <h2><span class="num">4</span>Grok, or any chat that fetches URLs</h2>
+  <div class="sect-sub">Some chats that can't host a tool can still <b>fetch a URL you give them</b>
+    (Grok, DeepSeek and similar). Paste this once at the top of a conversation — it teaches the chat
+    to fetch your Resonate line when you share a feeling.
+    <b>ChatGPT is not one of them:</b> its browsing searches the web but won't call an API, so on
+    ChatGPT use the <b>extension</b> (step 2's ChatGPT tab) — that's its zero-setup path.</div>
   <div class="code"><button class="copy" data-copy="prompt">copy</button><pre id="promptbox">…</pre></div>
   <div class="note" style="margin-top:12px">
-    <b>Heads-up on this path:</b> a browsing chat sends your words as part of a web address, so this
-    one is less private than the MCP URL above (which sends them in a request body). Use it for the
-    reach; use <b>Add by URL</b> when privacy matters. Browsing is also the model's choice each turn,
-    so it's helpful-but-imperfect, not a guaranteed connection.
+    <b>Heads-up on this path:</b> whether the chat actually fetches is the model's choice each turn —
+    if it answers without fetching, say <i>"fetch that URL and quote what it returns."</i> A browsing
+    chat also sends your words as part of a web address, so this is less private than the MCP URL
+    above (which sends them in a request body). Use it for reach; use <b>Add by URL</b> or the
+    extension when it matters.
   </div>
 
   <!-- ============ tools ============ -->

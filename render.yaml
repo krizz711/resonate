@@ -7,8 +7,11 @@ services:
     startCommand: python scripts/serve.py
     healthCheckPath: /health
     envVars:
+      # "auto": each provider goes live the moment its keys exist in the dashboard
+      # (Gloo: GLOO_CLIENT_ID + GLOO_CLIENT_SECRET; YouVersion: YOUVERSION_APP_KEY +
+      # RESONATE_BIBLE_ID) and stays on the offline mock otherwise.
       - key: RESONATE_MODE
-        value: mock
+        value: auto
       - key: RESONATE_HOST
         value: 0.0.0.0
       - key: NODE_VERSION

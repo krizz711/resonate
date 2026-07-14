@@ -574,6 +574,35 @@ class TestLiveProviders(unittest.TestCase):
         self.assertTrue(hasattr(cfg, "gloo_client_id") and hasattr(cfg, "gloo_client_secret"))
         self.assertEqual(cfg.yv_base_url, "https://api.youversion.com/v1")
 
+    def test_auto_mode_stays_mock_without_keys(self):
+        # "auto" with no credentials must be byte-identical to mock — a keyless
+        # deploy can never half-break.
+        from resonate.providers import make_gloo, make_youversion
+        from resonate.providers.gloo import MockGloo
+        from resonate.providers.youversion import MockYouVersion
+        cfg = EngineConfig()
+        cfg.provider_mode = "auto"
+        cfg.gloo_client_id = cfg.gloo_client_secret = ""
+        cfg.yv_app_key = ""
+        cfg.bible_id = ""
+        self.assertIsInstance(make_gloo(cfg), MockGloo)
+        self.assertIsInstance(make_youversion(cfg), MockYouVersion)
+
+    def test_auto_mode_goes_live_per_provider(self):
+        # each provider flips independently, and ONLY when its full credential
+        # set exists (YouVersion needs the bible id too, not just the key)
+        from resonate.providers import make_gloo, make_youversion
+        from resonate.providers.gloo import LiveGloo
+        from resonate.providers.youversion import LiveYouVersion, MockYouVersion
+        cfg = EngineConfig()
+        cfg.provider_mode = "auto"
+        cfg.gloo_client_id, cfg.gloo_client_secret = "id", "secret"
+        cfg.yv_app_key, cfg.bible_id = "k", ""   # key but no bible id -> still mock
+        self.assertIsInstance(make_gloo(cfg), LiveGloo)
+        self.assertIsInstance(make_youversion(cfg), MockYouVersion)
+        cfg.bible_id = "1"                        # full set -> live
+        self.assertIsInstance(make_youversion(cfg), LiveYouVersion)
+
     def test_envfile_loader_never_overrides(self):
         import tempfile
         from resonate.envfile import load_env

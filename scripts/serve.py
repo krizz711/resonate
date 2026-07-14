@@ -266,6 +266,12 @@ class Handler(BaseHTTPRequestHandler):
         # API endpoints first
         if path == "/health":
             self._send(200, {"ok": True, "mode": ENGINE.config.provider_mode,
+                             # which provider actually won under "auto" — lets anyone
+                             # verify from a browser that dashboard keys took effect
+                             "providers": {
+                                 "gloo": "live" if type(ENGINE.gloo).__name__ == "LiveGloo" else "mock",
+                                 "youversion": "live" if type(ENGINE.yv).__name__ == "LiveYouVersion" else "mock",
+                             },
                              "translation": ENGINE.config.translation,
                              "targets": list(TARGETS), "tts": tts.available()})
             return
