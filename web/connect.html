@@ -15,8 +15,16 @@
     --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{min-height:100vh;background:linear-gradient(180deg,#e4d7c6,#ddcdb8 60%,#d5c4ac);
+  body{position:relative;min-height:100vh;background:linear-gradient(180deg,#e4d7c6,#ddcdb8 60%,#d5c4ac);
     color:var(--ink);font-family:var(--sans);padding-bottom:70px}
+  /* parchment nature mural — a fixed backdrop framing the page; the gradient above
+     is the fallback if the image fails. Anchored to the top so the canopy + birds
+     stay in view; content sits in the pale centre. */
+  body::before{content:"";position:fixed;inset:0;z-index:-2;
+    background:url(/bg/connect.jpg) center top / cover no-repeat}
+  /* soft cream veil so text stays legible over the foliage in the corners */
+  body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(120% 80% at 50% 32%, rgba(245,239,227,.30), rgba(243,236,223,.62))}
   .wrap{width:min(860px,94vw);margin:0 auto}
   header{display:flex;align-items:baseline;justify-content:space-between;padding:24px 0 8px}
   header .brand{font-family:var(--serif);font-weight:600;font-size:24px}
