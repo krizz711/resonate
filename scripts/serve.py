@@ -230,12 +230,12 @@ class Handler(BaseHTTPRequestHandler):
             for name in names:
                 fpath = os.path.join(ext_dir, name)
                 if os.path.isfile(fpath):
-                    z.write(fpath, arcname="resonate-chatgpt-extension/" + name)
+                    z.write(fpath, arcname="resonate-extension/" + name)
         body = buf.getvalue()
         self.send_response(200)
         self.send_header("Content-Type", "application/zip")
         self.send_header("Content-Disposition",
-                         'attachment; filename="resonate-chatgpt-extension.zip"')
+                         'attachment; filename="resonate-extension.zip"')
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
@@ -301,7 +301,7 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/connect.html":  # "Connect to your assistant" (MCP onboarding)
             self._send_html(os.path.join(SRC_WEB_DIR, "connect.html"))
             return
-        if path == "/chatgpt-extension.zip":  # no-Plus path: download, then Chrome "Load unpacked"
+        if path in ("/resonate-extension.zip", "/chatgpt-extension.zip"):  # download, then Chrome "Load unpacked"
             self._send_extension_zip()
             return
         if path == "/guardians.html":  # consent-first guardian registration
