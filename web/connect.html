@@ -75,6 +75,19 @@
     border-radius:999px;padding:6px 13px}
   .chip.soft{color:var(--ink-soft);border-style:dashed}
 
+  /* "try it" — how to see the connection working */
+  .try{margin-top:18px;border-radius:12px;padding:15px 17px;
+    background:radial-gradient(120% 120% at 100% 0%,rgba(185,143,53,.1),transparent 60%),rgba(251,247,236,.5);
+    border:1px solid rgba(185,143,53,.32)}
+  .try-h{font-family:var(--serif);font-weight:600;font-size:15.5px;color:var(--ink);margin-bottom:9px}
+  .try-h .s{color:var(--gold);margin-right:7px}
+  .try-note{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+  .try-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:7px;font-size:12.5px;
+    color:var(--ink-soft);line-height:1.5;padding:7px 0}
+  .try-row + .try-row{border-top:1px dashed rgba(33,29,23,.12)}
+  .try .say{font-family:var(--serif);font-style:italic;font-size:14.5px;color:var(--ink)}
+  .try .arr{color:var(--clay);font-weight:600}
+
   /* download button */
   .dl{display:inline-flex;align-items:center;gap:10px;margin-top:16px;font-family:var(--sans);
     font-size:14px;font-weight:500;color:#f6f0e2;text-decoration:none;letter-spacing:.02em;
@@ -206,6 +219,14 @@
     </div>
     <div class="sect-sub" style="margin-top:12px">If a site changes its layout it simply stays quiet —
       it can never alter or break your chat. No Plus, no developer mode, no Python.</div>
+
+    <div class="try">
+      <div class="try-h"><span class="s">✦</span>See it work</div>
+      <div class="try-note" style="margin-bottom:6px">Open one of the AIs above and type a message — the panel decides on its own whether to speak:</div>
+      <div class="try-row"><span class="say">“I feel anxious about everything right now”</span> <span class="arr">→</span> a verse panel slips in from the corner</div>
+      <div class="try-row"><span class="say">“what's the capital of France?”</span> <span class="arr">→</span> nothing — it stays quiet on purpose</div>
+      <div class="try-row">anything that sounds like real distress <span class="arr">→</span> a gentle help card, never a verse</div>
+    </div>
   </div>
 
   <!-- ============ WAY 2 — the MCP connector ============ -->
@@ -225,6 +246,13 @@
       <span class="chip">VS Code · Copilot</span><span class="chip">Windsurf</span>
       <span class="chip">Gemini CLI</span><span class="chip">Claude Code</span>
       <span class="chip">Zed</span><span class="chip">Cline</span><span class="chip soft">any MCP app</span>
+    </div>
+
+    <div class="try">
+      <div class="try-h"><span class="s">✦</span>Test it</div>
+      <div class="try-note">An assistant calls a tool when it decides to — so nudge it. In a new chat (with Resonate enabled), paste this once:</div>
+      <div class="code" style="margin-top:9px"><button class="copy">copy</button><pre id="testprompt"></pre></div>
+      <div class="try-row" style="margin-top:5px">then say <span class="say">“I've had a discouraging week and feel worn down”</span> <span class="arr">→</span> it calls Resonate and quotes a real verse in its reply</div>
     </div>
 
     <details>
@@ -294,6 +322,7 @@
     return '{\n  "mcpServers": {\n    "resonate": {\n      "httpUrl": "' + hostedUrl() + '"\n    }\n  }\n}';
   }
   function cliCmd() { return "claude mcp add --transport http resonate " + hostedUrl(); }
+  var TEST_PROMPT = "When I share how I'm feeling, use the Resonate tool and quote back exactly what it returns.";
 
   // fill everything that depends on the key
   function paint() {
@@ -303,6 +332,7 @@
     document.getElementById("cfg_vscode").textContent = vscodeJson();
     document.getElementById("cfg_gemini").textContent = geminiJson();
     document.getElementById("cfg_cli").textContent = cliCmd();
+    document.getElementById("testprompt").textContent = TEST_PROMPT;
   }
   paint();
 
