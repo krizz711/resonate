@@ -504,17 +504,30 @@
   const sentLog = [];
   let lastComposer = null;
 
-  function isComposer(el) {
-    if (!el || (host && host.contains(el))) return false; // never our own panel
-    if (el.tagName === "TEXTAREA") return true;
-    return el.isContentEditable === true;
+  // The editable the user types into: a <textarea>, or the ROOT of a contenteditable.
+  // Rich editors (ChatGPT, Claude, Gemini) fire the keydown on a nested node, so we
+  // climb out of any inline child — otherwise we'd capture one span, not the message.
+  function composerRoot(el) {
+    if (!el || (host && host.contains(el))) return null; // never our own panel
+    if (el.tagName === "TEXTAREA") return el;
+    if (!el.isContentEditable) return null;
+    let root = el;
+    while (root.parentElement && root.parentElement.isContentEditable) root = root.parentElement;
+    return root;
+  }
+
+  function composerText(el) {
+    return norm(el.tagName === "TEXTAREA" ? el.value : (el.innerText || el.textContent || ""));
   }
 
   function captureSend(el) {
-    if (!el) return;
-    const text = norm(el.tagName === "TEXTAREA" ? el.value : el.innerText);
-    if (text.length < 8) return; // stray Enters in small fields aren't messages
-    if (sentLog[sentLog.length - 1] === text) return;
+    // resolve to the editable root; fall back to the last one we saw focused
+    const root = composerRoot(el) ||
+                 (lastComposer && document.contains(lastComposer) ? lastComposer : null);
+    if (!root) return;
+    const text = composerText(root);
+    if (text.length < 5) return;                       // ignore stray Enters / 1-word noise
+    if (sentLog[sentLog.length - 1] === text) return;  // dedupe the same send
     sentLog.push(text);
     if (sentLog.length > 6) sentLog.shift();
     handle(sentLog.slice());
@@ -522,14 +535,18 @@
 
   function startComposerCapture() {
     document.addEventListener("focusin", (e) => {
-      if (isComposer(e.target)) lastComposer = e.target;
+      const root = composerRoot(e.target);
+      if (root) lastComposer = root;
     }, true);
+    // Enter (plain, or with the ctrl/cmd send-shortcut some sites use) — capture in the
+    // capture phase, before the site clears the box. Shift+Enter / IME are newlines.
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Enter" || e.shiftKey || e.isComposing) return;
-      if (isComposer(e.target)) captureSend(e.target);
+      captureSend(e.target);
     }, true);
+    // click on a send/submit control — read the last-focused composer before it clears
     document.addEventListener("click", (e) => {
-      const btn = e.target && e.target.closest && e.target.closest('button, [role="button"]');
+      const btn = e.target && e.target.closest && e.target.closest('button, [role="button"], [type="submit"]');
       if (!btn || (host && host.contains(btn))) return;
       const label = ((btn.getAttribute("aria-label") || "") + " " +
                      (btn.getAttribute("data-testid") || "") + " " +
