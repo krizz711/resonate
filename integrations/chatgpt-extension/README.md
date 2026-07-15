@@ -1,9 +1,15 @@
-# Resonate — ChatGPT connector (flagship)
+# Resonate — the browser extension (flagship)
 
 Scripture, in the AI-powered world you already live in. Resonate sits quietly in the corner of
-your ChatGPT window. It **reads only your message text, processes it locally, stores nothing**,
-and **only speaks when it hears a story that echoes a verse** — appearing as a small, dismissible
-side panel. When it detects a crisis, it **stays silent on Scripture and points to help instead.**
+your AI chat — **ChatGPT, Claude, Gemini, Grok, DeepSeek, Copilot, Perplexity**. It **reads only
+your message text, processes it locally, stores nothing**, and **only speaks when it hears a story
+that echoes a verse** — appearing as a small, dismissible side panel. When it detects a crisis, it
+**stays silent on Scripture and points to help instead.**
+
+Two detection paths, one flow: ChatGPT and Claude have stable user-message DOM anchors (a
+MutationObserver watches those); every other chat uses **composer-capture** — the extension
+snapshots what you typed the instant you press send, with no site-specific DOM at all, so a
+site redesign can't break it.
 
 ## Panel v2 — what it does now
 - **Slips in from the right** (0.5 s, eased; honors `prefers-reduced-motion`), compact 340 px,
@@ -41,9 +47,11 @@ Resonate server** — which runs the matching engine + safety gate + Delivery Po
    ```
 2. **Load the extension:** open `chrome://extensions` → enable **Developer mode** →
    **Load unpacked** → select this folder (`integrations/chatgpt-extension`).
-3. Open **https://chatgpt.com**, send a message like *"I feel like I'm failing everyone."*
-   A quiet verse panel appears bottom-right. Try *"what's the capital of France?"* → silence.
-   Try a crisis phrase → a gentle help card, never a verse.
+3. Open your AI chat — **chatgpt.com, claude.ai, gemini.google.com, grok.com,
+   chat.deepseek.com, copilot.microsoft.com, perplexity.ai** — and send a message like
+   *"I feel like I'm failing everyone."* A quiet verse panel appears bottom-right.
+   Try *"what's the capital of France?"* → silence. Try a crisis phrase → a gentle help
+   card, never a verse.
 
 **No local engine? (end users / no-Plus ChatGPT)** Skip step 1. When no local server answers on
 `127.0.0.1:8765`, the worker automatically falls back to the hosted Resonate server, so the

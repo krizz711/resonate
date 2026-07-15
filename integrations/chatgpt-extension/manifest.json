@@ -1,14 +1,25 @@
 {
   "manifest_version": 3,
-  "name": "Resonate — Scripture in the conversation",
-  "version": "0.4.0",
-  "description": "A quiet, dismissible verse when your AI conversation echoes one — with a voice from an old chapel. Privacy-first: processed locally, nothing stored.",
+  "name": "Resonate — Scripture beside your AI",
+  "version": "0.5.0",
+  "description": "A quiet, dismissible verse when your AI conversation echoes one — beside ChatGPT, Claude, Gemini, Grok, DeepSeek, Copilot and Perplexity. Privacy-first: nothing stored.",
   "permissions": ["storage"],
   "host_permissions": ["http://127.0.0.1:8765/*", "http://localhost:8765/*", "https://resonate-hg6j.onrender.com/*"],
   "background": { "service_worker": "background.js" },
   "content_scripts": [
     {
-      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://grok.com/*",
+        "https://x.com/i/grok*",
+        "https://chat.deepseek.com/*",
+        "https://copilot.microsoft.com/*",
+        "https://www.perplexity.ai/*",
+        "https://perplexity.ai/*"
+      ],
       "js": ["content.js"],
       "run_at": "document_idle"
     }

@@ -1,8 +1,13 @@
-// Resonate content script for chatgpt.com.
-// Watches for new USER messages (the stable [data-message-author-role="user"] selector),
-// sends the text + a short rolling history to the background worker -> local engine, and
-// renders a quiet, dismissible parchment panel. If the selector ever fails or the engine
-// is offline, it does nothing — it never touches or breaks the chat UI.
+// Resonate content script — one panel beside ANY AI chat.
+// Two ways of hearing you, feeding one flow:
+//   1. Anchored sites (ChatGPT, Claude): a MutationObserver on the site's stable
+//      user-message selector — precise, catches edits and regenerations.
+//   2. Every other AI chat (Gemini, Grok, DeepSeek, Copilot, Perplexity, …):
+//      composer-capture — we snapshot what you typed the instant you press send,
+//      with no site-specific DOM at all, so redesigns can't break it.
+// Both send the text + a short rolling history to the background worker -> engine and
+// render a quiet, dismissible parchment panel. If detection fails or the engine is
+// offline, it does nothing — it never touches or breaks the chat UI.
 //
 // Panel v2: slides in from the right edge; after a while it folds itself into a small
 // wax seal so it never squats on the conversation — click the seal to unfold it again.
@@ -440,13 +445,25 @@
     clearTimeout(foldTimer); // a help card never folds itself away
   }
 
+  // Sites with a stable user-message DOM anchor. Everything else relies purely on
+  // composer-capture below (which also runs here, as a belt-and-braces instant path).
+  const HOST = location.hostname.replace(/^www\./, "");
+  const MESSAGE_SELECTORS = {
+    "chatgpt.com": '[data-message-author-role="user"]',
+    "chat.openai.com": '[data-message-author-role="user"]',
+    "claude.ai": '[data-testid="user-message"]',
+  };
+  const SEL = MESSAGE_SELECTORS[HOST];
+
+  const norm = (s) => (s || "").replace(/\s+/g, " ").trim();
+
   function userMessages() {
-    const nodes = document.querySelectorAll('[data-message-author-role="user"]');
-    return Array.from(nodes).map((n) => (n.innerText || "").trim()).filter(Boolean);
+    const nodes = document.querySelectorAll(SEL);
+    return Array.from(nodes).map((n) => norm(n.innerText)).filter(Boolean);
   }
 
   function handle(all) {
-    const text = all.length ? all[all.length - 1] : "";
+    const text = all.length ? norm(all[all.length - 1]) : "";
     if (!text || text === lastText) return;
     lastText = text;
     const history = all.slice(-4, -1); // up to 3 prior messages — conversation context
@@ -472,13 +489,58 @@
     }
   }
 
-  const observer = new MutationObserver(() => {
-    clearTimeout(debounce);
-    debounce = setTimeout(() => handle(userMessages()), 600);
-  });
+  // -- anchored path: observe the site's own user-message nodes --
+  const observer = SEL
+    ? new MutationObserver(() => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => handle(userMessages()), 600);
+      })
+    : null;
+
+  // -- universal path: capture the composer at the moment of send --
+  // Works on any chat UI: the message box is a <textarea> or contenteditable, and
+  // sending is Enter (without Shift) or a send-ish button. We read the words in the
+  // capture phase, before the site clears the box. History is our own rolling log.
+  const sentLog = [];
+  let lastComposer = null;
+
+  function isComposer(el) {
+    if (!el || (host && host.contains(el))) return false; // never our own panel
+    if (el.tagName === "TEXTAREA") return true;
+    return el.isContentEditable === true;
+  }
+
+  function captureSend(el) {
+    if (!el) return;
+    const text = norm(el.tagName === "TEXTAREA" ? el.value : el.innerText);
+    if (text.length < 8) return; // stray Enters in small fields aren't messages
+    if (sentLog[sentLog.length - 1] === text) return;
+    sentLog.push(text);
+    if (sentLog.length > 6) sentLog.shift();
+    handle(sentLog.slice());
+  }
+
+  function startComposerCapture() {
+    document.addEventListener("focusin", (e) => {
+      if (isComposer(e.target)) lastComposer = e.target;
+    }, true);
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" || e.shiftKey || e.isComposing) return;
+      if (isComposer(e.target)) captureSend(e.target);
+    }, true);
+    document.addEventListener("click", (e) => {
+      const btn = e.target && e.target.closest && e.target.closest('button, [role="button"]');
+      if (!btn || (host && host.contains(btn))) return;
+      const label = ((btn.getAttribute("aria-label") || "") + " " +
+                     (btn.getAttribute("data-testid") || "") + " " +
+                     (btn.getAttribute("title") || "") + " " + (btn.type || "")).toLowerCase();
+      if (/send|submit/.test(label)) captureSend(lastComposer);
+    }, true);
+  }
 
   function start() {
-    observer.observe(document.body, { childList: true, subtree: true });
+    if (observer) observer.observe(document.body, { childList: true, subtree: true });
+    startComposerCapture(); // on anchored sites too — instant, and handle() dedupes
   }
   if (document.body) start();
   else window.addEventListener("DOMContentLoaded", start);
