@@ -23,6 +23,12 @@ LEXICON = {
     "grief": ["grief", "grieving", "loss", "passed away", "died", "death", "mourning", "heartbroken"],
     "loneliness": ["lonely", "alone", "isolated", "nobody", "by myself", "no one"],
     "doubt": ["doubt", "unsure", "questioning", "confused", "even matters", "pointless", "what's the point", "shouting into the void"],
+    # overconfidence is NOT doubt — before this theme existed, "I'm the smartest one
+    # here" fell onto the doubt axis (nearest neighbour, wrong pole; observed live)
+    "pride": ["overconfident", "arrogant", "arrogance", "cocky", "smartest", "smarter than everyone",
+              "know it all", "know-it-all", "i know everything", "better than everyone", "only smart",
+              "everyone else is stupid", "world is stupid", "full of myself", "my ego",
+              "im always right", "i'm always right", "wise in my own eyes"],
     "guilt": ["guilt", "guilty", "ashamed", "shame", "regret", "i failed", "messed up", "my fault",
               "failing everyone", "let everyone down", "letting everyone down", "let them down"],
     "anger": ["angry", "anger", "furious", "resentful", "bitter", "frustrated"],
@@ -50,7 +56,7 @@ LEXICON = {
 
 EMOTION = {
     "anxiety": "anxious", "fear": "afraid", "grief": "grieving", "loneliness": "lonely",
-    "doubt": "uncertain", "guilt": "weighed down", "anger": "frustrated", "weariness": "exhausted",
+    "doubt": "uncertain", "pride": "self-assured", "guilt": "weighed down", "anger": "frustrated", "weariness": "exhausted",
     "gratitude": "grateful", "joy": "joyful", "hope": "hopeful", "peace": "unsettled",
     "perseverance": "determined", "purpose": "searching", "provision": "stretched",
     "forgiveness": "remorseful", "love": "longing", "comfort": "hurting", "courage": "hesitant",

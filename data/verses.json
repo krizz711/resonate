@@ -32,7 +32,9 @@
     "rest",
     "identity",
     "trust",
-    "prayer"
+    "prayer",
+    "pride",
+    "humility"
   ],
   "verses": [
     {
@@ -2684,6 +2686,94 @@
         "healed"
       ],
       "note": "Pray for one another, that you may be healed."
+    },
+    {
+      "reference": "Romans 12:3",
+      "usfm": "ROM.12.3",
+      "themes": [
+        "pride",
+        "identity"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "overconfident",
+        "arrogant",
+        "think highly of myself",
+        "smartest",
+        "ego",
+        "soberly",
+        "superior"
+      ],
+      "note": "Don't think of yourself more highly than you ought — judge yourself soberly."
+    },
+    {
+      "reference": "James 4:6",
+      "usfm": "JAS.4.6",
+      "themes": [
+        "pride",
+        "humility"
+      ],
+      "tone": "conviction",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "proud",
+        "pride",
+        "humble",
+        "grace",
+        "arrogant",
+        "resist"
+      ],
+      "note": "God resists the proud but gives grace to the humble."
+    },
+    {
+      "reference": "Proverbs 16:18",
+      "usfm": "PRO.16.18",
+      "themes": [
+        "pride"
+      ],
+      "tone": "conviction",
+      "intensity_fit": [
+        0.4,
+        0.9
+      ],
+      "keywords": [
+        "pride",
+        "haughty",
+        "fall",
+        "overconfident",
+        "arrogance",
+        "destruction"
+      ],
+      "note": "Pride goes before destruction; a haughty spirit before a fall."
+    },
+    {
+      "reference": "Philippians 2:3-4",
+      "usfm": "PHP.2.3-PHP.2.4",
+      "themes": [
+        "humility",
+        "love"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.7
+      ],
+      "keywords": [
+        "conceit",
+        "selfish ambition",
+        "humility",
+        "value others",
+        "esteem others",
+        "vainglory"
+      ],
+      "note": "In lowliness of mind, esteem others better than yourself."
     }
   ]
 }

@@ -2,65 +2,430 @@
   "schema_version": 1,
   "note": "Curated shortlist of biblical NARRATIVES for 'Your story' generation. Same anti-hallucination pattern as verses.json: we store references, themes, and a neutral synopsis — never generated 'scripture'. The story engine weaves the user's moment into ONE of these vetted narratives; any verse text shown verbatim is fetched from YouVersion. Synopses are descriptive summaries (our own words), reviewed for fidelity.",
   "stories": [
-    {"id": "broom_tree", "title": "Elijah under the broom tree", "usfm": "1KI.19.1-1KI.19.8", "reference": "1 Kings 19:1-8", "themes": ["weariness", "doubt", "rest", "comfort"], "tone": "comfort",
-     "synopsis": "After his greatest victory, Elijah collapses in the wilderness, spent and wanting out. God's answer isn't a lecture — it's sleep, bread, and a gentle voice, twice, before any next step is asked of him."},
-    {"id": "sower", "title": "The sower and the soils", "usfm": "MRK.4.3-MRK.4.20", "reference": "Mark 4:3-20", "themes": ["perseverance", "hope", "purpose"], "tone": "challenge",
-     "synopsis": "A farmer scatters seed everywhere — path, rocks, thorns, good soil — and most of it seems wasted. The harvest comes anyway, out of proportion to the loss, from the seed that lands and stays."},
-    {"id": "prodigal", "title": "The prodigal son", "usfm": "LUK.15.11-LUK.15.32", "reference": "Luke 15:11-32", "themes": ["guilt", "forgiveness", "love", "identity"], "tone": "assurance",
-     "synopsis": "A son burns every bridge, rehearses a servant's apology on the road home — and the father is running toward him before a word is out, restoring the sonship the boy thought he'd spent."},
-    {"id": "peter_water", "title": "Peter walks on the water", "usfm": "MAT.14.22-MAT.14.33", "reference": "Matthew 14:22-33", "themes": ["fear", "doubt", "trust", "courage"], "tone": "assurance",
-     "synopsis": "In a night storm Peter steps out of the boat and walks — until he looks at the wind instead of the face in front of him. He sinks one arm's length from rescue; the hand is already there."},
-    {"id": "widows_oil", "title": "The widow's oil", "usfm": "2KI.4.1-2KI.4.7", "reference": "2 Kings 4:1-7", "themes": ["provision", "anxiety", "trust"], "tone": "hope",
-     "synopsis": "A widow drowning in debt has one small jar of oil. She's told to borrow empty vessels — as many as she dares — and the oil keeps flowing exactly as long as there is something to fill."},
-    {"id": "hagar_seen", "title": "Hagar at the well", "usfm": "GEN.16.6-GEN.16.14", "reference": "Genesis 16:6-14", "themes": ["loneliness", "comfort", "identity"], "tone": "comfort",
-     "synopsis": "A runaway servant, pregnant and disposable in everyone else's story, is found by a spring in the desert. She gives God the name no one else uses: the One who sees me."},
-    {"id": "hannah", "title": "Hannah's prayer", "usfm": "1SA.1.9-1SA.1.20", "reference": "1 Samuel 1:9-20", "themes": ["prayer", "grief", "hope", "love"], "tone": "hope",
-     "synopsis": "Hannah prays so raw and wordless that the priest thinks she's drunk. She isn't answered that day — but she walks home lighter, having poured the whole weight of it out."},
-    {"id": "david_goliath", "title": "David and Goliath", "usfm": "1SA.17.32-1SA.17.50", "reference": "1 Samuel 17:32-50", "themes": ["courage", "fear", "trust", "identity"], "tone": "challenge",
-     "synopsis": "The armor they offer him doesn't fit, so he leaves it. Five smooth stones and a history of rescued sheep — David fights the giant as exactly who he already is, not who they told him to be."},
-    {"id": "job_endures", "title": "Job in the ashes", "usfm": "JOB.1.13-JOB.2.10", "reference": "Job 1:13-2:10", "themes": ["grief", "perseverance", "doubt", "anger"], "tone": "comfort",
-     "synopsis": "Job loses everything in a single afternoon and refuses easy answers — his own and his friends'. The book lets him rage and grieve for thirty chapters before any voice answers from the storm."},
-    {"id": "ruth_naomi", "title": "Ruth stays", "usfm": "RUT.1.8-RUT.1.18", "reference": "Ruth 1:8-18", "themes": ["loneliness", "grief", "love", "perseverance"], "tone": "assurance",
-     "synopsis": "Two widows on an empty road. Naomi has nothing left to offer, and Ruth binds herself to her anyway — where you go, I go. Loyalty, not optimism, is what carries them home."},
-    {"id": "storm_calmed", "title": "Jesus calms the storm", "usfm": "MRK.4.35-MRK.4.41", "reference": "Mark 4:35-41", "themes": ["anxiety", "fear", "peace", "trust"], "tone": "assurance",
-     "synopsis": "The boat is filling and he's asleep on a cushion — which feels like abandonment until he stands up. The storm obeys a sentence. The disciples' fear changes object, not size."},
-    {"id": "five_thousand", "title": "Feeding the five thousand", "usfm": "JHN.6.5-JHN.6.14", "reference": "John 6:5-14", "themes": ["provision", "doubt", "gratitude"], "tone": "hope",
-     "synopsis": "The math is hopeless — five loaves, two fish, thousands hungry. The boy hands over his lunch anyway, and the impossibility is fed with twelve baskets left over."},
-    {"id": "lost_sheep", "title": "The lost sheep", "usfm": "LUK.15.3-LUK.15.7", "reference": "Luke 15:3-7", "themes": ["love", "identity", "comfort"], "tone": "assurance",
-     "synopsis": "Ninety-nine are safe, and the shepherd goes out into the dark for the one — not because the one earned it, but because that's what this shepherd is like. He carries it home on his shoulders."},
-    {"id": "mary_martha", "title": "Mary and Martha", "usfm": "LUK.10.38-LUK.10.42", "reference": "Luke 10:38-42", "themes": ["rest", "anxiety", "weariness", "peace"], "tone": "conviction",
-     "synopsis": "Martha is doing everything right and drowning in it; Mary just sits down at his feet. The rebuke is gentle: you are anxious about many things, and only one is needed."},
-    {"id": "prison_songs", "title": "Songs at midnight", "usfm": "ACT.16.25-ACT.16.34", "reference": "Acts 16:25-34", "themes": ["joy", "perseverance", "hope", "prayer"], "tone": "celebration",
-     "synopsis": "Beaten and chained in the innermost cell, Paul and Silas sing at midnight — before the earthquake, not after. The jailer meets a freedom that was in the room before the doors opened."},
-    {"id": "thomas", "title": "Thomas and the scars", "usfm": "JHN.20.24-JHN.20.29", "reference": "John 20:24-29", "themes": ["doubt", "trust", "hope"], "tone": "assurance",
-     "synopsis": "Thomas won't pretend a faith he doesn't have, and Jesus doesn't shame him for it — he shows up a week later with his scars out, and offers the exact evidence Thomas asked for."},
-    {"id": "well_woman", "title": "The woman at the well", "usfm": "JHN.4.7-JHN.4.30", "reference": "John 4:7-30", "themes": ["identity", "loneliness", "guilt", "hope"], "tone": "assurance",
-     "synopsis": "She comes at noon to avoid the crowd and their opinions. The stranger at the well knows her whole story and stays in the conversation anyway — and she runs back to the very town she was hiding from."},
-    {"id": "zacchaeus", "title": "Zacchaeus in the tree", "usfm": "LUK.19.1-LUK.19.10", "reference": "Luke 19:1-10", "themes": ["identity", "guilt", "forgiveness", "joy"], "tone": "celebration",
-     "synopsis": "A rich man everyone despises climbs a tree like a child just to see. Out of the whole crowd, Jesus stops at his branch and invites himself to dinner — and the man climbs down changed."},
-    {"id": "joseph_purpose", "title": "Joseph — meant for good", "usfm": "GEN.50.15-GEN.50.21", "reference": "Genesis 50:15-21", "themes": ["purpose", "forgiveness", "anger", "trust"], "tone": "hope",
-     "synopsis": "Sold by his brothers, slandered, forgotten in prison — and years later Joseph stands in front of them with power to repay it all. What you meant for evil, God wove toward good."},
-    {"id": "burning_bush", "title": "Moses at the burning bush", "usfm": "EXO.3.1-EXO.3.14", "reference": "Exodus 3:1-14", "themes": ["courage", "purpose", "doubt", "identity"], "tone": "challenge",
-     "synopsis": "Moses has five objections, starting with 'who am I?' The voice in the fire never argues his adequacy — it answers every excuse with a presence: I will be with you."},
-    {"id": "jonah", "title": "Jonah and the second word", "usfm": "JON.3.1-JON.3.3", "reference": "Jonah 3:1-3", "themes": ["anger", "forgiveness", "purpose", "trust"], "tone": "conviction",
-     "synopsis": "Jonah runs the exact opposite direction and sinks all the way down. The tide turns on eight words: the word of the LORD came a second time. Failure didn't disqualify him."},
-    {"id": "gideon", "title": "Gideon, mighty man of valor", "usfm": "JDG.6.11-JDG.6.16", "reference": "Judges 6:11-16", "themes": ["courage", "doubt", "identity", "fear"], "tone": "challenge",
-     "synopsis": "Gideon is threshing wheat in a winepress, hiding from the enemy, when the angel greets him: mighty man of valor. God names the courage before Gideon has shown any."},
-    {"id": "bartimaeus", "title": "Blind Bartimaeus", "usfm": "MRK.10.46-MRK.10.52", "reference": "Mark 10:46-52", "themes": ["hope", "prayer", "perseverance"], "tone": "hope",
-     "synopsis": "The crowd tells him to be quiet; he shouts louder. Jesus stops the whole procession for a beggar's voice and asks the dignifying question: what do you want me to do for you?"},
-    {"id": "emmaus", "title": "The road to Emmaus", "usfm": "LUK.24.13-LUK.24.32", "reference": "Luke 24:13-32", "themes": ["grief", "hope", "doubt", "comfort"], "tone": "comfort",
-     "synopsis": "Two disciples walk away from the wreckage of everything they hoped, and a stranger falls in step and lets them say all of it. Their hearts burn long before their eyes open at the table."},
-    {"id": "gethsemane", "title": "Gethsemane", "usfm": "MAT.26.36-MAT.26.44", "reference": "Matthew 26:36-44", "themes": ["anxiety", "trust", "prayer", "grief"], "tone": "comfort",
-     "synopsis": "Jesus himself is overwhelmed to the point of death and prays the same anguished sentence three times, sweat like blood. Honest dread and full surrender live in the same prayer."},
-    {"id": "jesus_wept", "title": "Jesus wept", "usfm": "JHN.11.32-JHN.11.44", "reference": "John 11:32-44", "themes": ["grief", "comfort", "hope", "love"], "tone": "comfort",
-     "synopsis": "He knows resurrection is four minutes away — and he still stands at his friend's tomb and weeps with the sisters first. Grief is not a lack of faith; he honored it before he answered it."},
-    {"id": "furnace", "title": "The fourth man in the fire", "usfm": "DAN.3.16-DAN.3.28", "reference": "Daniel 3:16-28", "themes": ["courage", "trust", "fear", "perseverance"], "tone": "challenge",
-     "synopsis": "Three men refuse to bow, saying 'our God is able — but even if not…' They aren't spared the furnace; they're met inside it, and walk out without the smell of smoke."},
-    {"id": "simeon_anna", "title": "Simeon and Anna wait", "usfm": "LUK.2.25-LUK.2.38", "reference": "Luke 2:25-38", "themes": ["hope", "weariness", "prayer", "joy"], "tone": "hope",
-     "synopsis": "Two old believers have waited their entire lives on a promise, showing up to the same temple, decade after decade. One ordinary morning, the waiting ends in their arms."},
-    {"id": "sabbath_rest", "title": "The seventh day", "usfm": "GEN.2.1-GEN.2.3", "reference": "Genesis 2:1-3", "themes": ["rest", "peace", "weariness"], "tone": "conviction",
-     "synopsis": "The first thing ever called holy is not a mountain or a temple — it's a day off. Rest is stitched into the fabric of creation before anyone had earned it."},
-    {"id": "downcast_soul", "title": "Why so downcast, my soul", "usfm": "PSA.42.5-PSA.42.11", "reference": "Psalm 42:5-11", "themes": ["doubt", "grief", "hope", "prayer"], "tone": "comfort",
-     "synopsis": "The psalmist argues with his own soul in the dark — why are you cast down? — and preaches hope to himself twice, not because the feelings resolved, but because the address still stands."}
+    {
+      "id": "broom_tree",
+      "title": "Elijah under the broom tree",
+      "usfm": "1KI.19.1-1KI.19.8",
+      "reference": "1 Kings 19:1-8",
+      "themes": [
+        "weariness",
+        "doubt",
+        "rest",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "synopsis": "After his greatest victory, Elijah collapses in the wilderness, spent and wanting out. God's answer isn't a lecture — it's sleep, bread, and a gentle voice, twice, before any next step is asked of him."
+    },
+    {
+      "id": "sower",
+      "title": "The sower and the soils",
+      "usfm": "MRK.4.3-MRK.4.20",
+      "reference": "Mark 4:3-20",
+      "themes": [
+        "perseverance",
+        "hope",
+        "purpose"
+      ],
+      "tone": "challenge",
+      "synopsis": "A farmer scatters seed everywhere — path, rocks, thorns, good soil — and most of it seems wasted. The harvest comes anyway, out of proportion to the loss, from the seed that lands and stays."
+    },
+    {
+      "id": "prodigal",
+      "title": "The prodigal son",
+      "usfm": "LUK.15.11-LUK.15.32",
+      "reference": "Luke 15:11-32",
+      "themes": [
+        "guilt",
+        "forgiveness",
+        "love",
+        "identity"
+      ],
+      "tone": "assurance",
+      "synopsis": "A son burns every bridge, rehearses a servant's apology on the road home — and the father is running toward him before a word is out, restoring the sonship the boy thought he'd spent."
+    },
+    {
+      "id": "peter_water",
+      "title": "Peter walks on the water",
+      "usfm": "MAT.14.22-MAT.14.33",
+      "reference": "Matthew 14:22-33",
+      "themes": [
+        "fear",
+        "doubt",
+        "trust",
+        "courage"
+      ],
+      "tone": "assurance",
+      "synopsis": "In a night storm Peter steps out of the boat and walks — until he looks at the wind instead of the face in front of him. He sinks one arm's length from rescue; the hand is already there."
+    },
+    {
+      "id": "widows_oil",
+      "title": "The widow's oil",
+      "usfm": "2KI.4.1-2KI.4.7",
+      "reference": "2 Kings 4:1-7",
+      "themes": [
+        "provision",
+        "anxiety",
+        "trust"
+      ],
+      "tone": "hope",
+      "synopsis": "A widow drowning in debt has one small jar of oil. She's told to borrow empty vessels — as many as she dares — and the oil keeps flowing exactly as long as there is something to fill."
+    },
+    {
+      "id": "hagar_seen",
+      "title": "Hagar at the well",
+      "usfm": "GEN.16.6-GEN.16.14",
+      "reference": "Genesis 16:6-14",
+      "themes": [
+        "loneliness",
+        "comfort",
+        "identity"
+      ],
+      "tone": "comfort",
+      "synopsis": "A runaway servant, pregnant and disposable in everyone else's story, is found by a spring in the desert. She gives God the name no one else uses: the One who sees me."
+    },
+    {
+      "id": "hannah",
+      "title": "Hannah's prayer",
+      "usfm": "1SA.1.9-1SA.1.20",
+      "reference": "1 Samuel 1:9-20",
+      "themes": [
+        "prayer",
+        "grief",
+        "hope",
+        "love"
+      ],
+      "tone": "hope",
+      "synopsis": "Hannah prays so raw and wordless that the priest thinks she's drunk. She isn't answered that day — but she walks home lighter, having poured the whole weight of it out."
+    },
+    {
+      "id": "david_goliath",
+      "title": "David and Goliath",
+      "usfm": "1SA.17.32-1SA.17.50",
+      "reference": "1 Samuel 17:32-50",
+      "themes": [
+        "courage",
+        "fear",
+        "trust",
+        "identity"
+      ],
+      "tone": "challenge",
+      "synopsis": "The armor they offer him doesn't fit, so he leaves it. Five smooth stones and a history of rescued sheep — David fights the giant as exactly who he already is, not who they told him to be."
+    },
+    {
+      "id": "job_endures",
+      "title": "Job in the ashes",
+      "usfm": "JOB.1.13-JOB.2.10",
+      "reference": "Job 1:13-2:10",
+      "themes": [
+        "grief",
+        "perseverance",
+        "doubt",
+        "anger"
+      ],
+      "tone": "comfort",
+      "synopsis": "Job loses everything in a single afternoon and refuses easy answers — his own and his friends'. The book lets him rage and grieve for thirty chapters before any voice answers from the storm."
+    },
+    {
+      "id": "ruth_naomi",
+      "title": "Ruth stays",
+      "usfm": "RUT.1.8-RUT.1.18",
+      "reference": "Ruth 1:8-18",
+      "themes": [
+        "loneliness",
+        "grief",
+        "love",
+        "perseverance"
+      ],
+      "tone": "assurance",
+      "synopsis": "Two widows on an empty road. Naomi has nothing left to offer, and Ruth binds herself to her anyway — where you go, I go. Loyalty, not optimism, is what carries them home."
+    },
+    {
+      "id": "storm_calmed",
+      "title": "Jesus calms the storm",
+      "usfm": "MRK.4.35-MRK.4.41",
+      "reference": "Mark 4:35-41",
+      "themes": [
+        "anxiety",
+        "fear",
+        "peace",
+        "trust"
+      ],
+      "tone": "assurance",
+      "synopsis": "The boat is filling and he's asleep on a cushion — which feels like abandonment until he stands up. The storm obeys a sentence. The disciples' fear changes object, not size."
+    },
+    {
+      "id": "five_thousand",
+      "title": "Feeding the five thousand",
+      "usfm": "JHN.6.5-JHN.6.14",
+      "reference": "John 6:5-14",
+      "themes": [
+        "provision",
+        "doubt",
+        "gratitude"
+      ],
+      "tone": "hope",
+      "synopsis": "The math is hopeless — five loaves, two fish, thousands hungry. The boy hands over his lunch anyway, and the impossibility is fed with twelve baskets left over."
+    },
+    {
+      "id": "lost_sheep",
+      "title": "The lost sheep",
+      "usfm": "LUK.15.3-LUK.15.7",
+      "reference": "Luke 15:3-7",
+      "themes": [
+        "love",
+        "identity",
+        "comfort"
+      ],
+      "tone": "assurance",
+      "synopsis": "Ninety-nine are safe, and the shepherd goes out into the dark for the one — not because the one earned it, but because that's what this shepherd is like. He carries it home on his shoulders."
+    },
+    {
+      "id": "mary_martha",
+      "title": "Mary and Martha",
+      "usfm": "LUK.10.38-LUK.10.42",
+      "reference": "Luke 10:38-42",
+      "themes": [
+        "rest",
+        "anxiety",
+        "weariness",
+        "peace"
+      ],
+      "tone": "conviction",
+      "synopsis": "Martha is doing everything right and drowning in it; Mary just sits down at his feet. The rebuke is gentle: you are anxious about many things, and only one is needed."
+    },
+    {
+      "id": "prison_songs",
+      "title": "Songs at midnight",
+      "usfm": "ACT.16.25-ACT.16.34",
+      "reference": "Acts 16:25-34",
+      "themes": [
+        "joy",
+        "perseverance",
+        "hope",
+        "prayer"
+      ],
+      "tone": "celebration",
+      "synopsis": "Beaten and chained in the innermost cell, Paul and Silas sing at midnight — before the earthquake, not after. The jailer meets a freedom that was in the room before the doors opened."
+    },
+    {
+      "id": "thomas",
+      "title": "Thomas and the scars",
+      "usfm": "JHN.20.24-JHN.20.29",
+      "reference": "John 20:24-29",
+      "themes": [
+        "doubt",
+        "trust",
+        "hope"
+      ],
+      "tone": "assurance",
+      "synopsis": "Thomas won't pretend a faith he doesn't have, and Jesus doesn't shame him for it — he shows up a week later with his scars out, and offers the exact evidence Thomas asked for."
+    },
+    {
+      "id": "well_woman",
+      "title": "The woman at the well",
+      "usfm": "JHN.4.7-JHN.4.30",
+      "reference": "John 4:7-30",
+      "themes": [
+        "identity",
+        "loneliness",
+        "guilt",
+        "hope"
+      ],
+      "tone": "assurance",
+      "synopsis": "She comes at noon to avoid the crowd and their opinions. The stranger at the well knows her whole story and stays in the conversation anyway — and she runs back to the very town she was hiding from."
+    },
+    {
+      "id": "zacchaeus",
+      "title": "Zacchaeus in the tree",
+      "usfm": "LUK.19.1-LUK.19.10",
+      "reference": "Luke 19:1-10",
+      "themes": [
+        "identity",
+        "guilt",
+        "forgiveness",
+        "joy"
+      ],
+      "tone": "celebration",
+      "synopsis": "A rich man everyone despises climbs a tree like a child just to see. Out of the whole crowd, Jesus stops at his branch and invites himself to dinner — and the man climbs down changed."
+    },
+    {
+      "id": "joseph_purpose",
+      "title": "Joseph — meant for good",
+      "usfm": "GEN.50.15-GEN.50.21",
+      "reference": "Genesis 50:15-21",
+      "themes": [
+        "purpose",
+        "forgiveness",
+        "anger",
+        "trust"
+      ],
+      "tone": "hope",
+      "synopsis": "Sold by his brothers, slandered, forgotten in prison — and years later Joseph stands in front of them with power to repay it all. What you meant for evil, God wove toward good."
+    },
+    {
+      "id": "burning_bush",
+      "title": "Moses at the burning bush",
+      "usfm": "EXO.3.1-EXO.3.14",
+      "reference": "Exodus 3:1-14",
+      "themes": [
+        "courage",
+        "purpose",
+        "doubt",
+        "identity"
+      ],
+      "tone": "challenge",
+      "synopsis": "Moses has five objections, starting with 'who am I?' The voice in the fire never argues his adequacy — it answers every excuse with a presence: I will be with you."
+    },
+    {
+      "id": "jonah",
+      "title": "Jonah and the second word",
+      "usfm": "JON.3.1-JON.3.3",
+      "reference": "Jonah 3:1-3",
+      "themes": [
+        "anger",
+        "forgiveness",
+        "purpose",
+        "trust"
+      ],
+      "tone": "conviction",
+      "synopsis": "Jonah runs the exact opposite direction and sinks all the way down. The tide turns on eight words: the word of the LORD came a second time. Failure didn't disqualify him."
+    },
+    {
+      "id": "gideon",
+      "title": "Gideon, mighty man of valor",
+      "usfm": "JDG.6.11-JDG.6.16",
+      "reference": "Judges 6:11-16",
+      "themes": [
+        "courage",
+        "doubt",
+        "identity",
+        "fear"
+      ],
+      "tone": "challenge",
+      "synopsis": "Gideon is threshing wheat in a winepress, hiding from the enemy, when the angel greets him: mighty man of valor. God names the courage before Gideon has shown any."
+    },
+    {
+      "id": "bartimaeus",
+      "title": "Blind Bartimaeus",
+      "usfm": "MRK.10.46-MRK.10.52",
+      "reference": "Mark 10:46-52",
+      "themes": [
+        "hope",
+        "prayer",
+        "perseverance"
+      ],
+      "tone": "hope",
+      "synopsis": "The crowd tells him to be quiet; he shouts louder. Jesus stops the whole procession for a beggar's voice and asks the dignifying question: what do you want me to do for you?"
+    },
+    {
+      "id": "emmaus",
+      "title": "The road to Emmaus",
+      "usfm": "LUK.24.13-LUK.24.32",
+      "reference": "Luke 24:13-32",
+      "themes": [
+        "grief",
+        "hope",
+        "doubt",
+        "comfort"
+      ],
+      "tone": "comfort",
+      "synopsis": "Two disciples walk away from the wreckage of everything they hoped, and a stranger falls in step and lets them say all of it. Their hearts burn long before their eyes open at the table."
+    },
+    {
+      "id": "gethsemane",
+      "title": "Gethsemane",
+      "usfm": "MAT.26.36-MAT.26.44",
+      "reference": "Matthew 26:36-44",
+      "themes": [
+        "anxiety",
+        "trust",
+        "prayer",
+        "grief"
+      ],
+      "tone": "comfort",
+      "synopsis": "Jesus himself is overwhelmed to the point of death and prays the same anguished sentence three times, sweat like blood. Honest dread and full surrender live in the same prayer."
+    },
+    {
+      "id": "jesus_wept",
+      "title": "Jesus wept",
+      "usfm": "JHN.11.32-JHN.11.44",
+      "reference": "John 11:32-44",
+      "themes": [
+        "grief",
+        "comfort",
+        "hope",
+        "love"
+      ],
+      "tone": "comfort",
+      "synopsis": "He knows resurrection is four minutes away — and he still stands at his friend's tomb and weeps with the sisters first. Grief is not a lack of faith; he honored it before he answered it."
+    },
+    {
+      "id": "furnace",
+      "title": "The fourth man in the fire",
+      "usfm": "DAN.3.16-DAN.3.28",
+      "reference": "Daniel 3:16-28",
+      "themes": [
+        "courage",
+        "trust",
+        "fear",
+        "perseverance"
+      ],
+      "tone": "challenge",
+      "synopsis": "Three men refuse to bow, saying 'our God is able — but even if not…' They aren't spared the furnace; they're met inside it, and walk out without the smell of smoke."
+    },
+    {
+      "id": "simeon_anna",
+      "title": "Simeon and Anna wait",
+      "usfm": "LUK.2.25-LUK.2.38",
+      "reference": "Luke 2:25-38",
+      "themes": [
+        "hope",
+        "weariness",
+        "prayer",
+        "joy"
+      ],
+      "tone": "hope",
+      "synopsis": "Two old believers have waited their entire lives on a promise, showing up to the same temple, decade after decade. One ordinary morning, the waiting ends in their arms."
+    },
+    {
+      "id": "sabbath_rest",
+      "title": "The seventh day",
+      "usfm": "GEN.2.1-GEN.2.3",
+      "reference": "Genesis 2:1-3",
+      "themes": [
+        "rest",
+        "peace",
+        "weariness"
+      ],
+      "tone": "conviction",
+      "synopsis": "The first thing ever called holy is not a mountain or a temple — it's a day off. Rest is stitched into the fabric of creation before anyone had earned it."
+    },
+    {
+      "id": "downcast_soul",
+      "title": "Why so downcast, my soul",
+      "usfm": "PSA.42.5-PSA.42.11",
+      "reference": "Psalm 42:5-11",
+      "themes": [
+        "doubt",
+        "grief",
+        "hope",
+        "prayer"
+      ],
+      "tone": "comfort",
+      "synopsis": "The psalmist argues with his own soul in the dark — why are you cast down? — and preaches hope to himself twice, not because the feelings resolved, but because the address still stands."
+    },
+    {
+      "id": "nebuchadnezzar",
+      "title": "The king who looked up",
+      "usfm": "DAN.4.28-DAN.4.37",
+      "reference": "Daniel 4:28-37",
+      "themes": [
+        "pride",
+        "humility",
+        "identity"
+      ],
+      "tone": "challenge",
+      "synopsis": "The most powerful king alive walks his palace roof crediting himself for everything he sees — 'is not this great Babylon, that I have built?' In a moment his reason is taken and he eats grass like an ox, until he lifts his eyes to heaven — and the king who thought his was the only mind that mattered returns, saying: now I know who reigns."
+    }
   ]
 }
