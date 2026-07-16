@@ -34,7 +34,10 @@
     "trust",
     "prayer",
     "pride",
-    "humility"
+    "humility",
+    "envy",
+    "betrayal",
+    "temptation"
   ],
   "verses": [
     {
@@ -2774,6 +2777,135 @@
         "vainglory"
       ],
       "note": "In lowliness of mind, esteem others better than yourself."
+    },
+    {
+      "reference": "Proverbs 14:30",
+      "usfm": "PRO.14.30",
+      "themes": [
+        "envy",
+        "peace"
+      ],
+      "tone": "conviction",
+      "intensity_fit": [
+        0.3,
+        0.8
+      ],
+      "keywords": [
+        "jealous",
+        "envy",
+        "comparison",
+        "their success",
+        "resentment"
+      ],
+      "note": "A heart at peace gives life; envy rots the bones."
+    },
+    {
+      "reference": "Psalm 37:1",
+      "usfm": "PSA.37.1",
+      "themes": [
+        "envy",
+        "trust"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.2,
+        0.7
+      ],
+      "keywords": [
+        "envious",
+        "fret",
+        "unfair",
+        "they prosper",
+        "comparing"
+      ],
+      "note": "Don't fret over others' seeming success; walk your own path with God."
+    },
+    {
+      "reference": "Psalm 41:9",
+      "usfm": "PSA.41.9",
+      "themes": [
+        "betrayal",
+        "grief"
+      ],
+      "tone": "comfort",
+      "intensity_fit": [
+        0.4,
+        0.95
+      ],
+      "keywords": [
+        "betrayed",
+        "friend turned",
+        "trusted them",
+        "behind my back",
+        "cheated"
+      ],
+      "note": "The psalmist knew betrayal by a trusted friend — this wound is seen."
+    },
+    {
+      "reference": "Romans 12:19",
+      "usfm": "ROM.12.19",
+      "themes": [
+        "betrayal",
+        "anger",
+        "forgiveness"
+      ],
+      "tone": "challenge",
+      "intensity_fit": [
+        0.4,
+        0.9
+      ],
+      "keywords": [
+        "revenge",
+        "get back at",
+        "betrayed",
+        "wronged me",
+        "avenge"
+      ],
+      "note": "Release the score-settling; justice belongs to God."
+    },
+    {
+      "reference": "1 Corinthians 10:13",
+      "usfm": "1CO.10.13",
+      "themes": [
+        "temptation",
+        "perseverance"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.3,
+        0.9
+      ],
+      "keywords": [
+        "tempted",
+        "resist",
+        "urge",
+        "giving in",
+        "way out",
+        "escape"
+      ],
+      "note": "No temptation is beyond bearing — God always makes a way of escape."
+    },
+    {
+      "reference": "Hebrews 4:15-16",
+      "usfm": "HEB.4.15-HEB.4.16",
+      "themes": [
+        "temptation",
+        "comfort"
+      ],
+      "tone": "assurance",
+      "intensity_fit": [
+        0.2,
+        0.8
+      ],
+      "keywords": [
+        "tempted",
+        "weakness",
+        "understands",
+        "struggle",
+        "mercy",
+        "grace"
+      ],
+      "note": "Jesus was tempted in every way too — approach grace boldly, not ashamed."
     }
   ]
 }

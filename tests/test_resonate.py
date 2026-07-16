@@ -588,6 +588,17 @@ class TestLiveProviders(unittest.TestCase):
         self.assertIsInstance(make_gloo(cfg), MockGloo)
         self.assertIsInstance(make_youversion(cfg), MockYouVersion)
 
+    def test_unknown_theme_beat_abstains(self):
+        # The live model may tag an emotional-but-uncovered sentence ["other"] (its
+        # escape hatch). The engine must abstain — never shoehorn the nearest verse.
+        from resonate.models import Beat
+        eng = Engine(EngineConfig())
+        eng.gloo.segment = lambda text: [Beat(index=0, text=text,
+                                              themes=["other"], emotion="wistful", intensity=0.7)]
+        out = eng.resonate("an out-of-vocabulary feeling", user_id="t_other_theme")
+        self.assertFalse([d for d in out["deliveries"] if d["status"] == "delivered"])
+        self.assertTrue(any(d["status"] == "abstain" for d in out["deliveries"]))
+
     def test_auto_mode_goes_live_per_provider(self):
         # each provider flips independently, and ONLY when its full credential
         # set exists (YouVersion needs the bible id too, not just the key)

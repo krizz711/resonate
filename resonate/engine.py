@@ -7,7 +7,7 @@ from .verses import VerseStore
 from .retrieval import HybridRetriever
 from .memory import make_memory
 from .providers import make_gloo, make_youversion
-from .providers.gloo import lexicon_segment
+from .providers.gloo import lexicon_segment, LEXICON
 
 SAFETY_MESSAGE = (
     "This sounds heavy, and a verse isn't the right response here. Please reach out to someone "
@@ -43,6 +43,9 @@ class Engine:
         self.yv = make_youversion(self.config)
         self.memory = make_memory(self.config)
         self.guardian = GuardianAlerts(self.config)
+        # every theme the system can actually speak to — segmentation vocabulary plus
+        # the corpus's own tags; beats outside this set abstain in resonate() below
+        self._known_themes = set(LEXICON) | set(self.verses.theme_vocab)
 
     def _history_themes(self, history) -> list:
         """Themes heard in the last few prior messages, most recent counted twice.
@@ -90,6 +93,15 @@ class Engine:
             if self.gloo.safety(beat):
                 deliveries.append({"status": "safety_hold", "beat": vars(beat), "message": SAFETY_MESSAGE,
                                    "guardian": self.guardian.alert(user_id)})
+                continue
+
+            # vocabulary honesty — a beat whose themes are ALL outside the known
+            # vocabulary (the live model's "other" escape hatch) must abstain: forcing
+            # the nearest axis delivers a confident wrong verse (pride→doubt, observed
+            # live 2026-07-16). Honest silence over a shoehorned match.
+            if not any(t in self._known_themes for t in beat.themes):
+                deliveries.append({"status": "abstain", "beat": vars(beat),
+                                   "message": "This moment's theme isn't one Resonate can speak to yet."})
                 continue
 
             # stage 3 — hybrid retrieve + RRF (conversation context echoes into the query)
