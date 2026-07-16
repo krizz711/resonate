@@ -67,6 +67,12 @@ class EngineConfig:
     # at most once ever. OFF by default (tests stay hermetic); the server turns it on.
     yv_cache_persist: bool = field(default_factory=lambda: os.getenv("RESONATE_YV_CACHE", "0") == "1")
 
+    # unknown-theme tally (sanitized labels + counts ONLY, never the person's words) —
+    # the corpus's growth signal: /health surfaces what people felt that the vocabulary
+    # couldn't answer. OFF by default (tests stay hermetic); the server turns it on.
+    gaps_persist: bool = field(default_factory=lambda: os.getenv("RESONATE_GAPS", "0") == "1")
+    gaps_path: str = field(default_factory=lambda: os.getenv("RESONATE_GAPS_PATH", str(DATA_DIR / ".theme-gaps.json")))
+
     # --- guardian alerts (security module; consent-first, see resonate/guardian.py) ---
     guardian_enabled: bool = field(default_factory=lambda: os.getenv("RESONATE_GUARDIAN", "0") == "1")
     guardian_file: str = field(default_factory=lambda: os.getenv("GUARDIAN_FILE", str(DATA_DIR / "guardians.json")))

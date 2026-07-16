@@ -599,6 +599,18 @@ class TestLiveProviders(unittest.TestCase):
         self.assertFalse([d for d in out["deliveries"] if d["status"] == "delivered"])
         self.assertTrue(any(d["status"] == "abstain" for d in out["deliveries"]))
 
+    def test_unknown_theme_is_tallied_for_growth(self):
+        # the 'other:<feeling>' label is counted (labels only — never the words),
+        # so /health can show where the corpus should grow next
+        from resonate.models import Beat
+        eng = Engine(EngineConfig())
+        eng.gloo.segment = lambda text: [Beat(index=0, text=text,
+                                              themes=["other:embarrassment"],
+                                              emotion="flushed", intensity=0.6)]
+        out = eng.resonate("a feeling the vocabulary can't name", user_id="t_gap_tally")
+        self.assertTrue(any(d["status"] == "abstain" for d in out["deliveries"]))
+        self.assertIn({"theme": "embarrassment", "count": 1}, eng.gaps.top())
+
     def test_auto_mode_goes_live_per_provider(self):
         # each provider flips independently, and ONLY when its full credential
         # set exists (YouVersion needs the bible id too, not just the key)

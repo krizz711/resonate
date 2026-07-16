@@ -49,6 +49,7 @@ from resonate import tts  # noqa: E402
 _CFG = EngineConfig()
 _CFG.memory_persist = True  # the live server remembers recurring themes across sessions
 _CFG.yv_cache_persist = True  # and caches verse text to disk so grounding never waits on YouVersion
+_CFG.gaps_persist = True  # unknown-theme tally survives restarts — the corpus's growth signal
 # guardian alerts on by default now that there's a registration UI — still a no-op unless a
 # person has registered consenting guardians AND SMTP/Twilio creds exist (else it just logs).
 _CFG.guardian_enabled = True
@@ -273,7 +274,10 @@ class Handler(BaseHTTPRequestHandler):
                                  "youversion": "live" if type(ENGINE.yv).__name__ == "LiveYouVersion" else "mock",
                              },
                              "translation": ENGINE.config.translation,
-                             "targets": list(TARGETS), "tts": tts.available()})
+                             "targets": list(TARGETS), "tts": tts.available(),
+                             # what people felt that the corpus couldn't answer (labels+counts
+                             # only, never words) — the shortlist for the next curation pass
+                             "theme_gaps": ENGINE.gaps.top(8)})
             return
         if path == "/voices":
             self._send(200, {"ok": True, "available": tts.available(), "voices": tts.voices()})

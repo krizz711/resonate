@@ -35,6 +35,10 @@ data/guardians.json.log
 data/.yv-cache.json
 data/.yv-cache.json.tmp
 
+# unknown-theme tally (runtime state; labels+counts only)
+data/.theme-gaps.json
+data/.theme-gaps.json.tmp
+
 # generated audio (voice cache + tuning lab renders)
 data/.tts-cache/
 data/voice-lab/

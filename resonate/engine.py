@@ -1,6 +1,11 @@
 """The orchestrator — wires the 10 pipeline stages together (see ENGINE-DESIGN.md)."""
 from __future__ import annotations
 
+import json
+import os
+import re
+from pathlib import Path
+
 from .config import EngineConfig
 from .guardian import GuardianAlerts
 from .verses import VerseStore
@@ -34,6 +39,58 @@ def _theme_cover(beat, verse) -> float:
     return len(b & set(verse.get("themes", []))) / len(b)
 
 
+class ThemeGaps:
+    """Tallies the theme labels the engine could NOT answer — the segmenter's
+    'other:<feeling>' escape hatch, or any tag outside the vocabulary. This is how
+    the corpus learns where to grow next (surfaced on /health): the LLM scouts the
+    gap, a human vets the verses, the node ships. Privacy: stores ONLY sanitized
+    labels and counts — never the person's words."""
+
+    _MAX_LABELS = 200  # a rogue model can't grow the file without bound
+
+    def __init__(self, config):
+        self._persist_on = getattr(config, "gaps_persist", False)
+        self._path = Path(getattr(config, "gaps_path", "") or "")
+        self._counts = {}
+        if self._persist_on:
+            try:
+                raw = json.loads(self._path.read_text(encoding="utf-8"))
+                self._counts = {str(k): int(v) for k, v in raw.items()}
+            except (OSError, ValueError):
+                self._counts = {}
+
+    @staticmethod
+    def _label(theme):
+        t = str(theme or "").lower().strip()
+        if t.startswith("other:"):
+            t = t[6:]
+        t = re.sub(r"[^a-z0-9 _-]", "", t).strip()[:32]
+        return "" if t in ("", "other") else t
+
+    def record(self, themes):
+        for t in themes or []:
+            lab = self._label(t)
+            if not lab or (lab not in self._counts and len(self._counts) >= self._MAX_LABELS):
+                continue
+            self._counts[lab] = self._counts.get(lab, 0) + 1
+        self._save()
+
+    def top(self, n=8):
+        ranked = sorted(self._counts.items(), key=lambda x: x[1], reverse=True)
+        return [{"theme": t, "count": c} for t, c in ranked[:n]]
+
+    def _save(self):
+        if not self._persist_on:
+            return
+        try:
+            tmp = str(self._path) + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(self._counts, f, ensure_ascii=False)
+            os.replace(tmp, str(self._path))
+        except OSError:
+            pass
+
+
 class Engine:
     def __init__(self, config=None):
         self.config = config or EngineConfig()
@@ -46,6 +103,7 @@ class Engine:
         # every theme the system can actually speak to — segmentation vocabulary plus
         # the corpus's own tags; beats outside this set abstain in resonate() below
         self._known_themes = set(LEXICON) | set(self.verses.theme_vocab)
+        self.gaps = ThemeGaps(self.config)  # what people felt that we couldn't answer
 
     def _history_themes(self, history) -> list:
         """Themes heard in the last few prior messages, most recent counted twice.
@@ -100,6 +158,7 @@ class Engine:
             # the nearest axis delivers a confident wrong verse (pride→doubt, observed
             # live 2026-07-16). Honest silence over a shoehorned match.
             if not any(t in self._known_themes for t in beat.themes):
+                self.gaps.record(beat.themes)  # labels only — the corpus growth signal
                 deliveries.append({"status": "abstain", "beat": vars(beat),
                                    "message": "This moment's theme isn't one Resonate can speak to yet."})
                 continue
