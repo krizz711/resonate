@@ -2,7 +2,7 @@ const STATS = [
   { n: 96, suffix: '%', label: 'verse hit@1' },
   { n: 100, suffix: '%', label: 'safety recall' },
   { n: 0, suffix: '%', label: 'false positives' },
-  { n: 94, suffix: '', label: 'tests green' },
+  { n: 98, suffix: '', label: 'tests green' },
 ]
 
 export default function Stats() {

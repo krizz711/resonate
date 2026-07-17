@@ -97,11 +97,12 @@ function Voices() {
           <div className="folio-mark"><span className="num">II</span><span className="lbl">Voices</span></div>
           <h3 className="headline">Read aloud, like a voice from an old chapel.</h3>
           <p>
-            Three voices, synthesized locally with Kokoro, tuned unhurried and reverent. Press{' '}
-            <span className="script">Listen</span> and the verse is spoken — warm, close, and slow.
-            Play by default, or only when you ask.
+            Three Kokoro voices, tuned unhurried and reverent on the local engine. Press{' '}
+            <span className="script">Listen</span> and the verse is spoken — warm, close, and slow;
+            on the hosted server your browser lends its own voices. Play by default, or only when
+            you ask.
           </p>
-          <div className="meta"><span className="chip">Kokoro TTS · on-device</span><span className="chip">auto-read optional</span></div>
+          <div className="meta"><span className="chip">Kokoro TTS · local engine</span><span className="chip">auto-read optional</span></div>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>
@@ -143,7 +144,7 @@ function Verses() {
             hallucinated — every verse arrives licensed and verbatim, like a letter you break
             the seal on.
           </p>
-          <div className="meta"><span className="chip">Gloo AI · aligned</span><span className="chip">verbatim · licensed</span><span className="chip">131 curated refs</span></div>
+          <div className="meta"><span className="chip">Gloo AI · aligned</span><span className="chip">verbatim · licensed</span><span className="chip">141 curated refs</span></div>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>

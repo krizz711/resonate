@@ -1,11 +1,11 @@
 import { useState } from 'react'
 
 // The MCP server block — the one thing a visitor pastes to give their own
-// assistant Resonate's tools. Kept in the exact shape connect.html teaches.
+// assistant Resonate's tools. Hosted URL first (nothing to install), matching
+// connect.html; the personal ?key=RSN-… version is minted there.
 const MCP_SNIPPET = `"mcpServers": {
   "resonate": {
-    "command": "python",
-    "args": ["C:/path/to/resonate/integrations/mcp/resonate_mcp.py"]
+    "url": "https://resonate-hg6j.onrender.com/mcp"
   }
 }`
 
@@ -26,16 +26,17 @@ export default function Footer() {
         <div className="eyebrow reveal" style={{ justifyContent: 'center' }}><span className="tick" />Enable your assistant</div>
         <h2 className="display reveal">Give your assistant a sense of Scripture.</h2>
         <p className="lede reveal" style={{ margin: '16px auto 0' }}>
-          Resonate runs as an <b>MCP server</b> — paste this block into your assistant&apos;s MCP
-          config (Claude Desktop: <span className="mono-inline">Settings → Developer → Edit Config</span>),
-          use the real path on your machine, restart — and <b>Claude, Gemini, ChatGPT, Copilot,
-          Cursor, Antigravity, Windsurf</b> — any MCP-speaking app — can reach for a verified
-          verse, weave a story, or pull reels, mid-conversation.
+          Two ways in. Chat with AI in a <b>browser</b>? The{' '}
+          <a href="/connect.html">extension</a> slips a quiet verse panel beside ChatGPT, Claude,
+          Gemini, Grok and friends. Use a <b>coding assistant or Claude Desktop</b>? Resonate is a
+          hosted <b>MCP server</b> — paste this URL block into any MCP config (or add it as a
+          connector) and <b>Claude, Cursor, Copilot, Windsurf, Zed</b> can reach for a verified
+          verse, weave a story, or pull reels, mid-conversation. Nothing to install.
         </p>
 
         <div className="mcp-card reveal">
           <div className="mcp-bar">
-            <span className="mcp-file">claude_desktop_config.json</span>
+            <span className="mcp-file">any MCP config · hosted, no install</span>
             <button className="mcp-copy" onClick={copy} aria-live="polite">
               {copied ? '✓ Copied' : '⧉ Copy'}
             </button>
@@ -45,6 +46,8 @@ export default function Footer() {
         <p className="mcp-after reveal">
           Then say <i>“I’m exhausted and losing hope.”</i> — your assistant calls{' '}
           <span className="mono-inline">resonate_verse</span> and answers with a real, cited verse.
+          Mint a personal key on the <a href="/connect.html">connect page</a> and every AI you use
+          shares one context.
         </p>
 
         <div className="try-actions reveal">
