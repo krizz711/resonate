@@ -37,7 +37,8 @@
     "humility",
     "envy",
     "betrayal",
-    "temptation"
+    "temptation",
+    "sadness"
   ],
   "verses": [
     {
@@ -194,7 +195,8 @@
       "themes": [
         "grief",
         "comfort",
-        "loneliness"
+        "loneliness",
+        "sadness"
       ],
       "tone": "comfort",
       "intensity_fit": [
@@ -206,7 +208,8 @@
         "crushed",
         "grief",
         "sad",
-        "pain"
+        "pain",
+        "depressed"
       ],
       "note": "The Lord is near the brokenhearted."
     },
@@ -784,7 +787,8 @@
       "themes": [
         "hope",
         "grief",
-        "comfort"
+        "comfort",
+        "sadness"
       ],
       "tone": "hope",
       "intensity_fit": [
@@ -795,7 +799,9 @@
         "mercy",
         "new",
         "morning",
-        "faithful"
+        "faithful",
+        "sad",
+        "depressed"
       ],
       "note": "His mercies are new every morning."
     },
@@ -1088,7 +1094,8 @@
       "themes": [
         "grief",
         "hope",
-        "comfort"
+        "comfort",
+        "sadness"
       ],
       "tone": "hope",
       "intensity_fit": [
@@ -1099,7 +1106,9 @@
         "weeping",
         "night",
         "joy",
-        "morning"
+        "morning",
+        "sad",
+        "depressed"
       ],
       "note": "Weeping may last the night, but joy comes in the morning."
     },
@@ -1170,7 +1179,8 @@
       "themes": [
         "grief",
         "hope",
-        "comfort"
+        "comfort",
+        "sadness"
       ],
       "tone": "hope",
       "intensity_fit": [
@@ -1181,7 +1191,10 @@
         "beauty",
         "ashes",
         "mourning",
-        "joy"
+        "joy",
+        "depressed",
+        "heavy",
+        "despair"
       ],
       "note": "Beauty for ashes, the oil of joy for mourning."
     },
@@ -2132,7 +2145,8 @@
       "themes": [
         "hope",
         "grief",
-        "doubt"
+        "doubt",
+        "sadness"
       ],
       "tone": "hope",
       "intensity_fit": [
@@ -2142,7 +2156,10 @@
       "keywords": [
         "hope in God",
         "cast down",
-        "soul"
+        "soul",
+        "depressed",
+        "down",
+        "low"
       ],
       "note": "Why so downcast, my soul? Put your hope in God."
     },

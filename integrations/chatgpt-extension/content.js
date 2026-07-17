@@ -73,10 +73,49 @@
     VOICES = ids; VOICE_LABEL = labels; VOICE_INITIAL = initials;
     if (!VOICES.includes(voiceId)) voiceId = VOICES[0];
   }
+  // Distinct BROWSER voices ("bv:<exact name>") — the honest voice menu when the
+  // engine has no Kokoro (the hosted server can't carry the model). Before this,
+  // the panel showed Bella/Isabella/George whose /tts all 503'd to one identical
+  // browser voice — three names, one sound (observed live).
+  const BROWSER_PREFER = ["Google UK English Female", "Microsoft Aria", "Microsoft Sonia",
+                          "Microsoft Jenny", "Samantha", "Microsoft Zira", "Google US English",
+                          "Daniel", "Google UK English Male"];
+  function distinctBrowserVoices() {
+    let vs = [];
+    try { vs = window.speechSynthesis.getVoices() || []; } catch (e) {}
+    const en = vs.filter((v) => /^en/i.test(v.lang || ""));
+    const chosen = [];
+    for (const name of BROWSER_PREFER) {
+      const m = en.find((v) => v.name && v.name.includes(name) && chosen.indexOf(v) === -1);
+      if (m) chosen.push(m);
+      if (chosen.length === 3) break;
+    }
+    for (const v of en) {
+      if (chosen.length >= 3) break;
+      if (chosen.indexOf(v) === -1) chosen.push(v);
+    }
+    return chosen;
+  }
+
+  function useBrowserVoices() {
+    const chosen = distinctBrowserVoices();
+    if (!chosen.length) return; // voices not loaded yet — onvoiceschanged retries below
+    rebuildVoices(chosen.map((v) => ({
+      id: "bv:" + v.name,
+      // "Microsoft Aria Online (Natural) - …" -> "Aria"; "Google UK English Female" -> "UK"
+      label: (v.name || "Voice").replace(/^(Microsoft|Google)\s+/i, "").split(/[\s(–-]+/)[0] || "Voice",
+    })));
+  }
+
   try {
     chrome.runtime.sendMessage({ type: "voices" }, (resp) => {
-      if (!chrome.runtime.lastError && resp && resp.ok && resp.data && resp.data.ok &&
-          Array.isArray(resp.data.voices)) rebuildVoices(resp.data.voices);
+      const d = !chrome.runtime.lastError && resp && resp.ok && resp.data;
+      if (d && d.ok && d.available && Array.isArray(d.voices) && d.voices.length) {
+        rebuildVoices(d.voices);       // engine has real Kokoro voices (local dev)
+      } else {
+        useBrowserVoices();            // hosted: no Kokoro — offer distinct browser voices
+        try { window.speechSynthesis.onvoiceschanged = useBrowserVoices; } catch (e) {}
+      }
     });
   } catch (e) {}
   try {
@@ -104,12 +143,17 @@
     return vs.find((v) => /^en/i.test(v.lang || "")) || vs[0] || null;
   }
 
-  function speakBrowser(text) {
+  function speakBrowser(text, name) {
     try {
       const synth = window.speechSynthesis; if (!synth) return endSpeak();
       synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      const v = pickBrowserVoice(); if (v) u.voice = v;
+      let v = null;
+      if (name) {
+        try { v = (synth.getVoices() || []).find((x) => x.name === name) || null; } catch (e) {}
+      }
+      if (!v) v = pickBrowserVoice();
+      if (v) u.voice = v;
       u.rate = 0.92; u.pitch = 0.96; u.volume = 1; // warm, unhurried, reverent
       u.onend = endSpeak; u.onerror = endSpeak;
       speaking = true; reflectSpeaking();
@@ -119,7 +163,10 @@
 
   function speak(text) {
     stopSpeak(false);
-    if (voiceId === "browser") { speakBrowser(text); return; }
+    if (voiceId === "browser" || voiceId.indexOf("bv:") === 0) {
+      speakBrowser(text, voiceId.indexOf("bv:") === 0 ? voiceId.slice(3) : null);
+      return;
+    }
     try {
       chrome.runtime.sendMessage({ type: "tts", voice: voiceId, text }, (resp) => {
         if (chrome.runtime.lastError || !resp || !resp.ok) { speakBrowser(text); return; }
