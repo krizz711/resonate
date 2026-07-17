@@ -71,23 +71,44 @@ function Mcp() {
 }
 
 /* ---------- 2. Voices ---------- */
+// Each chip plays the real Kokoro-rendered "godly" preset clip (public/voices/*.mp3),
+// the exact audio shipped by resonate/tts.py — so a visitor hears our voices, not the
+// browser's. The waveform lights up while the clip plays.
+// NB: path is /voice-clips (not /voices) — the engine owns /voices for its JSON
+// voice-list endpoint, and the Vite dev proxy forwards /voices there.
 const VOICES = [
-  { n: 'Bella', d: 'warm · close' },
-  { n: 'Isabella', d: 'luminous' },
-  { n: 'George', d: 'natural · full' },
+  { n: 'Bella', d: 'warm · close', src: '/voice-clips/bella.mp3' },
+  { n: 'Isabella', d: 'luminous', src: '/voice-clips/isabella.mp3' },
+  { n: 'George', d: 'natural · full', src: '/voice-clips/george.mp3' },
 ]
 
 function Voices() {
   const [active, setActive] = useState(null)
   const [playing, setPlaying] = useState(false)
-  const timer = useRef()
+  const audioRef = useRef(null)
+
+  // one reusable <audio>; created once so rapid taps never stack overlapping clips
+  useEffect(() => {
+    const a = new Audio()
+    a.preload = 'none'
+    audioRef.current = a
+    const stop = () => { setPlaying(false); setActive(null) }
+    a.addEventListener('ended', stop)
+    a.addEventListener('error', stop) // missing/blocked file -> silently reset, never stuck
+    return () => { a.pause(); a.removeEventListener('ended', stop); a.removeEventListener('error', stop) }
+  }, [])
 
   const play = (i) => {
+    const a = audioRef.current
+    if (!a) return
+    if (active === i && playing) {        // tap the playing voice again to stop it
+      a.pause(); a.currentTime = 0; setPlaying(false); setActive(null); return
+    }
+    a.pause(); a.currentTime = 0
+    a.src = VOICES[i].src
     setActive(i); setPlaying(true)
-    clearTimeout(timer.current)
-    timer.current = setTimeout(() => { setPlaying(false); setActive(null) }, 3200)
+    a.play().catch(() => { setPlaying(false); setActive(null) })
   }
-  useEffect(() => () => clearTimeout(timer.current), [])
 
   return (
     <section id="voices">
@@ -97,12 +118,11 @@ function Voices() {
           <div className="folio-mark"><span className="num">II</span><span className="lbl">Voices</span></div>
           <h3 className="headline">Read aloud, like a voice from an old chapel.</h3>
           <p>
-            Three Kokoro voices, tuned unhurried and reverent on the local engine. Press{' '}
-            <span className="script">Listen</span> and the verse is spoken — warm, close, and slow;
-            on the hosted server your browser lends its own voices. Play by default, or only when
-            you ask.
+            Three Kokoro voices, tuned unhurried and reverent — warm, close, and slow.{' '}
+            <span className="script">Tap a name</span> to hear the verse spoken in that voice, right
+            here. In your assistant it can read every verse aloud by default, or only when you ask.
           </p>
-          <div className="meta"><span className="chip">Kokoro TTS · local engine</span><span className="chip">auto-read optional</span></div>
+          <div className="meta"><span className="chip">Kokoro TTS</span><span className="chip">auto-read optional</span></div>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>
@@ -112,11 +132,13 @@ function Voices() {
                   <i key={i} style={{ animationDelay: `${i * 0.045}s`, animationDuration: `${1.1 + (i % 5) * 0.16}s` }} />
                 ))}
               </div>
-              <div className="voice-verse">“Come to me, all you who are weary and burdened, and I will give you rest.”</div>
+              <div className="voice-verse">“Come unto me, all ye that labour and are heavy laden, and I will give you rest.”</div>
               <div className="voice-chips">
                 {VOICES.map((v, i) => (
-                  <button key={v.n} className={`vchip${active === i ? ' on' : ''}`} data-magnetic onClick={() => play(i)}>
-                    <div className="vn">{v.n}</div><div className="vd">{v.d}</div>
+                  <button key={v.n} className={`vchip${active === i ? ' on' : ''}`} data-magnetic onClick={() => play(i)}
+                    aria-label={active === i && playing ? `Stop ${v.n}` : `Hear ${v.n}`}>
+                    <div className="vn">{v.n}</div>
+                    <div className="vd">{active === i && playing ? '► playing' : v.d}</div>
                   </button>
                 ))}
               </div>
@@ -139,12 +161,13 @@ function Verses() {
           <div className="folio-mark"><span className="num">III</span><span className="lbl">Verses</span></div>
           <h3 className="headline">Verified words, sealed until they’re yours.</h3>
           <p>
-            <b>Gloo AI</b> — values-aligned reasoning — proposes a reference from a vetted
-            shortlist; the <b>YouVersion Platform API</b> confirms the words. Nothing is ever
-            hallucinated — every verse arrives licensed and verbatim, like a letter you break
+            A verse is never written by the model. Each one is drawn from a curated, licensed
+            library and quoted word-for-word, so nothing is invented. The engine is built to pair
+            <b> Gloo AI</b>’s values-aligned reasoning with the <b>YouVersion Platform API</b> — so a
+            real source always holds the exact words. Verbatim, or nothing, like a letter you break
             the seal on.
           </p>
-          <div className="meta"><span className="chip">Gloo AI · aligned</span><span className="chip">verbatim · licensed</span><span className="chip">141 curated refs</span></div>
+          <div className="meta"><span className="chip">Gloo AI · YouVersion</span><span className="chip">verbatim · licensed</span><span className="chip">never model-written</span></div>
         </div>
         <div className="visual reveal">
           <div className="stage" data-tilt>
@@ -205,11 +228,114 @@ function Safety() {
 
 /* ---------- 5. Story reels ---------- */
 const FRAMES = [
-  { scene: 'radial-gradient(120% 90% at 50% 20%,#8a6a3a,#141008)', label: 'Elijah · 1 Kings 19', verse: <>Under the broom tree, an angel said: <em>Arise and eat.</em></>, likes: '2.4k', notes: '318' },
-  { scene: 'radial-gradient(120% 90% at 50% 30%,#3a5570,#0b0e12)', label: 'Peter · Matthew 14', verse: <>He walked on the water toward the voice that said <em>Come.</em></>, likes: '5.1k', notes: '602' },
-  { scene: 'radial-gradient(120% 90% at 50% 25%,#6d4a63,#100a10)', label: 'Psalm 23', verse: <>He leadeth me beside the still waters.</>, likes: '8.7k', notes: '914' },
-  { scene: 'radial-gradient(120% 90% at 50% 20%,#87652a,#141008)', label: 'Matthew 11:28', verse: <>Come to me, all who are weary — and I will give you rest.</>, likes: '3.9k', notes: '421' },
+  { kind: 'broomtree', label: 'Elijah · 1 Kings 19', verse: <>Under the broom tree, an angel said: <em>Arise and eat.</em></>, likes: '2.4k', notes: '318' },
+  { kind: 'water', label: 'Peter · Matthew 14', verse: <>He walked on the water toward the voice that said <em>Come.</em></>, likes: '5.1k', notes: '602' },
+  { kind: 'stillwaters', label: 'Psalm 23', verse: <>He leadeth me beside the still waters.</>, likes: '8.7k', notes: '914' },
+  { kind: 'rest', label: 'Matthew 11:28', verse: <>Come to me, all who are weary — and I will give you rest.</>, likes: '3.9k', notes: '421' },
 ]
+
+/* Hand-drawn 9:16 "poster" scenes — layered silhouettes over atmospheric gradients,
+   so each reel shows real cover art instead of a flat wash. All inline SVG (no image
+   files); gradient ids are per-scene so the four frames coexist in the DOM. */
+function ReelScene({ kind }) {
+  const common = { className: 'scene', viewBox: '0 0 160 340', preserveAspectRatio: 'xMidYMid slice', 'aria-hidden': true }
+  if (kind === 'water') {
+    return (
+      <svg {...common}>
+        <defs>
+          <linearGradient id="wt-sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#0a1022" /><stop offset="60%" stopColor="#132339" /><stop offset="100%" stopColor="#1c3350" />
+          </linearGradient>
+          <linearGradient id="wt-beam" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#fdf6df" stopOpacity=".55" /><stop offset="100%" stopColor="#fdf6df" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <rect width="160" height="340" fill="url(#wt-sky)" />
+        <circle cx="80" cy="70" r="20" fill="#fbf3d8" /><circle cx="80" cy="70" r="34" fill="#fbf3d8" opacity=".08" />
+        <g fill="#f4ead2" opacity=".7"><circle cx="30" cy="40" r=".9" /><circle cx="132" cy="52" r="1" /><circle cx="112" cy="28" r=".7" /></g>
+        <rect y="176" width="160" height="164" fill="#0c1a2c" />
+        <path d="M64 176 L96 176 L110 340 L50 340 Z" fill="url(#wt-beam)" />
+        <g fill="#0a1524"><rect y="198" width="160" height="4" rx="2" opacity=".9" /><rect y="224" width="160" height="5" rx="2" opacity=".75" /><rect y="256" width="160" height="6" rx="3" opacity=".6" /></g>
+        <path d="M78 210 q3 -18 3 -24 q0 -6 -2 -8 q6 0 6 8 q0 8 3 24 z" fill="#050b16" />
+        <circle cx="80" cy="176" r="4.4" fill="#050b16" />
+        <ellipse cx="80" cy="214" rx="15" ry="3" fill="#0a1524" opacity=".7" /><ellipse cx="80" cy="214" rx="8" ry="1.8" fill="#20415f" opacity=".5" />
+      </svg>
+    )
+  }
+  if (kind === 'stillwaters') {
+    return (
+      <svg {...common}>
+        <defs>
+          <linearGradient id="sw-sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#241826" /><stop offset="55%" stopColor="#5d4560" /><stop offset="100%" stopColor="#c88f66" />
+          </linearGradient>
+          <linearGradient id="sw-water" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#c88f66" stopOpacity=".85" /><stop offset="100%" stopColor="#33253a" />
+          </linearGradient>
+        </defs>
+        <rect width="160" height="340" fill="url(#sw-sky)" />
+        <circle cx="80" cy="198" r="27" fill="#f4d9a6" opacity=".5" /><circle cx="80" cy="202" r="10" fill="#f8e6c0" opacity=".9" />
+        <path d="M0 208 Q46 188 92 200 Q130 210 160 196 V216 H0 Z" fill="#2e2130" />
+        <path d="M0 214 Q60 202 160 214 V222 H0 Z" fill="#241826" />
+        <rect y="220" width="160" height="120" fill="url(#sw-water)" />
+        <rect x="72" y="220" width="16" height="120" fill="#f4d9a6" opacity=".2" />
+        <g fill="#180f16">
+          <path d="M40 220 q3 -20 4 -26 q0 -5 -3 -7 q7 -1 8 7 q1 8 3 26 z" />
+          <circle cx="45" cy="184" r="4" />
+        </g>
+        <path d="M50 188 q8 -11 5 -22" stroke="#180f16" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        <g fill="#241826" opacity=".85"><ellipse cx="64" cy="216" rx="5" ry="3" /><ellipse cx="76" cy="218" rx="4" ry="2.4" /></g>
+      </svg>
+    )
+  }
+  if (kind === 'rest') {
+    return (
+      <svg {...common}>
+        <defs>
+          <linearGradient id="rs-sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#2a1c0c" /><stop offset="52%" stopColor="#7a5320" /><stop offset="100%" stopColor="#e6b45c" />
+          </linearGradient>
+          <radialGradient id="rs-sun" cx="50%" cy="74%" r="46%">
+            <stop offset="0" stopColor="#fff2cf" /><stop offset="60%" stopColor="#f6cd7a" stopOpacity=".55" /><stop offset="100%" stopColor="#f6cd7a" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="160" height="340" fill="url(#rs-sky)" />
+        <ellipse cx="80" cy="248" rx="120" ry="92" fill="url(#rs-sun)" />
+        <g stroke="#fbe4ad" strokeWidth="1.1" opacity=".38" strokeLinecap="round">
+          <line x1="80" y1="248" x2="80" y2="150" /><line x1="80" y1="248" x2="32" y2="178" /><line x1="80" y1="248" x2="128" y2="178" /><line x1="80" y1="248" x2="14" y2="238" /><line x1="80" y1="248" x2="146" y2="238" />
+        </g>
+        <circle cx="80" cy="250" r="21" fill="#fff4d6" />
+        <path d="M0 268 Q54 244 160 264 V340 H0 Z" fill="#5a3d15" />
+        <path d="M0 296 Q80 276 160 300 V340 H0 Z" fill="#3a2610" />
+        <g fill="#1c1206"><path d="M74 268 q3 -18 4 -24 q0 -5 -3 -7 q7 -1 8 7 q1 8 3 24 z" /><circle cx="79" cy="234" r="4" /></g>
+      </svg>
+    )
+  }
+  // broomtree — Elijah, night desert with an angel's glow
+  return (
+    <svg {...common}>
+      <defs>
+        <linearGradient id="bt-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#0e1330" /><stop offset="52%" stopColor="#2a1d2a" /><stop offset="100%" stopColor="#3f2712" />
+        </linearGradient>
+        <radialGradient id="bt-glow" cx="50%" cy="74%" r="54%">
+          <stop offset="0" stopColor="#ffce85" stopOpacity=".5" /><stop offset="100%" stopColor="#ffce85" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="160" height="340" fill="url(#bt-sky)" />
+      <g fill="#f4ead2"><circle cx="26" cy="46" r="1" /><circle cx="128" cy="30" r="1.1" /><circle cx="60" cy="34" r=".7" /><circle cx="96" cy="66" r=".8" /><circle cx="18" cy="86" r=".7" /></g>
+      <circle cx="120" cy="56" r="13" fill="#f7eecf" /><circle cx="120" cy="56" r="24" fill="#f7eecf" opacity=".1" />
+      <ellipse cx="82" cy="256" rx="80" ry="66" fill="url(#bt-glow)" />
+      <path d="M0 258 Q66 230 160 254 V340 H0 Z" fill="#26180a" />
+      <path d="M0 290 Q86 266 160 298 V340 H0 Z" fill="#150d05" />
+      <g fill="#0d0904">
+        <path d="M95 256 C92 226 90 208 92 188 C96 208 99 232 101 256 Z" />
+        <ellipse cx="88" cy="184" rx="19" ry="8" /><ellipse cx="103" cy="192" rx="13" ry="6" /><ellipse cx="97" cy="176" rx="11" ry="5" />
+      </g>
+      <path d="M66 256 q-2 -12 6 -16 q8 -3 11 5 q2 7 -2 11 z" fill="#0b0703" />
+    </svg>
+  )
+}
 
 /* tiny reel-UI glyphs for the action rail */
 const IconHeart = () => (<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21S3.5 15.4 3.5 9.3C3.5 6.4 5.7 4.5 8.2 4.5c1.7 0 3 .9 3.8 2.1.8-1.2 2.1-2.1 3.8-2.1 2.5 0 4.7 1.9 4.7 4.8C20.5 15.4 12 21 12 21Z" /></svg>)
@@ -257,7 +383,7 @@ function Reels() {
                     </div>
                     {FRAMES.map((f, k) => (
                       <div className={`reel-frame${k === active ? ' on' : ''}`} key={k}>
-                        <div className="scene" style={{ background: f.scene }} />
+                        <ReelScene kind={f.kind} />
                         <div className="rlabel">{f.label}</div>
                         <div className="rverse">{f.verse}</div>
                       </div>

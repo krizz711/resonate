@@ -8,7 +8,6 @@ import Nav from './components/Nav'
 import Hero from './components/Hero'
 import Marquee from './components/Marquee'
 import Features from './components/Features'
-import Stats from './components/Stats'
 import Footer from './components/Footer'
 
 gsap.registerPlugin(useGSAP, ScrollTrigger)
@@ -31,7 +30,6 @@ export default function App() {
       q('.reveal').forEach((n) => { n.style.opacity = 1; n.style.transform = 'none' })
       q('.shield .draw').forEach((p) => { p.style.strokeDashoffset = 0 })
       q('.eyebrow .tick').forEach((t) => { t.style.width = '28px' })
-      q('[data-count]').forEach((n) => { n.innerText = n.dataset.count })
       q('.pause-beam').forEach((n) => { n.style.transform = 'scaleY(1)' })
       q('.pause-seal, .pause-rule').forEach((n) => { n.style.opacity = 1; n.style.transform = 'none' })
       return
@@ -231,13 +229,6 @@ export default function App() {
       press(tl, '#master .stamp')
     })
 
-    /* stats — the whole band counts in as one strip, left to right */
-    gsap.set('.stat', { opacity: 0, y: 40 })
-    ScrollTrigger.create({
-      trigger: '#stats', start: 'top 82%', once: true,
-      onEnter: () => gsap.to('.stat', { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.12 }),
-    })
-
     /* eyebrow ticks draw out */
     q('.eyebrow .tick').forEach((t) => {
       ScrollTrigger.create({
@@ -256,18 +247,6 @@ export default function App() {
     ScrollTrigger.create({
       trigger: '#safety', start: 'top 66%', once: true,
       onEnter: () => gsap.to('.shield .draw', { strokeDashoffset: 0, duration: 1.6, ease: 'power1.inOut', stagger: 0.5 }),
-    })
-
-    /* stats count up */
-    q('[data-count]').forEach((node) => {
-      const end = +node.dataset.count
-      ScrollTrigger.create({
-        trigger: node, start: 'top 88%', once: true,
-        onEnter: () => {
-          const obj = { v: 0 }
-          gsap.to(obj, { v: end, duration: 1.6, ease: 'power2.out', onUpdate: () => { node.innerText = Math.round(obj.v) } })
-        },
-      })
     })
 
     /* micro-interactions: magnetic buttons + card tilt */
@@ -350,7 +329,6 @@ export default function App() {
         {/* Stage 3: Progressive content reveal — each element scrolls in */}
         <Marquee />
         <Features />
-        <Stats />
         <Footer />
       </main>
     </div>

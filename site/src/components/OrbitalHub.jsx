@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
    clicking anywhere else resumes. Parchment-styled throughout. */
 
 const ITEMS = [
-  { title: 'Claude',  tag: 'MCP · native', desc: 'Resonate’s tools appear natively in Claude — resonate_verse, generate_story and fetch_passage, straight from the tool list.' },
+  { title: 'Claude',  tag: 'MCP · native', desc: 'Resonate’s four tools appear natively in Claude — resonate_verse, generate_story, reel_groups and fetch_passage, straight from the tool list.' },
   { title: 'ChatGPT', tag: 'extension',    desc: 'The browser extension listens quietly and surfaces verified verses as gentle popups inside the conversation.' },
   { title: 'Gemini',  tag: 'MCP',          desc: 'Any client that speaks the Model Context Protocol calls the same engine — Gemini included, no separate build.' },
   { title: 'Discord', tag: 'bot',          desc: 'A community surface: verses and story reels arrive right inside your server, where the conversation already is.' },
