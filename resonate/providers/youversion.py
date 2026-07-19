@@ -41,6 +41,20 @@ def _strip_html(s: str) -> str:
     return _html.unescape(_TAG_RE.sub(" ", s or "")).replace("\xa0", " ").strip()
 
 
+# YouVersion Platform API numeric bible_id -> version abbreviation. Used to LABEL fetched
+# text so the label always reflects the version ACTUALLY fetched (bible_id is the source of
+# truth) instead of a possibly-stale RESONATE_TRANSLATION default. Only verified ids belong
+# here — a wrong label misattributes Scripture (e.g. NIV wording shown as "KJV"). 111=NIV is
+# live-validated (developer.youversion.com catalog + a real /passages fetch).
+_BIBLE_ABBREV = {"111": "NIV"}
+
+
+def resolved_translation(config) -> str:
+    """Version label matching the configured bible_id, falling back to RESONATE_TRANSLATION
+    when the id isn't in the verified map (or when running mock/offline)."""
+    return _BIBLE_ABBREV.get(str(getattr(config, "bible_id", "") or "")) or config.translation
+
+
 class LiveYouVersion:
     """Real YouVersion Platform API, per developers.youversion.com (verified 2026-07-04):
 
@@ -130,7 +144,10 @@ class LiveYouVersion:
         text = data.get("content") or data.get("text") or ""
         if "<" in text:
             text = _strip_html(text)
-        out = {"usfm": usfm, "translation": data.get("abbreviation", translation),
+        # Label with the API's own abbreviation when present; otherwise the version resolved
+        # from bible_id (source of truth) — NEVER a stale RESONATE_TRANSLATION default, which
+        # would misattribute e.g. live NIV text as "KJV".
+        out = {"usfm": usfm, "translation": data.get("abbreviation") or resolved_translation(self.config),
                "text": text.strip(), "source": "youversion"}
         self._cache[key] = out
         self._persist()

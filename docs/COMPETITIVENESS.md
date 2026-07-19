@@ -55,15 +55,15 @@ score.
   **temporal memory graph**; a **Delivery Policy** for restraint; phrasing-robust **safety gate**.
 - **Anti-hallucination by construction**: model constrained to a vetted shortlist; YouVersion
   supplies the words.
-- **Proof, not promises**: 31 unit tests + a 32-scenario eval harness (theme 100% / hit@1 96% /
-  hit@3 100% / safety 100% / FP 0%) wired in as a regression guard.
-- Three working surfaces from one engine; mock/live adapters; runs fully offline.
+- **Proof, not promises**: 98 unit tests + a 42-scenario eval harness (theme 100% / hit@3 100% /
+  safety 100% across 14 crisis phrasings / FP 0%) wired in as a regression guard.
+- Multiple working surfaces from one engine; mock/live adapters; runs fully offline.
 
 ## Done vs. remaining
 | | |
 |---|---|
-| ✅ Done | engine, 3 surfaces, restraint, safety, memory-over-time, voice, tests+eval, notebook, writeup, video script, cover, parchment UI |
-| ⛔ Blocked | **live Gloo + YouVersion keys** (open 2026-07-06) — flip `RESONATE_MODE=live`; **filming the video** (human) |
+| ✅ Done | engine, surfaces, restraint, safety, memory-over-time, voice, tests+eval, notebook, writeup, cover, parchment UI, **live Gloo + YouVersion** (hosted, verified) |
+| ⛔ Remaining | **filming the ≤3-min video** (human) — the one big gap |
 
 ## Top 3 things that would most raise the score
 1. **Wire in the live APIs the moment keys drop (07-06).** It converts "well-engineered (mock)"

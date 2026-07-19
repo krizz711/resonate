@@ -44,6 +44,7 @@ from resonate.ratelimit import RateLimiter  # noqa: E402
 from resonate.reels import ReelStore  # noqa: E402
 from resonate.story import StoryWeaver  # noqa: E402
 from resonate.providers.gloo import is_crisis  # noqa: E402
+from resonate.providers.youversion import resolved_translation  # noqa: E402
 from resonate import tts  # noqa: E402
 
 _CFG = EngineConfig()
@@ -273,7 +274,7 @@ class Handler(BaseHTTPRequestHandler):
                                  "gloo": "live" if type(ENGINE.gloo).__name__ == "LiveGloo" else "mock",
                                  "youversion": "live" if type(ENGINE.yv).__name__ == "LiveYouVersion" else "mock",
                              },
-                             "translation": ENGINE.config.translation,
+                             "translation": resolved_translation(ENGINE.config),
                              "targets": list(TARGETS), "tts": tts.available(),
                              # what people felt that the corpus couldn't answer (labels+counts
                              # only, never words) — the shortlist for the next curation pass
@@ -329,7 +330,9 @@ class Handler(BaseHTTPRequestHandler):
         rel = path.lstrip("/") or "index.html"
         # Prevent directory traversal
         candidate = os.path.normpath(os.path.join(WEB_DIR, rel))
-        if not candidate.startswith(os.path.normpath(WEB_DIR)):
+        web_root = os.path.normpath(WEB_DIR)
+        # exact-dir or true subpath only — a sibling like "<root>dist2" must NOT slip past
+        if candidate != web_root and not candidate.startswith(web_root + os.sep):
             self._send(403, {"error": "forbidden"})
             return
         if os.path.isfile(candidate):
@@ -467,6 +470,9 @@ class Handler(BaseHTTPRequestHandler):
             self._send(404, {"error": "not found"})
             return
         length = int(self.headers.get("Content-Length", 0))
+        if length > 64 * 1024:  # 64 KB ceiling — real chat messages are tiny; refuse blowups
+            self._send(413, {"error": "request too large"})
+            return
         try:
             data = json.loads(self.rfile.read(length) or b"{}")
         except Exception as e:

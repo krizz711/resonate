@@ -6,6 +6,7 @@ ChatGPT developer mode at this file and the assistant itself can:
 
   resonate_verse    hear a moment -> a verified verse (or restrained silence)
   generate_story    weave the user's moment into a vetted biblical narrative
+  reel_groups       prioritized "reels for you" sets for the moment's themes
   fetch_passage     verbatim licensed passage text (YouVersion in live mode)
 
 The engine's guarantees hold server-side no matter what the model asks for:

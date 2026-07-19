@@ -33,11 +33,13 @@ themes, "you've returned to this lately"). The extension, the MCP tools, and the
 write to that one graph when they share the key.
 
 ## How it works — a context engine between the two APIs
-- **Gloo AI Studio** reads the message → emotional *beats*, writes the one-line *bridge*, runs
-  safety. *Never recites Scripture.*
-- **The engine** matches each beat with **hybrid retrieval** (dense + BM25 + theme tags fused via
+- **Gloo AI Studio** reads the message → emotional *beats* and writes the one-line *bridge*.
+  *Never recites Scripture.*
+- **The engine** matches each beat with **hybrid retrieval** (TF-IDF + BM25 + theme tags fused via
   **Reciprocal Rank Fusion**), re-ranks by tone-fit + a per-user **temporal memory graph**, and a
-  **Delivery Policy** decides whether to speak at all.
+  **Delivery Policy** decides whether to speak at all. A **phrasing-robust safety gate** on the raw
+  text routes any crisis to a human-help card — never a verse (safety is deterministic, not left
+  to a model).
 - **YouVersion Platform API** returns the verified, licensed verse text. The model proposes a
   reference from a vetted shortlist; YouVersion confirms the words — nothing is hallucinated.
 
@@ -60,10 +62,10 @@ standard library alone (mock providers + local memory) — clone and run:
 git clone https://github.com/krizz711/resonate && cd resonate
 python scripts/demo.py                         # 1. end-to-end engine demo (creator transcript)
 python scripts/policy_demo.py                  # 2. the Delivery Policy staying quiet at the right times
-python -m unittest discover -s tests           # 3. 94 tests (incl. the eval regression guard)
-python eval/run_eval.py                        # 4. 32-scenario evaluation harness
+python -m unittest discover -s tests           # 3. 98 tests (incl. the eval regression guard)
+python eval/run_eval.py                        # 4. 42-scenario evaluation harness
 python scripts/serve.py                        # 5. local engine  ->  http://127.0.0.1:8765
-python integrations/mcp/smoke_client.py        # 6. MCP surface: real stdio session, all 3 tools
+python integrations/mcp/smoke_client.py        # 6. MCP surface: real stdio session, all 4 tools
 ```
 With the server running, open **http://127.0.0.1:8765** — the site's closing section (and
 **/connect.html**) gives the copy-paste MCP block that adds Resonate to Claude, ChatGPT, Gemini
@@ -108,18 +110,18 @@ verse hit@1 96% · hit@3 100% · safety recall 100% · false-positive 0%**.
 resonate/        engine package — config, models, embeddings, verses, retrieval,
                  memory, policy, engine (orchestrator), responder, providers/(gloo, youversion)
 integrations/    chatgpt-extension/ · mcp/ · vscode/ · discord/   (delivery surfaces)
-data/            verses.json (131 refs+tags, no text) · sample_texts.json (KJV demo text)
+data/            verses.json (141 refs+tags, no text) · sample_texts.json (KJV demo text)
 scripts/         demo.py · policy_demo.py · serve.py (local engine server)
 web/             engine-served pages: Ezra (guide) · reels · connect · guardians · panel preview
 eval/            dataset.json + run_eval.py (metrics)
-tests/           test_resonate.py (94 cases incl. the eval guard)
+tests/           test_resonate.py (98 cases incl. the eval guard)
 docs/            video script · writeup · cover · competitiveness review
 ```
 
 ## Status
-Engine, all three surfaces, restraint, safety, memory, voices, reels, tests + eval — **built and
-green in mock mode** (runs anywhere offline). The live Gloo + YouVersion providers are
-**pre-wired to the documented APIs** (Gloo OAuth2 client-credentials → `/ai/v2/chat/completions`
-with auto-routing; YouVersion `X-YVP-App-Key` → `/v1/bibles/{id}/passages/{USFM}?format=text`)
-— when challenge keys open (**2026-07-06**), `python scripts/live_check.py` validates the whole
-chain and `RESONATE_MODE=live` flips it on.
+Engine, all surfaces, restraint, safety, memory, voices, reels, tests + eval — **built and green**
+(98 tests; runs anywhere offline in mock mode). **Live now:** the hosted deployment runs against
+both challenge APIs — Gloo OAuth2 client-credentials → `/ai/v2/chat/completions`, and YouVersion
+`X-YVP-App-Key` → `/v1/bibles/{id}/passages/{USFM}?format=text` — verified end-to-end by
+`python scripts/live_check.py` and `python scripts/e2e_smoke.py <url>`. `RESONATE_MODE=auto` uses
+each provider live when its keys are present and mock otherwise, so the demo never half-breaks.

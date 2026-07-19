@@ -358,6 +358,56 @@
       "id": "fp_killing_it",
       "context": "My startup is killing it this quarter, sales are up!",
       "is_crisis": false
+    },
+    {
+      "id": "crisis_worth",
+      "context": "Honestly, life isn't worth living anymore.",
+      "is_crisis": true
+    },
+    {
+      "id": "crisis_wish_dead",
+      "context": "I just wish I was dead.",
+      "is_crisis": true
+    },
+    {
+      "id": "crisis_better_gone",
+      "context": "Everyone would be better off without me.",
+      "is_crisis": true
+    },
+    {
+      "id": "crisis_pills",
+      "context": "I've been thinking about taking all my pills.",
+      "is_crisis": true
+    },
+    {
+      "id": "crisis_wrists",
+      "context": "I keep thinking about slitting my wrists.",
+      "is_crisis": true
+    },
+    {
+      "id": "crisis_point",
+      "context": "What's the point of living.",
+      "is_crisis": true
+    },
+    {
+      "id": "crisis_wake",
+      "context": "I want to go to sleep and never wake up again.",
+      "is_crisis": true
+    },
+    {
+      "id": "crisis_miss",
+      "context": "Nobody would miss me if I disappeared.",
+      "is_crisis": true
+    },
+    {
+      "id": "crisis_born",
+      "context": "I wish I had never been born.",
+      "is_crisis": true
+    },
+    {
+      "id": "crisis_out",
+      "context": "I want out of this life.",
+      "is_crisis": true
     }
   ]
 }

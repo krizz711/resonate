@@ -141,7 +141,14 @@ class TestSegmentationAndSafety(unittest.TestCase):
         from resonate.providers.gloo import is_crisis
         for phrase in ["I don't want to be alive anymore", "I dont want to be alive",
                        "I want to be dead", "there's no reason to be here",
-                       "I just want to disappear", "I can't want to live like this"]:
+                       "I just want to disappear", "I can't want to live like this",
+                       # expanded coverage (2026-07-18): common phrasings the first pass missed
+                       "I wish I was dead", "I wish I were dead", "I wish I hadn't been born",
+                       "life isn't worth living", "nothing is worth living for anymore",
+                       "I'm thinking of slitting my wrists", "I might overdose on my pills",
+                       "I just want to sleep and never wake up again", "no point in being alive",
+                       "everyone would be better off without me", "I want out of this life",
+                       "I've been having thoughts of not being here"]:
             self.assertTrue(is_crisis(phrase), "missed crisis phrase: %r" % phrase)
 
     def test_safety_no_false_positive(self):
@@ -151,7 +158,11 @@ class TestSegmentationAndSafety(unittest.TestCase):
         # SAFE failure mode — a help card instead of a verse — so we don't test those).
         from resonate.providers.gloo import is_crisis
         for ok in ["I want to go on a trip", "let's keep this project alive and fun",
-                   "I'm dead tired but happy"]:
+                   "I'm dead tired but happy",
+                   # guards for the expanded patterns — these benign lines must NOT trip
+                   "I wish I was taller", "this book isn't worth reading", "life is worth living",
+                   "no point in living in the past", "I never wake up on time",
+                   "I want to get out of this meeting", "I overdosed on caffeine this morning"]:
             self.assertFalse(is_crisis(ok), "false positive on: %r" % ok)
 
 

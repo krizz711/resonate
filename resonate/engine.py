@@ -142,8 +142,12 @@ class Engine:
                                     "guardian": self.guardian.alert(user_id)}],
                     "series_memory": self.memory.patterns(user_id)}
 
+        # Bound the work: safety was already checked on the full text above. Cap the length
+        # that reaches segmentation so a pathologically long message can't spawn thousands of
+        # beats/deliveries on the shared engine (real chat messages are far shorter).
+        text = (text or "")[:4000]
         ctx_themes = self._history_themes(history)
-        beats = self.gloo.segment(text)
+        beats = self.gloo.segment(text)[:12]  # at most 12 beats/message — bounds response size
         deliveries = []
 
         for beat in beats:

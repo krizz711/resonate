@@ -79,15 +79,39 @@ EMOTION = {
 # Crisis detection as a robust regex (handles "don't"/"do not" variants, -ing forms, etc.).
 # Checked on the RAW text independently of theme segmentation, so a crisis is never missed.
 _CRISIS_RE = re.compile(
-    r"(?:\b(?:do\s*n[o']?t|never|no\s+longer|stop|can[o']?t)\s+want(?:ing)?\s+to\s+"
+    r"(?:\b(?:do\s*n[o']?t|never|no\s+longer|stop|can[o']?t)\s+(?:want(?:ing)?\s+to|wanna)\s+"
     r"(?:live|be\s+here|be\s+alive|stay\s+alive|exist|wake\s+up)\b)"
     r"|(?:\b(?:want|wanna|going|plan(?:ning)?)\s+to\s+"
     r"(?:die|be\s+dead|kill\s+myself|end\s+(?:it\s+all|it|my\s+life|things))\b)"
     r"|(?:\b(?:kill|hurt|harm|cut)(?:ing)?\s+myself\b)"
     r"|(?:\b(?:end|ending|take|taking)\s+my(?:\s+own)?\s+life\b)"
     r"|(?:\bself[\s-]?harm\b)"
-    r"|(?:\b(?:better\s+off\s+dead|no\s+reason\s+to\s+(?:live|be\s+here|go\s+on)|"
-    r"do\s*n[o']?t\s+want\s+to\s+be\s+alive|suicidal|suicide|want\s+to\s+disappear)\b)",
+    r"|(?:\b(?:better\s+off\s+(?:dead|gone)|no\s+reason\s+to\s+(?:live|be\s+here|go\s+on)|"
+    r"do\s*n[o']?t\s+want\s+to\s+be\s+alive|suicidal|suicide|want\s+to\s+disappear)\b)"
+    # Common real-world phrasings the first pass missed — indirect/passive ideation, method-
+    # specific, slang, contractions, a few non-English stems. Validated at 0 false positives
+    # against a benign battery incl. "wish I was taller", "isn't worth reading", "overdosed on
+    # caffeine", "never wake up on time", "jumping off the diving board", "I miss my best friend".
+    # Recall matters more than precision for a safety gate: a false catch is a help card instead
+    # of a verse (safe); a miss shows Scripture to someone in crisis (harm).
+    r"|(?:\bwish\s+i\s+(?:was|were)\s+dead\b)"
+    r"|(?:\bwish\s+i\s+(?:wasn'?t|weren'?t|was\s+not|were\s+not)\s+(?:alive|here|born)\b)"
+    r"|(?:\bwish\s+i\s+(?:had\s+)?(?:never|hadn'?t\s+(?:ever\s+)?)\s*(?:been\s+)?born\b)"
+    r"|(?:\b(?:not|isn'?t|ain'?t|aren'?t|nothing|no\s+longer|never|hardly)\b[^.!?;]{0,15}\bworth\s+living\b)"
+    r"|(?:\bslit(?:ting|s|ted)?\s+(?:my|his|her|the|their)?\s*wrist)"
+    r"|(?:\boverdos(?:e|ing|ed)\s+on\s+(?:my\s+|the\s+|these\s+)?(?:pills|meds|medication|tablets|drugs)\b"
+    r"|\btak(?:e|ing)\s+all\s+(?:my|these|the)\s+pills\b|\btake\s+an?\s+overdose\b|\bwant\s+to\s+overdose\b)"
+    r"|(?:\bsleep\s+and\s+never\s+wake\s+up\b|\bnever\s+wake\s+up\s+again\b)"
+    r"|(?:\bbetter\s+off\s+without\s+me\b)"
+    r"|(?:\b(?:nobody|no\s+one|no-one)\s+(?:would|will|'?d)\s+(?:even\s+)?miss\s+me\b)"
+    r"|(?:\bwhat'?s\s+the\s+point\s+of\s+(?:living|life|it\s+all|going\s+on|anything)\b)"
+    r"|(?:\bno\s+(?:point|sense|reason)\s+(?:in\s+)?(?:being\s+alive|to\s+live|going\s+on|carrying\s+on|to\s+be\s+here)\b)"
+    r"|(?:\bjump(?:ing)?\s+off\s+(?:a|the)\s+(?:bridge|building|roof|balcony)\b)"
+    r"|(?:\bwant\s+(?:to\s+get\s+)?out\s+of\s+(?:this\s+)?life\b)"
+    r"|(?:\bwant\s+to\s+not\s+(?:exist|be\s+here|be\s+alive|wake\s+up)\b)"
+    r"|(?:\bunaliv(?:e|ed|ing)\b)"
+    r"|(?:\bquiero\s+morir\b|\bno\s+quiero\s+vivir\b|\bquiero\s+matarme\b)"
+    r"|(?:\bthoughts?\s+of\s+(?:not\s+being\s+here|not\s+existing|ending\s+it|ending\s+things|dying|suicide|self[\s-]?harm)\b)",
     re.IGNORECASE,
 )
 
@@ -102,7 +126,8 @@ _INTENSITY_CUES = ["so ", "really", "completely", "totally", "can't", "cant", "n
 # "My dad died last week." carries no amplifier words, but a comfort-tone verse
 # (intensity_fit floor 0.6) must not lose to a brighter one because the sentence
 # was quiet. Grief speaks quietly.
-_GRAVITY_CUES = ["died", "death", "passed away", "funeral", "buried", "grave",
+_GRAVITY_CUES = ["died", "death", "passed away", "passed", "funeral", "buried", "grave",
+                 "mourning", "grieving", "grief", "loss of", "lost my", "lost her", "lost him",
                  "miscarriage", "stillborn", "terminal", "hospice", "cancer",
                  "diagnos", "divorce", "abuse", "assault", "barely breathe"]
 
@@ -414,7 +439,9 @@ class LiveGloo:
             return MockGloo(self.config).story(user_text, emotion, narrative, verse, memory_note)
 
     def safety(self, beat):
-        # regex backstop + (optionally) a Gloo guardrail classification call
+        # Safety is DETERMINISTIC by design — the same phrasing-robust regex in mock and live.
+        # We deliberately do NOT delegate crisis detection to the LLM: a model can refuse, drift,
+        # or rate-limit, and a missed crisis is the one failure this product must never have.
         return is_crisis(beat.text)
 
     def safety_text(self, text):
