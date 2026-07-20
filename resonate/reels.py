@@ -31,10 +31,15 @@ class ReelStore:
             self.reels = {}
 
     def resolve(self, usfm: str, translation: str = "KJV") -> dict:
-        """-> {url, kind: 'story'|'verse-page', title?} — never empty."""
+        """-> {url, kind: 'story'|'verse-page', title?, thumb?} — never empty."""
         entry = self.reels.get(usfm) or self.reels.get(_first_usfm(usfm))
         if entry and entry.get("url"):
-            return {"url": entry["url"], "kind": "story", "title": entry.get("title", "")}
+            out = {"url": entry["url"], "kind": "story", "title": entry.get("title", "")}
+            # poster still for the card (the film's own YouVersion og:image);
+            # absent -> the page keeps its theme-gradient scene
+            if entry.get("thumb"):
+                out["thumb"] = entry["thumb"]
+            return out
         ver = _BIBLE_COM_VERSION.get((translation or "KJV").upper(), 1)
         first = _first_usfm(usfm)
         return {"url": "https://www.bible.com/bible/%d/%s.%s" % (ver, first, (translation or "KJV").upper()),

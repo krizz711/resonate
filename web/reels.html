@@ -16,6 +16,12 @@
   *{box-sizing:border-box;margin:0;padding:0}
   body{min-height:100vh;background:linear-gradient(180deg,#e4d7c6 0%,#ddcdb8 60%,#d5c4ac 100%);
     color:var(--ink);font-family:var(--sans);padding-bottom:60px}
+  /* sepia mural behind a cream veil — swap the art by replacing /bg/reels.jpg
+     (drop-in, no code change); if the file is absent the parchment gradient shows */
+  body::before{content:"";position:fixed;inset:0;z-index:-2;
+    background:url("/bg/reels.jpg") center top / cover no-repeat}
+  body::after{content:"";position:fixed;inset:0;z-index:-1;
+    background:linear-gradient(180deg,rgba(239,233,223,.58),rgba(235,227,213,.46) 45%,rgba(229,217,198,.62))}
   .wrap{width:min(860px,94vw);margin:0 auto}
 
   header{display:flex;align-items:baseline;justify-content:space-between;padding:24px 0 8px}
@@ -63,7 +69,10 @@
     display:flex;flex-direction:column;justify-content:flex-end;padding:12px 11px;
     transition:transform .25s ease, box-shadow .25s ease}
   .card:hover .art{transform:translateY(-4px);box-shadow:0 20px 40px rgba(70,55,30,.36)}
-  .art::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(16,11,5,.82))}
+  /* film poster still (YouVersion og:image) — sits under the label gradient; when a
+     card has no thumb (or it fails to load) the theme-gradient scene shows instead */
+  .art .thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .art::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(transparent 40%,rgba(16,11,5,.82))}
   .art .play{position:absolute;top:10px;right:10px;z-index:2;width:26px;height:26px;border-radius:50%;
     display:grid;place-items:center;font-size:10px;color:#f6efe2;
     background:rgba(20,14,6,.5);border:1px solid rgba(246,239,226,.5)}
@@ -178,6 +187,14 @@
           '<span class="play">' + (r.kind === "story" ? "▶" : "❧") + "</span>" +
           '<div class="ref">' + r.reference + "</div>" +
           '<div class="kind">' + (r.kind === "story" ? "story film · YouVersion" : "verse page · YouVersion") + "</div>";
+        if (r.thumb) {
+          const im = document.createElement("img");
+          im.className = "thumb"; im.alt = "";
+          im.loading = gi === 0 ? "eager" : "lazy";   // top shelf paints at once
+          im.onerror = () => im.remove();      // broken still -> gradient scene stays
+          im.src = r.thumb;
+          art.prepend(im);
+        }
         const under = document.createElement("div");
         under.className = "under";
         under.textContent = r.kind === "story" && r.title ? r.title : (r.note || "");
@@ -240,7 +257,8 @@
     try {
       let seen = JSON.parse(localStorage.getItem("resonate_watched") || "[]");
       seen = seen.filter((x) => x.reference !== r.reference);
-      seen.unshift({ reference: r.reference, url: r.url, kind: r.kind, title: r.title || "", note: r.note || "" });
+      seen.unshift({ reference: r.reference, url: r.url, kind: r.kind, title: r.title || "",
+                     note: r.note || "", thumb: r.thumb || "" });
       localStorage.setItem("resonate_watched", JSON.stringify(seen.slice(0, 8)));
     } catch (e) {}
   }
@@ -264,6 +282,13 @@
         '<div class="ref">' + r.reference + '</div>' +
         '<div class="kind">opened recently</div></div>' +
         '<div class="under">' + (r.kind === "story" && r.title ? r.title : (r.note || "")) + "</div>";
+      if (r.thumb) {
+        const im = document.createElement("img");
+        im.className = "thumb"; im.alt = "";   // top-of-page shelf: eager paint
+        im.onerror = () => im.remove();
+        im.src = r.thumb;
+        a.querySelector(".art").prepend(im);
+      }
       a.addEventListener("click", () => trackWatch(r));
       row.appendChild(a);
     });

@@ -532,6 +532,18 @@ class TestReels(unittest.TestCase):
         self.assertEqual(_first_usfm("PHP.4.6-PHP.4.7"), "PHP.4.6")
         self.assertEqual(_first_usfm("JHN.3.16"), "JHN.3.16")
 
+    def test_thumb_passes_through_when_present(self):
+        self.store.reels["X.1.1"] = {"url": "https://e.example/x", "title": "T",
+                                     "thumb": "https://e.example/x.jpg"}
+        self.assertEqual(self.store.resolve("X.1.1")["thumb"], "https://e.example/x.jpg")
+        # no thumb key -> none invented (page falls back to its gradient scene)
+        self.store.reels["Y.1.1"] = {"url": "https://e.example/y", "title": "U"}
+        self.assertNotIn("thumb", self.store.resolve("Y.1.1"))
+        # curated entries ship with a real poster still
+        curated = self.store.resolve("JHN.14.27")
+        if curated["kind"] == "story":
+            self.assertTrue(curated.get("thumb", "").startswith("https://"))
+
 
 class TestLiveProviders(unittest.TestCase):
     """Offline tests of the live-provider plumbing (no network, no httpx needed)."""

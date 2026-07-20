@@ -3,47 +3,58 @@
   "reels": {
     "MAT.11.28-MAT.11.30": {
       "url": "https://www.bible.com/videos/collections/351-at-the-table-with-jesus",
-      "title": "At the Table with Jesus · YouVersion Videos"
+      "title": "At the Table with Jesus · YouVersion Videos",
+      "thumb": "https://imageproxy.youversionapi.com/900x506,jpeg/https://s3.amazonaws.com/static-youversionapi-com/collections/thumbnails/351/en.jpg?x-cdn-redirect=video-asset-redirects"
     },
     "PSA.23.4": {
       "url": "https://www.bible.com/videos/collections/1662-house-of-david-season-1",
-      "title": "House of David · YouVersion Videos"
+      "title": "House of David · YouVersion Videos",
+      "thumb": "https://imageproxy.youversionapi.com/900x506,jpeg/https://s3.amazonaws.com/static-youversionapi-com/collections/thumbnails/1662/en.jpg?x-cdn-redirect=video-asset-redirects"
     },
     "PSA.34.18": {
       "url": "https://www.bible.com/videos/collections/1662-house-of-david-season-1",
-      "title": "House of David · YouVersion Videos"
+      "title": "House of David · YouVersion Videos",
+      "thumb": "https://imageproxy.youversionapi.com/900x506,jpeg/https://s3.amazonaws.com/static-youversionapi-com/collections/thumbnails/1662/en.jpg?x-cdn-redirect=video-asset-redirects"
     },
     "PSA.147.3": {
       "url": "https://www.bible.com/videos/collections/1662-house-of-david-season-1",
-      "title": "House of David · YouVersion Videos"
+      "title": "House of David · YouVersion Videos",
+      "thumb": "https://imageproxy.youversionapi.com/900x506,jpeg/https://s3.amazonaws.com/static-youversionapi-com/collections/thumbnails/1662/en.jpg?x-cdn-redirect=video-asset-redirects"
     },
     "PSA.55.22": {
       "url": "https://www.bible.com/videos/collections/1662-house-of-david-season-1",
-      "title": "House of David · YouVersion Videos"
+      "title": "House of David · YouVersion Videos",
+      "thumb": "https://imageproxy.youversionapi.com/900x506,jpeg/https://s3.amazonaws.com/static-youversionapi-com/collections/thumbnails/1662/en.jpg?x-cdn-redirect=video-asset-redirects"
     },
     "JHN.14.27": {
       "url": "https://www.bible.com/videos/53528-507-the-upper-room-part-i",
-      "title": "The Chosen — The Upper Room (John 14) · YouVersion Videos"
+      "title": "The Chosen — The Upper Room (John 14) · YouVersion Videos",
+      "thumb": "https://imageproxy.youversionapi.com/640x360/https://storage.googleapis.com/yv-content-assets/delivery/images/161fff40-1f5d-462f-ba58-17cd19e11861.jpg"
     },
     "MAT.6.31-MAT.6.33": {
       "url": "https://www.bible.com/videos/collections/170-three-gospels",
-      "title": "Three Gospels — Sermon on the Mount · YouVersion Videos"
+      "title": "Three Gospels — Sermon on the Mount · YouVersion Videos",
+      "thumb": "https://imageproxy.youversionapi.com/900x506,jpeg/https://s3.amazonaws.com/static-youversionapi-com/collections/thumbnails/170/en.jpg?x-cdn-redirect=video-asset-redirects"
     },
     "MAT.6.34": {
       "url": "https://www.bible.com/videos/collections/170-three-gospels",
-      "title": "Three Gospels — Sermon on the Mount · YouVersion Videos"
+      "title": "Three Gospels — Sermon on the Mount · YouVersion Videos",
+      "thumb": "https://imageproxy.youversionapi.com/900x506,jpeg/https://s3.amazonaws.com/static-youversionapi-com/collections/thumbnails/170/en.jpg?x-cdn-redirect=video-asset-redirects"
     },
     "MAT.5.4": {
       "url": "https://www.bible.com/videos/collections/170-three-gospels",
-      "title": "Three Gospels — the Beatitudes · YouVersion Videos"
+      "title": "Three Gospels — the Beatitudes · YouVersion Videos",
+      "thumb": "https://imageproxy.youversionapi.com/900x506,jpeg/https://s3.amazonaws.com/static-youversionapi-com/collections/thumbnails/170/en.jpg?x-cdn-redirect=video-asset-redirects"
     },
     "MRK.9.24": {
       "url": "https://www.bible.com/videos/collections/14-life-of-jesus-gospel-of-john",
-      "title": "Life of Jesus (LUMO) · YouVersion Videos"
+      "title": "Life of Jesus (LUMO) · YouVersion Videos",
+      "thumb": "https://imageproxy.youversionapi.com/900x506,jpeg/https://s3.amazonaws.com/static-youversionapi-com/collections/thumbnails/14/en.jpg?x-cdn-redirect=video-asset-redirects"
     },
     "1JN.1.9": {
       "url": "https://www.bible.com/videos/collections/14-life-of-jesus-gospel-of-john",
-      "title": "Life of Jesus (LUMO) · YouVersion Videos"
+      "title": "Life of Jesus (LUMO) · YouVersion Videos",
+      "thumb": "https://imageproxy.youversionapi.com/900x506,jpeg/https://s3.amazonaws.com/static-youversionapi-com/collections/thumbnails/14/en.jpg?x-cdn-redirect=video-asset-redirects"
     }
   }
 }
