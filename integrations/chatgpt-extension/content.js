@@ -54,7 +54,7 @@
   let VOICE_LABEL = { bella: "Bella", isabella: "Isabella", george: "George", browser: "Browser" };
   // button initials — "Br" keeps Browser distinguishable from Bella's "B"
   let VOICE_INITIAL = { bella: "B", isabella: "I", george: "G", browser: "Br" };
-  let voiceId = "bella";
+  let voiceId = "george"; // default voice — George's unhurried baritone reads the verse
   let autoSpeak = false; // "play by default" — an option, off until chosen
   let audioEl = null;
   let speaking = false;
@@ -108,9 +108,14 @@
   } catch (e) {}
   try {
     if (chrome.storage && chrome.storage.sync)
-      chrome.storage.sync.get({ autoSpeak: false, voiceId: "bella" }, (r) => {
+      chrome.storage.sync.get({ autoSpeak: false, voiceId: "george", voiceDefault: "" }, (r) => {
         autoSpeak = !!r.autoSpeak;
-        if (VOICES.includes(r.voiceId)) voiceId = r.voiceId;
+        let v = r.voiceId;
+        // one-time default change to George: installs still sitting on the old default
+        // ("bella") follow the new one; any pick made AFTER this migration persists.
+        if (r.voiceDefault !== "george" && v === "bella") v = "george";
+        if (VOICES.includes(v)) voiceId = v;
+        try { chrome.storage.sync.set({ voiceDefault: "george", voiceId }); } catch (e) {}
       });
   } catch (e) {}
   try { window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged = () => {}; } catch (e) {}

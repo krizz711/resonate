@@ -133,6 +133,23 @@ class TestSegmentationAndSafety(unittest.TestCase):
         beats = self.g.segment("I'm stuck on 3 errors I can't fix.")
         self.assertTrue(any("perseverance" in b.themes for b in beats))
 
+    def test_segment_dying_family_and_comfort_requests(self):
+        # field bug 2026-07-18: both of these produced ZERO beats -> Ezra had no verse
+        # to give and answered a comfort request with counter-questions instead
+        themes = {t for b in self.g.segment(
+            "How can I comfort myself when one of my family members is dying?") for t in b.themes}
+        self.assertTrue({"grief", "comfort"} & themes, "dying family member must ground a beat")
+        themes = {t for b in self.g.segment(
+            "Are there any words in the Bible that can comfort me right now?") for t in b.themes}
+        self.assertIn("comfort", themes, "asking for comfort IS a comfort beat")
+
+    def test_segment_dying_idiom_stays_silent(self):
+        # the excited idiom must NOT read as grief, and furniture isn't a comfort beat
+        for ok in ["I'm dying to see that movie tonight!", "these new chairs are so comfortable"]:
+            themes = {t for b in self.g.segment(ok) for t in b.themes}
+            self.assertNotIn("grief", themes, "grief FP on: %r" % ok)
+            self.assertNotIn("comfort", themes, "comfort FP on: %r" % ok)
+
     def test_safety_detects_crisis(self):
         beats = self.g.segment("Honestly I don't want to live anymore.")
         self.assertTrue(any(self.g.safety(b) for b in beats))

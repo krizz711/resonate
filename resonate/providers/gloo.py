@@ -20,7 +20,11 @@ from ..models import Beat
 LEXICON = {
     "anxiety": ["worry", "worried", "anxious", "anxiety", "stress", "stressed", "overwhelmed", "panic", "nervous", "on edge"],
     "fear": ["afraid", "fear", "scared", "terrified", "fearful", "dread"],
-    "grief": ["grief", "grieving", "loss", "passed away", "died", "death", "mourning", "heartbroken"],
+    # "dying" ships only as phrases — bare "dying" would false-trigger on the idiom
+    # "dying to see/try..." (an excited message must never get a grief verse)
+    "grief": ["grief", "grieving", "loss", "passed away", "died", "death", "mourning", "heartbroken",
+              "is dying", "the dying", "dying of", "my dying", "deathbed", "hospice",
+              "terminally ill", "terminal illness", "close to death", "about to die"],
     "loneliness": ["lonely", "alone", "isolated", "nobody", "by myself", "no one"],
     "doubt": ["doubt", "unsure", "questioning", "confused", "even matters", "pointless", "what's the point", "shouting into the void"],
     # overconfidence is NOT doubt — before this theme existed, "I'm the smartest one
@@ -57,7 +61,10 @@ LEXICON = {
     "provision": ["money", "bills", "afford", "provide", "provision", "rent", "paycheck"],
     "forgiveness": ["forgive", "forgiven", "forgiveness", "repent"],
     "love": ["unloved", "loved", "longing"],
-    "comfort": ["hurting", "in pain", "aching", "suffering"],
+    # asking for comfort IS a comfort beat ("any words that can comfort me?") — phrases
+    # only, so "comfortable chairs" stays silent
+    "comfort": ["hurting", "in pain", "aching", "suffering", "comfort me", "comfort myself",
+                "need comfort", "any comfort", "comforting", "be comforted", "words of comfort"],
     "courage": ["courage", "brave", "bold", "step out"],
     "rest": ["need a break", "slow down", "restless", "can't sleep"],
     "identity": ["worthless", "not enough", "not good enough", "my worth", "who i am"],
