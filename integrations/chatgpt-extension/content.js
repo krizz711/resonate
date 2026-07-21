@@ -84,6 +84,9 @@
     isabella: { prefer: ["Google UK English Female", "Microsoft Sonia", "Microsoft Libby", "Serena", "Kate"], rate: 0.88, pitch: 1.06 },
     george:   { prefer: ["Google UK English Male", "Microsoft Ryan", "Daniel", "Microsoft George", "Arthur", "Microsoft David"], rate: 0.92, pitch: 0.80 },
   };
+  const _MALE = /\b(male|david|mark|guy|george|ryan|daniel|arthur|fred|alex|james|thomas|paul|rishi|prabhat|gordon|william)\b/i;
+  const _FEMALE = /\b(female|zira|aria|hazel|susan|linda|samantha|sonia|libby|serena|kate|heera|michelle|jenny|eva|catherine)\b/i;
+
   function pickVoiceFrom(prefer) {
     let vs = [];
     try { vs = window.speechSynthesis.getVoices() || []; } catch (e) {}
@@ -146,12 +149,21 @@
         try { v = (synth.getVoices() || []).find((x) => x.name === name) || null; } catch (e) {}
       }
       if (!v && profile) v = pickVoiceFrom(profile.prefer); // map a named voice to its browser match
+      // George must NEVER land on the female-biased generic picker: take any male-sounding
+      // voice first; only non-George falls through to pickBrowserVoice().
+      if (!v && voiceId === "george") {
+        let vs = []; try { vs = (synth.getVoices() || []).filter((x) => /^en/i.test(x.lang || "")); } catch (e) {}
+        v = vs.find((x) => _MALE.test(x.name || "") && !_FEMALE.test(x.name || "")) || null;
+      }
       if (!v) v = pickBrowserVoice();
       if (v) u.voice = v;
       // per-voice tuning approximates the Kokoro preset (deeper for George, brighter for Isabella);
       // the pitch/rate differences also keep the three distinct when only one OS voice exists.
       u.rate = profile ? profile.rate : 0.92;
       u.pitch = profile ? profile.pitch : 0.96;
+      // if George still couldn't get a male voice (female-only system), deepen hard so it
+      // never reads as a woman's voice — the exact complaint this fixes.
+      if (voiceId === "george" && (!v || _FEMALE.test((v && v.name) || ""))) u.pitch = 0.62;
       u.volume = 1;
       u.onend = endSpeak; u.onerror = endSpeak;
       speaking = true; reflectSpeaking();

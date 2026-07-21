@@ -263,13 +263,30 @@
     george:   { prefer: ["Google UK English Male", "Microsoft Ryan", "Daniel", "Microsoft George", "Arthur", "Microsoft David", "Microsoft Mark"], rate: 0.92, pitch: 0.78 },
     browser:  { prefer: ["Google US English", "Samantha", "Microsoft Aria"], rate: 0.95, pitch: 0.96 },
   };
+  // getVoices() is async — empty until 'voiceschanged' fires. Cache so George never speaks
+  // before the list loads (which is exactly when it fell back to the female default voice).
+  let _voices = [];
+  function _loadVoices() { _voices = speechSynthesis.getVoices() || []; }
+  _loadVoices();
+  try { speechSynthesis.addEventListener("voiceschanged", _loadVoices); } catch (e) {}
+  const _MALE = /\b(male|david|mark|guy|george|ryan|daniel|arthur|fred|alex|james|thomas|paul|rishi|prabhat|gordon|william)\b/i;
+  const _FEMALE = /\b(female|zira|aria|hazel|susan|linda|samantha|sonia|libby|serena|kate|heera|michelle|jenny|eva|catherine)\b/i;
+
   function speakBrowser(text, done, onStart) {
     try {
       const p = BROWSER_PROFILE[voice] || BROWSER_PROFILE.browser;
       const u = new SpeechSynthesisUtterance(text);
       u.rate = p.rate; u.pitch = p.pitch;
-      const vs = (speechSynthesis.getVoices() || []).filter((v) => /^en/i.test(v.lang || ""));
-      const pick = p.prefer.map((n) => vs.find((v) => v.name && v.name.includes(n))).find(Boolean);
+      const all = (_voices.length ? _voices : (speechSynthesis.getVoices() || []));
+      const vs = all.filter((v) => /^en/i.test(v.lang || ""));
+      let pick = p.prefer.map((n) => vs.find((v) => v.name && v.name.includes(n))).find(Boolean);
+      // George must NEVER fall back to a female default: if no preferred male voice is
+      // present, take any male-sounding one; if only female voices exist, deepen hard.
+      if (!pick && voice === "george") {
+        pick = vs.find((v) => _MALE.test(v.name || "") && !_FEMALE.test(v.name || ""))
+            || (all.find((v) => _MALE.test(v.name || "") && !_FEMALE.test(v.name || "")));
+        if (!pick) u.pitch = 0.6;
+      }
       if (pick) u.voice = pick;
       u.onstart = () => onStart && onStart();
       u.onend = done; u.onerror = done;
