@@ -21,6 +21,7 @@ export default function Nav() {
         <li><a href="/connect.html">Connect</a></li>
         <li><a href="/reels.html">Reels</a></li>
         <li><a href="/guide.html">Ezra</a></li>
+        <li><a href="/guardians.html">Guardians</a></li>
       </ul>
       <a className="docs" href="https://github.com/krizz711/resonate" target="_blank" rel="noopener">Docs ↗</a>
     </header>

@@ -16,6 +16,12 @@
   *{box-sizing:border-box;margin:0;padding:0}
   body{min-height:100vh;background:linear-gradient(180deg,#e4d7c6,#ddcdb8 60%,#d5c4ac);
     color:var(--ink);font-family:var(--sans);padding-bottom:70px}
+  /* Christ by the lake — "he watches over you" — behind a cream veil so the form stays
+     readable. Drop-in: replace /bg/guardians.jpg to swap the art. */
+  body::before{content:"";position:fixed;inset:0;z-index:-2;
+    background:url("/bg/guardians.jpg") center top/cover no-repeat}
+  body::after{content:"";position:fixed;inset:0;z-index:-1;
+    background:linear-gradient(180deg,rgba(239,233,223,.60),rgba(235,227,213,.5) 42%,rgba(229,217,198,.66))}
   .wrap{width:min(680px,94vw);margin:0 auto}
   header{display:flex;align-items:baseline;justify-content:space-between;padding:24px 0 8px}
   header .brand{font-family:var(--serif);font-weight:600;font-size:24px}
@@ -71,6 +77,8 @@
     <div class="brand"><span class="cross">†</span>Resonate</div>
     <nav>
       <a href="/guide.html" title="Talk with Ezra">☎ Ezra</a>
+      <a href="/reels.html" title="Story reels picked for you">▷ reels</a>
+      <a href="/connect.html" title="Add Resonate to your AI assistant">⚡ connect</a>
       <a href="/" title="Home">home</a>
     </nav>
   </header>

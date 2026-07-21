@@ -59,6 +59,7 @@ export default function Hero() {
           <a className="btn primary" href="/connect.html" data-magnetic>⚡ Add to your AI assistant</a>
           <a className="btn ghost" href="#features" data-magnetic>📖 Explore the features</a>
         </div>
+        <a className="hero-safety" href="/guardians.html">♥ Set up your safety circle — people to quietly notify if you're ever not okay</a>
       </div>
     </section>
   )
