@@ -78,7 +78,7 @@ Four design commitments — each one is enforced in code, not just claimed:
 ## 🏛️ Architecture
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'fontFamily':'Georgia, serif','lineColor':'#9a7529','primaryColor':'#faf6ec','primaryTextColor':'#211d17','primaryBorderColor':'#a65b43','edgeLabelBackground':'#efe9df'}}}%%
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif','fontSize':'14px','lineColor':'#94a3b8','primaryColor':'#f1f5f9','primaryTextColor':'#1e293b','primaryBorderColor':'#cbd5e1','clusterBkg':'#f8fafc','clusterBorder':'#e2e8f0','edgeLabelBackground':'#ffffff'}}}%%
 flowchart TB
     subgraph S["🌐 Delivery surfaces — native to where you already are"]
         direction LR
@@ -110,21 +110,18 @@ flowchart TB
     E -->|"fetch by reference"| YV
     E -.->|"crisis detected"| HELP["🆘 Human help card<br/>+ optional guardian alert"]
 
-    classDef surface fill:#faf6ec,stroke:#a65b43,stroke-width:1px,color:#211d17;
-    classDef key fill:#b98f35,stroke:#7d5f1e,stroke-width:1.5px,color:#211d17;
-    classDef engine fill:#332a22,stroke:#b98f35,stroke-width:1px,color:#f4efe3;
-    classDef gloo fill:#8a4a35,stroke:#c98b5f,stroke-width:1px,color:#f7ece2;
-    classDef yv fill:#9a7529,stroke:#d8b45f,stroke-width:1px,color:#fbf3df;
-    classDef help fill:#4a3f36,stroke:#a65b43,stroke-width:1px,color:#f4efe3;
+    classDef surface fill:#eef2ff,stroke:#a5b4fc,stroke-width:1.5px,color:#3730a3;
+    classDef key fill:#4f46e5,stroke:#4338ca,stroke-width:2px,color:#ffffff;
+    classDef engine fill:#e0e7ff,stroke:#6366f1,stroke-width:1.5px,color:#3730a3;
+    classDef gloo fill:#f5f3ff,stroke:#8b5cf6,stroke-width:1.5px,color:#5b21b6;
+    classDef yv fill:#ecfdf5,stroke:#10b981,stroke-width:1.5px,color:#065f46;
+    classDef help fill:#fff1f2,stroke:#fb7185,stroke-width:1.5px,color:#9f1239;
     class EXT,MCP,EZRA,MORE surface;
     class KEY key;
     class SEG,RET,MEM,POL engine;
     class GLOO gloo;
     class YV yv;
     class HELP help;
-    style S fill:#f2ece0,stroke:#c9a56f,stroke-width:1px,color:#6b5a3a;
-    style E fill:#211d17,stroke:#b98f35,stroke-width:1.2px,color:#e9d9ae;
-    style A fill:#efe6d4,stroke:#b98f35,stroke-width:1px,color:#6b5a3a;
 ```
 
 The engine is **dependency-light** (Python standard library for the core), so it runs fully offline with mock providers, then flips to the live APIs with one config flag. Every surface talks to the **same** engine instance and the **same** per-user memory graph.
@@ -140,7 +137,7 @@ Resonate's contribution is the **context engine** that sits between the two chal
 - **📖 YouVersion Platform API** — the **single source of verse text.** The engine fetches the licensed words *by reference*; those exact words are the only ones a user ever sees.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'fontFamily':'Georgia, serif','actorBkg':'#211d17','actorBorder':'#b98f35','actorTextColor':'#f4efe3','signalColor':'#a65b43','signalTextColor':'#4a3f36','noteBkgColor':'#efe6d4','noteBorderColor':'#b98f35','noteTextColor':'#4a3f36','activationBkgColor':'#e3d7c4','activationBorderColor':'#a65b43'}}}%%
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif','fontSize':'14px','actorBkg':'#4f46e5','actorBorder':'#4338ca','actorTextColor':'#ffffff','actorLineColor':'#c7d2fe','signalColor':'#64748b','signalTextColor':'#334155','noteBkgColor':'#fffbeb','noteBorderColor':'#fbbf24','noteTextColor':'#92400e','activationBkgColor':'#e0e7ff','activationBorderColor':'#6366f1','sequenceNumberColor':'#ffffff'}}}%%
 sequenceDiagram
     autonumber
     participant U as 🧑 You — in your AI
@@ -170,7 +167,7 @@ sequenceDiagram
 Every message flows through the same stages. Safety is checked **first**, on the raw text, independent of everything else — so a crisis can never be missed or answered with a verse.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'fontFamily':'Georgia, serif','lineColor':'#9a7529','primaryColor':'#faf6ec','primaryTextColor':'#211d17','primaryBorderColor':'#a65b43','edgeLabelBackground':'#efe9df'}}}%%
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif','fontSize':'14px','lineColor':'#94a3b8','primaryColor':'#f1f5f9','primaryTextColor':'#1e293b','primaryBorderColor':'#cbd5e1','clusterBkg':'#f8fafc','clusterBorder':'#e2e8f0','edgeLabelBackground':'#ffffff'}}}%%
 flowchart TD
     M(["🧑 User message"]) --> S{{"🛟 Safety gate<br/>raw text · deterministic"}}
     S -->|crisis| H["🆘 Help card + guardian alert<br/>(never a verse)"]
@@ -187,16 +184,20 @@ flowchart TD
     F --> B["9 · Gloo writes a one-line bridge"]
     B --> D(["10 · Deliver to your surface<br/>+ remember the theme"])
 
-    classDef term fill:#a65b43,stroke:#7a3f2d,stroke-width:1px,color:#f7ece2;
-    classDef gate fill:#b98f35,stroke:#7d5f1e,stroke-width:1.2px,color:#211d17;
-    classDef step fill:#faf6ec,stroke:#c9a56f,stroke-width:1px,color:#211d17;
-    classDef decision fill:#efe6d4,stroke:#b98f35,stroke-width:1px,color:#4a3f36;
-    classDef stop fill:#4a3f36,stroke:#a65b43,stroke-width:1px,color:#f4efe3;
+    classDef term fill:#4f46e5,stroke:#4338ca,stroke-width:2px,color:#ffffff;
+    classDef safety fill:#fff1f2,stroke:#fb7185,stroke-width:1.5px,color:#9f1239;
+    classDef gloo fill:#f5f3ff,stroke:#8b5cf6,stroke-width:1.5px,color:#5b21b6;
+    classDef yv fill:#ecfdf5,stroke:#10b981,stroke-width:1.5px,color:#065f46;
+    classDef step fill:#eff6ff,stroke:#93c5fd,stroke-width:1.5px,color:#1e40af;
+    classDef decision fill:#fffbeb,stroke:#fbbf24,stroke-width:1.5px,color:#92400e;
+    classDef quiet fill:#f1f5f9,stroke:#cbd5e1,stroke-width:1.5px,color:#475569;
     class M,D term;
-    class S gate;
-    class SEG,R,RRF,RR,V,F,B step;
+    class S,H safety;
+    class SEG,V,B gloo;
+    class F yv;
+    class R,RRF,RR step;
     class K,C decision;
-    class H,AB stop;
+    class AB quiet;
 ```
 
 Full design rationale: **[ENGINE-DESIGN.md](ENGINE-DESIGN.md)**.
