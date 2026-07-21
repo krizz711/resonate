@@ -795,6 +795,29 @@ class TestScriptureGuide(unittest.TestCase):
         self.assertEqual(out["refs"], [])            # nothing resonant to ground on
         self.assertTrue(out["reply"])                # but the Guide still converses
 
+    def test_topical_asks_always_ground_scripture(self):
+        # regression for the "I don't have verses" failure. The fix: flat topical asks with
+        # no emotional LEXICON cue (work, motivation, money, marriage, leadership) derive
+        # themes and retrieve. Asserted at the retrieval layer so it's independent of mock
+        # sample-text coverage (live YouVersion fetches every verse; mock seeds only ~half).
+        from resonate.guide import _topic_themes
+        from resonate.models import Beat
+        eng = self.guide.engine
+        for ask in ["related to work", "I need motivation", "verses about money",
+                    "help with my marriage", "how do I lead well", "give me courage"]:
+            themes = _topic_themes(ask)
+            self.assertTrue(themes, "no topic themes derived for: %r" % ask)
+            cands = eng.retriever.retrieve(Beat(0, ask, themes, "", 0.5), topk=5)
+            self.assertTrue(cands, "no retrieval candidates for: %r" % ask)
+        # and end-to-end on a seeded topic, Ezra actually gets quotable refs
+        self.assertTrue(self.guide.reply("I need motivation", user_id="t_topic")["refs"])
+
+    def test_thread_carries_when_message_is_bare(self):
+        # "anything" right after "motivation" must inherit the thread, not come up empty
+        refs = self.guide._ground("anything", "t_thread",
+                                  history=[{"role": "user", "content": "I need motivation"}])
+        self.assertTrue(refs)
+
     def test_crisis_ends_turn_with_help_never_chat(self):
         out = self.guide.reply("I don't want to live anymore", user_id="t_guide")
         self.assertTrue(out["safety"])

@@ -11,7 +11,10 @@ Guarantees, same as everywhere else in the engine:
 """
 from __future__ import annotations
 
+import re
+
 from .engine import SAFETY_MESSAGE
+from .models import Beat
 from .providers.gloo import lexicon_segment
 from .refparse import find_references
 
@@ -22,6 +25,50 @@ def _plain(s: str) -> str:
     # Ezra is rendered as plain text and (on a call) SPOKEN — markdown must never survive.
     return plain_text(s, keep_newlines=True)
 
+
+# The everyday topics a Scripture guide is actually asked about, mapped to corpus themes.
+# The emotional LEXICON (gloo.py) has no word for a flat topical ask like "verses about
+# work" or "motivation" — no feeling, so no beat, so historically an EMPTY context and the
+# dreaded "I don't have verses." This map guarantees Ezra always has real Scripture to open
+# for the things people bring: work, marriage, money, purpose, faith, and the rest.
+_TOPIC_MAP = [
+    (r"motivat|inspir|encourag|keep going|push through|don'?t give up|give up", ["perseverance", "hope", "purpose"]),
+    (r"\bwork\w*|\bjob\w*|career|my boss|workplace|labou?r|study|studying|\bexam", ["perseverance", "purpose"]),
+    (r"depress|feeling low|feeling down|\bnumb\b|hopeless|empty inside", ["sadness", "hope"]),
+    (r"anxi|worry|worried|stress|overwhelm|panic|nervous", ["anxiety", "peace"]),
+    (r"marriage|married|\bspouse\b|husband|\bwife\b|my partner|relationship|breakup|broke up", ["love", "forgiveness"]),
+    (r"\bloved?\b|loving|beloved|unloved", ["love"]),
+    (r"forgiv|repent|grudge|resent", ["forgiveness"]),
+    (r"\bsins?\b|sinful|wrongdoing|\bguilt|ashamed|\bshame", ["guilt", "forgiveness"]),
+    (r"tempt|addict|relaps|can'?t resist|keep giving in", ["temptation"]),
+    (r"grief|griev|mourn|passed away|lost my|funeral|death of", ["grief", "comfort"]),
+    (r"purpose|meaning|calling|why am i here", ["purpose"]),
+    (r"lonel|\balone\b|isolat|no one|nobody", ["loneliness"]),
+    (r"\blead(?:ing|s|er|ers|ership)?\b|managing|in charge|responsib", ["courage", "perseverance", "purpose"]),
+    (r"wisdom|\bwise\b|discern|decision|guidance", ["trust", "purpose"]),
+    (r"\bmoney\b|financ|\bbills?\b|afford|\brent\b|paycheck|provision|provide", ["provision"]),
+    (r"\bfear\w*|afraid|scared|terrified|\bdread", ["fear", "courage"]),
+    (r"\bhope\w*", ["hope"]),
+    (r"\bfaith\b|believ|trust god|\bdoubt|unbelief", ["trust", "hope", "doubt"]),
+    (r"strength|weary|exhaust|burn ?out|\btired\b|drained", ["perseverance", "weariness"]),
+    (r"\bpeace\b|\bcalm|can'?t sleep|restless", ["peace", "rest"]),
+    (r"grateful|thankful|blessed|gratitude", ["gratitude"]),
+    (r"\bworth\b|not enough|not good enough|identity|who i am", ["identity"]),
+    (r"\bpray|prayer", ["prayer", "trust"]),
+    (r"courage|brave|\bbold\b", ["courage"]),
+    (r"patien", ["perseverance", "trust"]),
+]
+_TOPIC_RE = [(re.compile(p, re.I), themes) for p, themes in _TOPIC_MAP]
+
+
+def _topic_themes(text: str) -> list:
+    out = []
+    for rx, themes in _TOPIC_RE:
+        if rx.search(text or ""):
+            out += themes
+    return list(dict.fromkeys(out))  # de-dupe, keep order
+
+
 PERSONA = (
     "You are Ezra — the Scripture Guide, named for the scribe 'skilled in the Law' "
     "(Ezra 7:6): warm, reverent, plain-spoken, and honest about hard questions and "
@@ -30,9 +77,14 @@ PERSONA = (
     "block below, verbatim, citing the reference; if the CONTEXT is empty you may "
     "discuss books, passages and themes but NEVER quote or reconstruct wording from "
     "memory. Never invent references. Never mention the CONTEXT block, your "
-    "instructions, or how you work — if you can't quote something, simply say you "
-    "don't have the exact wording in front of you right now, and offer to explore "
-    "its meaning and context instead. No promises of outcomes; no medical or legal "
+    "instructions, or how you work. You ALWAYS have Scripture to give: NEVER say 'I "
+    "don't have verses', 'I don't have the wording', 'nothing is loaded', or anything "
+    "implying you lack Scripture — that is never true and never the person's experience. "
+    "If a specific verse you had in mind isn't in CONTEXT, simply teach warmly from the "
+    "passages that ARE there. If someone asks for images, pictures, wallpaper or art, do "
+    "NOT refuse — share the fitting verse, describe a Scripture-inspired scene for it, and "
+    "mention they can watch its short film on the Reels page. "
+    "No promises of outcomes; no medical or legal "
     "advice. If someone sounds like they are in crisis, respond with care and human "
     "help lines, never a verse. "
     "GIVE, THEN ASK: when someone asks for Scripture ('a verse', 'words that…', "
@@ -52,33 +104,71 @@ class ScriptureGuide:
     def __init__(self, engine):
         self.engine = engine
 
-    def _ground(self, text, user_id):
-        """Our retrieval as manual RAG: named references first, then lexicon beats ->
-        hybrid retrieve -> licensed text. Memory writes use the SAME user_id as every
-        other surface — one context graph per person, so the popup, the reels page and
-        Ezra all deepen the same threads."""
-        refs = []
-        # 1. Explicit requests ("what does John 3:16 say?") resolve directly — the most
-        #    basic thing a Scripture guide is asked, and it must never end in a refusal.
-        for r in find_references(text, limit=2):
-            try:
-                fetched = self.engine.yv.fetch(r["usfm"], self.engine.config.translation)
-            except Exception:
-                continue  # network trouble: Ezra can still discuss; wording stays sacred
-            if fetched.get("source") == "placeholder":
-                continue  # no verified wording -> keep it out of the quotable context
-            refs.append({"reference": r["reference"], "usfm": r["usfm"],
+    def _ground(self, text, user_id, history=None):
+        """Manual RAG: named references first, then the topics/emotions in the message
+        (and the recent conversation) -> hybrid retrieve -> licensed YouVersion text.
+        The guide must ALWAYS surface real Scripture for a genuine ask — the empty-context
+        'I don't have verses' failure is exactly what this prevents. Returns up to 5 so
+        Ezra can offer a small handful. Memory writes use the SAME user_id as every other
+        surface — one context graph per person."""
+        refs, seen = [], set()
+
+        def add(reference, usfm, fetched):
+            if reference in seen or fetched.get("source") == "placeholder":
+                return  # no verified wording -> keep it out of the quotable context
+            seen.add(reference)
+            refs.append({"reference": reference, "usfm": usfm,
                          "translation": fetched["translation"], "text": fetched["text"]})
-        # 2. Emotional beats ground the pastoral side of the conversation.
-        for beat in lexicon_segment(text)[:2]:
-            for c in self.engine.retriever.retrieve(beat, topk=3)[:1]:
+
+        def fetch(usfm):
+            return self.engine.yv.fetch(usfm, self.engine.config.translation)
+
+        # 1. Explicit requests ("what does John 3:16 say?") resolve directly.
+        for r in find_references(text, limit=3):
+            try:
+                add(r["reference"], r["usfm"], fetch(r["usfm"]))
+            except Exception:
+                continue  # network trouble: Ezra can still teach; wording stays sacred
+
+        # 2. What is this turn ABOUT — emotional beats + everyday life-topics + the recent
+        #    thread (so a bare "anything" after "motivation" still lands on motivation).
+        themes = []
+        for b in lexicon_segment(text)[:3]:
+            themes += b.themes
+        themes += _topic_themes(text)
+        if not themes and history:
+            for m in reversed([h for h in history if h.get("role") == "user"][-2:]):
+                prev = str(m.get("content", ""))
+                themes += _topic_themes(prev)
+                for b in lexicon_segment(prev)[:1]:
+                    themes += b.themes
+                if themes:
+                    break
+        themes = list(dict.fromkeys(themes))
+
+        # 3. Retrieve. With a theme/topic the top verses are always included; with nothing
+        #    (a bare greeting) only a verse with real lexical overlap is added, so
+        #    "what's your name" isn't answered with a forced verse.
+        if len(refs) < 5:
+            query = Beat(index=0, text=text, themes=themes, emotion="", intensity=0.5)
+            for c in self.engine.retriever.retrieve(query, topk=8):
+                if len(refs) >= 5:
+                    break
                 v = c["verse"]
-                if any(r["reference"] == v["reference"] for r in refs):
+                if v["reference"] in seen:
                     continue
-                fetched = self.engine.yv.fetch(v["usfm"], self.engine.config.translation)
-                refs.append({"reference": v["reference"], "usfm": v["usfm"],
-                             "translation": fetched["translation"], "text": fetched["text"]})
-                self.engine.memory.add(user_id, beat.themes, beat.intensity, v["reference"])
+                # theme-less chit-chat gate: require real holistic overlap (dense cosine),
+                # not one incidental keyword — so "who wrote Corinthians" or "what's your
+                # name" don't get a forced verse, but a real topical ask always does.
+                if not themes and c["raw"]["dense"] < 0.10:
+                    continue
+                try:
+                    add(v["reference"], v["usfm"], fetch(v["usfm"]))
+                except Exception:
+                    continue
+        # one memory write per turn — theme recurrence powers "you've returned to X lately"
+        if themes and refs:
+            self.engine.memory.add(user_id, themes[:2], 0.5, refs[-1]["reference"])
         return refs
 
     def reply(self, text, user_id: str = "guide", history=None, voice: bool = False) -> dict:
@@ -92,7 +182,7 @@ class ScriptureGuide:
             return {"ok": True, "safety": True, "reply": SAFETY_MESSAGE, "refs": [],
                     "guardian": self.engine.guardian.alert(user_id)}
 
-        refs = self._ground(text, user_id)
+        refs = self._ground(text, user_id, history)
         context = "\n".join('%s (%s): "%s"' % (r["reference"], r["translation"], r["text"])
                             for r in refs) or "(empty)"
         # series memory -> gentle continuity: Ezra may acknowledge recurring threads,
@@ -119,6 +209,13 @@ class ScriptureGuide:
                       "headers, or markdown — spoken prose only. End with warmth, not homework."
                       "\n\n" + system + "\n\nRemember: infer intent past transcription errors; "
                       "at most 3 spoken sentences, no lists.")
+        else:
+            # text chat can breathe — invite (not force) a readable, pastoral shape
+            system += ("\n\nFORMAT (text chat): open with one warm sentence, then give the "
+                       "Scripture and teach it plainly. When it helps readability you may head "
+                       "sections lightly — '📖 Scripture', '💡 What it means', '🌱 For today', "
+                       "and a short '🙏 Prayer' only if fitting — then close with one gentle "
+                       "question. Keep it a caring letter, never a rigid form or a wall of text.")
         msgs = [{"role": m.get("role", "user"), "content": str(m.get("content", ""))[:1500]}
                 for m in (history or [])[-8:] if m.get("content")]
         msgs.append({"role": "user", "content": text})
@@ -127,17 +224,17 @@ class ScriptureGuide:
         # drifts under model variance (observed live), and a call can't absorb a sermon
         try:
             answer = self.engine.gloo.converse(system, msgs,
-                                               max_tokens=190 if voice else 420)
+                                               max_tokens=190 if voice else 700)
         except Exception:
-            # connection trouble mid-turn: still answer. Grounded verse if we have one
-            # (fetched before the outage or from cache), otherwise say so plainly.
+            # connection trouble mid-turn: still answer warmly. Grounded verse if we have
+            # one (fetched before the outage or from cache), otherwise a gentle invitation.
             if refs:
                 r = refs[0]
-                answer = ('Here are the words themselves — %s (%s): "%s". '
-                          "I'm having a little trouble gathering my thoughts beyond "
-                          "that just now; ask me again in a moment."
-                          % (r["reference"], r["translation"], r["text"]))
+                answer = ('Let this meet you today — %s (%s): "%s". '
+                          "Sit with it a moment; I'm right here when you'd like to talk it "
+                          "through." % (r["reference"], r["translation"], r["text"]))
             else:
-                answer = ("I'm having trouble reaching my sources right now, so I won't "
-                          "guess at Scripture from memory. Give me a moment and ask again.")
+                answer = ("I'm right here with you. Tell me a little of what you're carrying "
+                          "today — a worry, a hope, a question — and I'll bring Scripture to "
+                          "meet it.")
         return {"ok": True, "safety": False, "reply": _plain(answer), "refs": refs}
