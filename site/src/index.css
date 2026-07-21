@@ -229,92 +229,6 @@ p.lede{font-family:var(--serif);font-size:clamp(17px,2.2vw,21px);color:var(--ink
 @media (max-width:760px){ .hero-3d{transform:none} }
 .hero-3d canvas{display:block;width:100%!important;height:100%!important;touch-action:none;}
 
-/* the 3D Christus render — big, centered, hem resting on the page bottom */
-.hero-statue{position:absolute;left:50%;bottom:0;transform:translateX(-50%);z-index:1;
-  height:80vh;width:auto;max-width:none;pointer-events:none;user-select:none;
-  filter:drop-shadow(0 18px 40px rgba(96,76,44,.20));}
-@media (max-width:760px){
-  .hero-statue{height:auto;width:158vw;}
-}
-
-/* travelling light-shine — a soft glint that glides across the marble */
-/* soft glowing aura behind the figure + a light-pool at the feet (breathing) */
-.hero-aura{position:absolute;left:50%;bottom:0;transform:translateX(-50%);z-index:0;
-  height:100vh;aspect-ratio:766/631;pointer-events:none;filter:blur(26px);
-  background:
-    radial-gradient(46% 42% at 50% 44%, rgba(255,236,196,.42), transparent 72%),
-    radial-gradient(42% 15% at 50% 99%, rgba(255,244,214,.82), transparent 72%);
-  animation:aura 5s ease-in-out infinite;}
-@keyframes aura{0%,100%{opacity:.68}50%{opacity:1}}
-
-/* ascension light — a glow band that rises from the feet up to the head,
-   masked to the figure so it lights the marble from within */
-.hero-shine{position:absolute;left:50%;bottom:0;transform:translateX(-50%);z-index:2;
-  height:98vh;aspect-ratio:766/631;pointer-events:none;mix-blend-mode:screen;
-  -webkit-mask-image:url(/christus-hero.png);mask-image:url(/christus-hero.png);
-  -webkit-mask-size:100% 100%;mask-size:100% 100%;
-  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;}
-.hero-shine .wave{position:absolute;left:-12%;right:-12%;height:52%;top:112%;
-  background:radial-gradient(58% 100% at 50% 50%, rgba(255,250,230,.98), rgba(255,240,203,.45) 55%, transparent 76%);
-  filter:blur(6px);
-  animation:rise 5s cubic-bezier(.45,.05,.4,1) infinite;}
-@keyframes rise{
-  0%{top:114%;opacity:0}
-  12%{opacity:1}
-  56%{top:20%;opacity:1}
-  90%{top:-64%;opacity:1}
-  100%{top:-64%;opacity:0}
-}
-@media (max-width:760px){ .hero-aura,.hero-shine{height:auto;width:158vw;} }
-@media (prefers-reduced-motion:reduce){ .hero-shine .wave,.hero-aura{animation:none} }
-
-.hero-wrap{max-width:1080px;margin:0 auto;width:100%}
-.hero-brand{font-family:var(--serif);font-weight:600;font-size:clamp(34px,5.4vw,58px);letter-spacing:.01em;
-  display:flex;align-items:baseline;gap:16px}
-.hero-brand .cross{font-size:.82em}
-.hero-sub{margin-top:10px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--faded)}
-
-.hero-stagearea{margin:clamp(30px,5.5vh,54px) auto 0;perspective:1400px;max-width:880px}
-.mock{position:relative;transform-style:preserve-3d}
-.chatcard{position:relative;width:min(620px,88%);border-radius:20px;padding:20px 22px 26px;
-  background:linear-gradient(178deg,var(--cream-hi) 0%,#f4eede 100%);
-  border:1px solid var(--line);box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.7)}
-.chatcard::before{content:"";position:absolute;inset:8px;border:1px solid var(--line-soft);border-radius:13px;pointer-events:none}
-.chatcard .chrome{display:flex;align-items:center;gap:7px;margin-bottom:18px}
-.chatcard .dot{width:10px;height:10px;border-radius:50%;background:var(--paper4)}
-.chatcard .ttl{margin-left:8px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--faded)}
-.skl{height:12px;border-radius:6px;background:linear-gradient(90deg,#e8e0cd,#efe8d6);margin-bottom:12px}
-.skl.w1{width:78%}.skl.w2{width:64%}.skl.w3{width:84%}.skl.w4{width:46%}
-.bubble-me{margin:16px 0 4px auto;max-width:64%;width:fit-content;background:var(--sage);color:var(--sage-ink);
-  padding:11px 15px;border-radius:14px 14px 5px 14px;font-size:13.5px;line-height:1.5;
-  box-shadow:0 6px 16px rgba(96,76,44,.12)}
-
-.panel{position:absolute;right:-2%;bottom:-15%;width:min(340px,84%);box-sizing:border-box;color:var(--ink);z-index:3;
-  background:radial-gradient(130% 120% at 100% 0%,rgba(166,91,67,.07),transparent 58%),
-    linear-gradient(177deg,var(--paper) 0%,var(--paper2) 58%,var(--paper3) 100%);
-  border:1px solid rgba(33,29,23,.22);border-radius:18px;padding:22px 24px 15px;
-  box-shadow:0 26px 60px rgba(96,76,44,.28), inset 0 1px 0 rgba(255,255,255,.5)}
-.panel::before{content:"";position:absolute;inset:7px;border:1px solid rgba(33,29,23,.13);border-radius:12px;pointer-events:none}
-.panel .x{position:absolute;top:10px;right:13px;color:#9a8f7f;font-size:17px;line-height:1}
-.panel .x:hover{color:var(--clay)}
-.panel .ref{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--clay);margin:0 0 11px;padding-right:18px}
-.panel .ref .tr{color:var(--faded);letter-spacing:.2em}
-.panel .ref::after{content:"";display:block;width:32px;height:1px;background:var(--clay);opacity:.55;margin-top:9px}
-.panel .verse{font-family:var(--serif);font-size:21px;line-height:1.4;font-weight:500}
-.panel .bridge{margin-top:13px;font-family:var(--serif);font-size:14.5px;font-style:italic;color:var(--ink-soft);
-  border-top:1px solid rgba(33,29,23,.13);padding-top:11px}
-.panel .mem{margin-top:11px;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--clay);opacity:.92}
-.panel .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px}
-.panel .listen{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--clay);
-  border:1px solid rgba(166,91,67,.45);border-radius:999px;padding:5px 13px;transition:background .3s}
-.panel .listen:hover{background:rgba(166,91,67,.10)}
-.panel .auto{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--faded)}
-.panel .foot{margin-top:12px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--faded)}
-
-.hero-tagline{margin-top:clamp(56px,9vh,90px);font-family:var(--serif);font-weight:600;
-  font-size:clamp(30px,4.8vw,52px);line-height:1.12;max-width:16ch}
-.hero-tagline em{font-style:italic;color:var(--clay)}
-.hero-actions{display:flex;flex-wrap:wrap;gap:13px;margin-top:26px}
 .btn{font-size:11px;letter-spacing:.2em;text-transform:uppercase;border-radius:999px;padding:13px 26px;display:inline-block;
   transition:transform .3s var(--ease),box-shadow .3s var(--ease),filter .25s}
 .btn.primary{color:var(--paper);background:linear-gradient(160deg,var(--clay),var(--clay-deep));
@@ -322,13 +236,6 @@ p.lede{font-family:var(--serif);font-size:clamp(17px,2.2vw,21px);color:var(--ink
 .btn.primary:hover{transform:translateY(-3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 12px 30px rgba(138,74,53,.42)}
 .btn.ghost{color:var(--clay);border:1px solid rgba(166,91,67,.5)}
 .btn.ghost:hover{transform:translateY(-3px);background:rgba(166,91,67,.07)}
-.powered{margin-top:clamp(36px,6vh,58px);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--faded)}
-.powered b{color:var(--ink-soft);font-weight:600}
-.scrollcue{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
-  font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--faded);text-align:center}
-.scrollcue .line{width:1px;height:34px;background:linear-gradient(var(--clay),transparent);margin:9px auto 0;
-  transform-origin:top;animation:drip 2.4s ease-in-out infinite}
-@keyframes drip{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
 
 /* ---------------- marquee ---------------- */
 .marquee{padding:0;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);
