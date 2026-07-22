@@ -1,21 +1,21 @@
-# 📖 Resonate — *Scripture, where you already are*
+# Resonate — *Scripture, where you already are*
 
 ![Resonate cover](docs/cover.svg)
 
-[![Live demo](https://img.shields.io/badge/▶_live_demo-resonate--hg6j.onrender.com-2e7d32?style=flat-square)](https://resonate-hg6j.onrender.com/)
+[![Live demo](https://img.shields.io/badge/live_demo-resonate--hg6j.onrender.com-2e7d32?style=flat-square)](https://resonate-hg6j.onrender.com/)
 [![Tests](https://img.shields.io/badge/tests-103_passing-2e7d32?style=flat-square)](tests/test_resonate.py)
 [![Eval](https://img.shields.io/badge/eval-hit@3_100%25_·_safety_100%25-b98f35?style=flat-square)](eval/run_eval.py)
 [![License](https://img.shields.io/badge/license-MIT-a65b43?style=flat-square)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.11+-211d17?style=flat-square)](#-reproduce-it-offline--no-keys-no-installs)
+[![Python](https://img.shields.io/badge/python-3.11+-211d17?style=flat-square)](#reproduce-it-offline--no-keys-no-installs)
 
-> ### ▶️ See it live: **https://resonate-hg6j.onrender.com/**
+> ### See it live: **https://resonate-hg6j.onrender.com/**
 >
 > | | |
 > |---|---|
-> | 🌐 **Live product** | **[resonate-hg6j.onrender.com](https://resonate-hg6j.onrender.com/)** — running against the real Gloo + YouVersion APIs |
-> | 🎬 **3-min film** *(primary)* | _🚧 coming soon — YouTube link goes here_ |
-> | 🖥️ **Live walkthrough** | _🚧 coming soon — YouTube link goes here_ |
-> | 🔬 **Technical explainer** | _🚧 coming soon — YouTube link goes here_ |
+> | **Live product** | **[resonate-hg6j.onrender.com](https://resonate-hg6j.onrender.com/)** — running against the real Gloo + YouVersion APIs |
+> | **3-min film** *(primary)* | _coming soon — YouTube link goes here_ |
+> | **Live walkthrough** | _coming soon — YouTube link goes here_ |
+> | **Technical explainer** | _coming soon — YouTube link goes here_ |
 
 Billions type their most honest words — *grief, burnout, doubt* — into **AI chatbots**, not a Bible app. Scripture has never been present there. **Resonate is the bridge:** it weaves *verified* Scripture into the conversations people already have — quietly, safely, and only when it truly fits.
 
@@ -26,20 +26,20 @@ Built for the Kaggle hackathon **[Scripture in New Frontiers](https://www.kaggle
 ---
 
 ## Contents
-- [🎯 Aim](#-aim) · [💡 Purpose](#-purpose--the-problem) · [🧭 Approach](#-approach)
-- [🧩 The surfaces](#-the-surfaces) · [🏛️ Architecture](#️-architecture)
-- [🔄 The context engine between two APIs](#-how-it-works--a-context-engine-between-two-apis)
-- [⚙️ The pipeline](#️-the-pipeline-10-stages) · [🔑 The Resonate Key](#-one-brain-across-every-ai--the-resonate-key)
-- [🔬 Technical deep-dive](#-technical-deep-dive) · [▶️ Reproduce it](#-reproduce-it-offline--no-keys-no-installs)
-- [🌐 Go live](#-go-live-real-apis) · [✅ Verification](#-verification--proof-it-works) · [🗂️ Layout](#️-repository-layout)
+- [Aim](#aim) · [Purpose](#purpose--the-problem) · [Approach](#approach)
+- [The surfaces](#the-surfaces) · [Architecture](#architecture)
+- [The context engine between two APIs](#how-it-works--a-context-engine-between-two-apis)
+- [The pipeline](#the-pipeline-10-stages) · [The Resonate Key](#one-brain-across-every-ai--the-resonate-key)
+- [Technical deep-dive](#technical-deep-dive) · [Reproduce it](#reproduce-it-offline--no-keys-no-installs)
+- [Go live](#go-live-real-apis) · [Verification](#verification--proof-it-works) · [Layout](#repository-layout)
 
 ---
 
-## 🎯 Aim
+## Aim
 
 **Put the right verse in front of a person at the exact moment their own words are already reaching for it — inside the AI chat they're already using — without ever intruding, storing, or fabricating.**
 
-## 💡 Purpose — the problem
+## Purpose — the problem
 
 People now bring their inner lives to AI assistants: they type *"I feel like I'm failing everyone,"* *"I can't keep going,"* *"what's the point."* These are the moments Scripture has spoken to for millennia — but in that space, it's simply **absent**. The options today are wrong in both directions:
 
@@ -48,57 +48,57 @@ People now bring their inner lives to AI assistants: they type *"I feel like I'm
 
 Resonate exists to be the missing middle: **present where life actually happens, restrained enough to be welcome, and verified enough to be trusted.**
 
-## 🧭 Approach
+## Approach
 
 Four design commitments — each one is enforced in code, not just claimed:
 
 | Principle | What it means | Where it lives |
 |---|---|---|
-| 🎯 **Native** | The verse appears *inside* your existing AI surface (a panel in ChatGPT, a tool your model calls) — not a destination you visit. | `integrations/` |
-| ✅ **Verified** | The model **never recites Scripture**. It proposes a *reference*; **YouVersion supplies the words.** Nothing is hallucinated. | `resonate/engine.py`, `providers/youversion.py` |
-| 🤫 **Restrained** | Silent on ordinary messages; speaks only on a real, high-confidence emotional beat; rate-limited; learns from dismissals. | `resonate/policy.py` |
-| 🛟 **Safe** | Crisis text is caught on the raw input and routed to a **human-help card — never a verse.** Deterministic, checked first, on every surface. | `providers/gloo.py` (`is_crisis`) |
+| **Native** | The verse appears *inside* your existing AI surface (a panel in ChatGPT, a tool your model calls) — not a destination you visit. | `integrations/` |
+| **Verified** | The model **never recites Scripture**. It proposes a *reference*; **YouVersion supplies the words.** Nothing is hallucinated. | `resonate/engine.py`, `providers/youversion.py` |
+| **Restrained** | Silent on ordinary messages; speaks only on a real, high-confidence emotional beat; rate-limited; learns from dismissals. | `resonate/policy.py` |
+| **Safe** | Crisis text is caught on the raw input and routed to a **human-help card — never a verse.** Deterministic, checked first, on every surface. | `providers/gloo.py` (`is_crisis`) |
 
 ---
 
-## 🧩 The surfaces
+## The surfaces
 
 *One engine, many native delivery surfaces — this is the architecture, not a slogan:*
 
 | Surface | What it is | Where |
 |---|---|---|
-| **🧩 ChatGPT extension** *(flagship)* | a quiet verse beside your AI chat — with voices, "your story", and reels | [`integrations/chatgpt-extension`](integrations/chatgpt-extension) |
-| **🔌 MCP server** | Scripture as a native capability for **any** assistant (Claude, ChatGPT, Gemini, Cursor) — stdio locally, or **hosted over HTTP at `/mcp`** so a single URL is the whole install | [`integrations/mcp`](integrations/mcp) |
-| **💬 Ezra — the Scripture Guide** | a warm, Bible-rooted companion you can chat or **voice-call**; grounds every answer in real retrieved Scripture | [`web/guide.html`](web/guide.html) · [`resonate/guide.py`](resonate/guide.py) |
-| **🎞️ Reels for you** | a Spotify-style shelf of verse-matched story films (real YouVersion partner videos) | [`web/reels.html`](web/reels.html) |
-| **📝 VS Code · Discord** | Scripture in the margins where builders think; conversation, not broadcast | [`integrations/vscode`](integrations/vscode) · [`integrations/discord`](integrations/discord) |
+| **ChatGPT extension** *(flagship)* | a quiet verse beside your AI chat — with voices, "your story", and reels | [`integrations/chatgpt-extension`](integrations/chatgpt-extension) |
+| **MCP server** | Scripture as a native capability for **any** assistant (Claude, ChatGPT, Gemini, Cursor) — stdio locally, or **hosted over HTTP at `/mcp`** so a single URL is the whole install | [`integrations/mcp`](integrations/mcp) |
+| **Ezra — the Scripture Guide** | a warm, Bible-rooted companion you can chat or **voice-call**; grounds every answer in real retrieved Scripture | [`web/guide.html`](web/guide.html) · [`resonate/guide.py`](resonate/guide.py) |
+| **Reels for you** | a Spotify-style shelf of verse-matched story films (real YouVersion partner videos) | [`web/reels.html`](web/reels.html) |
+| **VS Code · Discord** | Scripture in the margins where builders think; conversation, not broadcast | [`integrations/vscode`](integrations/vscode) · [`integrations/discord`](integrations/discord) |
 
 ---
 
-## 🏛️ Architecture
+## Architecture
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'fontFamily':'ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif','fontSize':'14px','lineColor':'#94a3b8','primaryColor':'#f1f5f9','primaryTextColor':'#1e293b','primaryBorderColor':'#cbd5e1','clusterBkg':'#f8fafc','clusterBorder':'#e2e8f0','edgeLabelBackground':'#ffffff'}}}%%
 flowchart TB
-    subgraph S["🌐 Delivery surfaces — native to where you already are"]
+    subgraph S["Delivery surfaces — native to where you already are"]
         direction LR
-        EXT["🧩 ChatGPT extension<br/>(flagship)"]
-        MCP["🔌 MCP server<br/>Claude · Cursor · Gemini"]
-        EZRA["💬 Ezra<br/>chat + voice"]
-        MORE["📝 VS Code · Discord · Reels"]
+        EXT["ChatGPT extension<br/>(flagship)"]
+        MCP["MCP server<br/>Claude · Cursor · Gemini"]
+        EZRA["Ezra<br/>chat + voice"]
+        MORE["VS Code · Discord · Reels"]
     end
 
-    KEY(["🔑 Resonate Key — one person · one memory · any AI"])
+    KEY(["Resonate Key — one person · one memory · any AI"])
 
-    subgraph E["⚙️ Resonate Context Engine · pure-stdlib Python"]
+    subgraph E["Resonate Context Engine · pure-stdlib Python"]
         direction LR
         SEG["segment<br/>beats"] --> RET["hybrid retrieve<br/>+ RRF"] --> MEM["memory<br/>re-rank"] --> POL["delivery<br/>policy"]
     end
 
-    subgraph A["☁️ Challenge APIs"]
+    subgraph A["Challenge APIs"]
         direction LR
-        GLOO["🧠 Gloo AI Studio<br/>beats + bridge"]
-        YV["📖 YouVersion Platform<br/>verified verse text"]
+        GLOO["Gloo AI Studio<br/>beats + bridge"]
+        YV["YouVersion Platform<br/>verified verse text"]
     end
 
     EXT --- KEY
@@ -108,7 +108,7 @@ flowchart TB
     KEY --> E
     E <-->|"segment · verify · bridge"| GLOO
     E -->|"fetch by reference"| YV
-    E -.->|"crisis detected"| HELP["🆘 Human help card<br/>+ optional guardian alert"]
+    E -.->|"crisis detected"| HELP["Human help card<br/>+ optional guardian alert"]
 
     classDef surface fill:#eef2ff,stroke:#a5b4fc,stroke-width:1.5px,color:#3730a3;
     classDef key fill:#4f46e5,stroke:#4338ca,stroke-width:2px,color:#ffffff;
@@ -128,22 +128,22 @@ The engine is **dependency-light** (Python standard library for the core), so it
 
 ---
 
-## 🔄 How it works — a context engine between two APIs
+## How it works — a context engine between two APIs
 
 Resonate's contribution is the **context engine** that sits between the two challenge APIs and decides *which* verse, *whether* to speak, and *how* to keep it honest. The division of labor is deliberate — and it's what makes hallucination structurally impossible:
 
-- **🧠 Gloo AI Studio** (faith-aligned LLM) — tags the message's emotional **beats** (grief, perseverance, anxiety…), then **verifies/selects** the best *reference* from a vetted shortlist, and writes the one-line **bridge**. **It never supplies verse wording.**
-- **⚙️ The engine** (our code) — hybrid retrieval + Reciprocal Rank Fusion + a temporal memory graph + a restraint policy + a deterministic safety gate.
-- **📖 YouVersion Platform API** — the **single source of verse text.** The engine fetches the licensed words *by reference*; those exact words are the only ones a user ever sees.
+- **Gloo AI Studio** (faith-aligned LLM) — tags the message's emotional **beats** (grief, perseverance, anxiety…), then **verifies/selects** the best *reference* from a vetted shortlist, and writes the one-line **bridge**. **It never supplies verse wording.**
+- **The engine** (our code) — hybrid retrieval + Reciprocal Rank Fusion + a temporal memory graph + a restraint policy + a deterministic safety gate.
+- **YouVersion Platform API** — the **single source of verse text.** The engine fetches the licensed words *by reference*; those exact words are the only ones a user ever sees.
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'fontFamily':'ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif','fontSize':'14px','actorBkg':'#4f46e5','actorBorder':'#4338ca','actorTextColor':'#ffffff','actorLineColor':'#c7d2fe','signalColor':'#64748b','signalTextColor':'#334155','noteBkgColor':'#fffbeb','noteBorderColor':'#fbbf24','noteTextColor':'#92400e','activationBkgColor':'#e0e7ff','activationBorderColor':'#6366f1','sequenceNumberColor':'#ffffff'}}}%%
 sequenceDiagram
     autonumber
-    participant U as 🧑 You — in your AI
-    participant E as ⚙️ Resonate Engine
-    participant G as 🧠 Gloo AI Studio
-    participant Y as 📖 YouVersion API
+    participant U as You — in your AI
+    participant E as Resonate Engine
+    participant G as Gloo AI Studio
+    participant Y as YouVersion API
 
     U->>E: your own message
     E->>G: segment into emotional beats
@@ -162,18 +162,18 @@ sequenceDiagram
 
 ---
 
-## ⚙️ The pipeline (10 stages)
+## The pipeline (10 stages)
 
 Every message flows through the same stages. Safety is checked **first**, on the raw text, independent of everything else — so a crisis can never be missed or answered with a verse.
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'fontFamily':'ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif','fontSize':'14px','lineColor':'#94a3b8','primaryColor':'#f1f5f9','primaryTextColor':'#1e293b','primaryBorderColor':'#cbd5e1','clusterBkg':'#f8fafc','clusterBorder':'#e2e8f0','edgeLabelBackground':'#ffffff'}}}%%
 flowchart TD
-    M(["🧑 User message"]) --> S{{"🛟 Safety gate<br/>raw text · deterministic"}}
-    S -->|crisis| H["🆘 Help card + guardian alert<br/>(never a verse)"]
+    M(["User message"]) --> S{{"Safety gate<br/>raw text · deterministic"}}
+    S -->|crisis| H["Help card + guardian alert<br/>(never a verse)"]
     S -->|ok| SEG["1 · Gloo segments → emotional beats<br/>themes · emotion · intensity"]
     SEG --> K{"2 · Theme in the<br/>known vocabulary?"}
-    K -->|no| AB["🤫 Abstain — honest silence"]
+    K -->|no| AB["Abstain — honest silence"]
     K -->|yes| R["3 · Hybrid retrieve<br/>TF-IDF + BM25 + theme tags"]
     R --> RRF["4 · Reciprocal Rank Fusion"]
     RRF --> RR["5 · Memory re-rank + tone-fit<br/>recency · fatigue · narrative arc"]
@@ -204,13 +204,13 @@ Full design rationale: **[ENGINE-DESIGN.md](ENGINE-DESIGN.md)**.
 
 ---
 
-## 🔑 One brain across every AI — the Resonate Key
+## One brain across every AI — the Resonate Key
 
 A person is **one individual**, not one account per chatbot. Generate a key on **[/connect.html](https://resonate-hg6j.onrender.com/connect.html)** (e.g. `RSN-7K2P`) and carry it in the hosted URL (`…/mcp?key=RSN-7K2P`), the local `--key` flag, or the browsing prompt. The same key in ChatGPT, Claude, Cursor — on any device — reaches the **same temporal memory graph**, so the recurring-theme insight (*"you've returned to this lately"*) follows the person, not the bot. The extension, the MCP tools, and the web pages all deepen that one graph when they share the key.
 
 ---
 
-## 🔬 Technical deep-dive
+## Technical deep-dive
 
 - **Hybrid retrieval + RRF.** Three independent retrievers — a **TF-IDF** dense vector, **Okapi BM25** (sparse), and **theme-tag** overlap — each rank the 141-verse corpus. Their *ranks* (not raw scores, which need no calibration this way) are merged with **Reciprocal Rank Fusion**. Conversation context echoes into the query so the choice follows the whole conversation, not one line. *(`resonate/retrieval.py`)*
 - **Temporal memory graph.** Per-user, it re-ranks by **recency** (don't repeat a verse), **theme-fatigue** (don't hammer one theme), and **narrative arcs** (continuity across sessions) — and surfaces the *"returned to this 4× lately"* moment. Thread-safe; local JSON or Redis backend with automatic fallback. *(`resonate/memory.py`)*
@@ -221,7 +221,7 @@ A person is **one individual**, not one account per chatbot. Generate a key on *
 
 ---
 
-## ▶️ Reproduce it (offline — no keys, no installs)
+## Reproduce it (offline — no keys, no installs)
 
 Requirements: **Python 3.11+** and a Chromium browser. The engine core runs on the **standard library alone** (mock providers + local memory) — clone and run:
 
@@ -239,7 +239,7 @@ With the server running, open **http://127.0.0.1:8765** — the homepage and **/
 
 **Optional voices** (Kokoro TTS): install [Kokoro-82M](https://github.com/hexgrad/kokoro) in a venv (`pip install kokoro soundfile`), point `RESONATE_KOKORO_PY` at that venv's python, and have `ffmpeg` on PATH — the Listen button then uses **Bella / Isabella / George**; without it, a tuned browser voice is used automatically.
 
-## 🌐 Go live (real APIs)
+## Go live (real APIs)
 
 ```bash
 cp .env.example .env         # paste GLOO_CLIENT_ID / SECRET + YOUVERSION_APP_KEY
@@ -252,7 +252,7 @@ Then set `RESONATE_MODE=live` (or `auto`) and restart `scripts/serve.py`. Accept
 
 ---
 
-## ✅ Verification — *proof it works*
+## Verification — *proof it works*
 
 Enforced as a **regression guard in the test suite** (quality can't silently drop):
 
@@ -269,7 +269,7 @@ Enforced as a **regression guard in the test suite** (quality can't silently dro
 
 ---
 
-## 🗂️ Repository layout
+## Repository layout
 
 ```
 resonate/        engine package — config, models, embeddings, verses, retrieval, memory,
@@ -283,16 +283,16 @@ docs/            writeup · video script · cover · competitiveness review · c
 notebook/        resonate_demo.ipynb  (public Kaggle proof-of-work)
 ```
 
-## 📦 Submission assets
+## Submission assets
 
-- 🎬 Video script — [docs/VIDEO-SCRIPT.md](docs/VIDEO-SCRIPT.md)
-- 📄 Writeup (≤500 words) — [docs/WRITEUP.md](docs/WRITEUP.md)
-- 📓 Public notebook — [notebook/resonate_demo.ipynb](notebook/resonate_demo.ipynb)
-- 🖼 Cover image — [docs/cover.svg](docs/cover.svg)
-- 🧭 Competitiveness review — [docs/COMPETITIVENESS.md](docs/COMPETITIVENESS.md)
-- 🏛️ Engine design — [ENGINE-DESIGN.md](ENGINE-DESIGN.md)
+- Video script — [docs/VIDEO-SCRIPT.md](docs/VIDEO-SCRIPT.md)
+- Writeup (≤500 words) — [docs/WRITEUP.md](docs/WRITEUP.md)
+- Public notebook — [notebook/resonate_demo.ipynb](notebook/resonate_demo.ipynb)
+- Cover image — [docs/cover.svg](docs/cover.svg)
+- Competitiveness review — [docs/COMPETITIVENESS.md](docs/COMPETITIVENESS.md)
+- Engine design — [ENGINE-DESIGN.md](ENGINE-DESIGN.md)
 
-## 📜 License
+## License
 
 [MIT](LICENSE) — OSI-approved, per the competition's winning requirements. Scripture text is fetched at runtime from the YouVersion Platform API under its own license terms; no verse text is redistributed in this repository.
 
