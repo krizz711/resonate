@@ -1073,5 +1073,55 @@ class TestPlainText(unittest.TestCase):
         self.assertGreaterEqual(beats[0].intensity, 0.7)
 
 
+class TestGuardianHonesty(unittest.TestCase):
+    """The alert status must never claim a send that cannot happen — telling someone in
+    crisis 'your guardians have been notified' when nothing was sent is a real harm."""
+
+    def _cfg(self, tmpdir):
+        import json
+        cfg = EngineConfig()
+        cfg.guardian_enabled = True
+        cfg.guardian_file = os.path.join(tmpdir, "guardians.json")
+        with open(cfg.guardian_file, "w", encoding="utf-8") as f:
+            json.dump({"users": {"u1": {"consent": True, "display_name": "K.",
+                                        "guardians": [{"name": "Mom", "channel": "email",
+                                                       "address": "mom@example.com"}]}}}, f)
+        cfg.smtp_host = cfg.smtp_from = cfg.smtp_user = cfg.smtp_password = ""
+        cfg.twilio_sid = cfg.twilio_token = cfg.twilio_whatsapp_from = ""
+        return cfg
+
+    def test_no_channel_configured_reports_not_dispatched(self):
+        import tempfile
+        from resonate.guardian import GuardianAlerts
+        with tempfile.TemporaryDirectory() as td:
+            cfg = self._cfg(td)
+            out = GuardianAlerts(cfg).alert("u1")
+            self.assertFalse(out["dispatched"], "must not claim an alert it cannot send")
+            self.assertEqual(out["registered"], 1)
+            self.assertIn("channel", out.get("reason", ""))
+            # a no-op must not burn the 24h cooldown either
+            self.assertFalse(os.path.exists(cfg.guardian_file + ".log"))
+
+    def test_configured_channel_reports_dispatched(self):
+        import tempfile
+        from resonate.guardian import GuardianAlerts
+        with tempfile.TemporaryDirectory() as td:
+            cfg = self._cfg(td)
+            cfg.smtp_host, cfg.smtp_from = "smtp.example.com", "alerts@example.com"
+            g = GuardianAlerts(cfg)
+            g._dispatch = lambda entry: None      # never touch the network in tests
+            out = g.alert("u1")
+            self.assertTrue(out["dispatched"])
+            self.assertEqual(out.get("sending"), 1)
+
+    def test_unregistered_user_not_dispatched(self):
+        import tempfile
+        from resonate.guardian import GuardianAlerts
+        with tempfile.TemporaryDirectory() as td:
+            out = GuardianAlerts(self._cfg(td)).alert("nobody")
+            self.assertFalse(out["dispatched"])
+            self.assertEqual(out["registered"], 0)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

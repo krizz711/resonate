@@ -92,6 +92,14 @@ class GuardianAlerts:
             pass
 
     # ---------------------------------------------------------------- channels
+    def _channel_ready(self, channel: str) -> bool:
+        """Can this channel actually deliver right now? Mirrors the guards inside the
+        _send_* methods, so alert() can tell the truth about what will happen."""
+        c = self.config
+        if channel == "whatsapp":
+            return bool(c.twilio_sid and c.twilio_token and c.twilio_whatsapp_from)
+        return bool(c.smtp_host and c.smtp_from)
+
     def _send_email(self, address: str, body: str) -> bool:
         c = self.config
         if not (c.smtp_host and c.smtp_from):
@@ -147,10 +155,20 @@ class GuardianAlerts:
         entry = self._entry(user_id)
         if entry is None:
             return {"enabled": True, "registered": 0, "dispatched": False}
+        # Honesty gate: an unconfigured channel silently logs and skips, so without this we
+        # would tell someone in crisis "your guardians have been notified" when nothing was
+        # sent. Never claim a safety action we did not perform — and don't burn the cooldown
+        # on a no-op either.
+        deliverable = [g for g in entry["guardians"] if self._channel_ready(g.get("channel"))]
+        if not deliverable:
+            _log("alert suppressed — no delivery channel configured (set SMTP_* or TWILIO_*)")
+            return {"enabled": True, "registered": len(entry["guardians"]),
+                    "dispatched": False, "reason": "no delivery channel configured"}
         with self._lock:
             if self._recently_alerted(user_id):
                 return {"enabled": True, "registered": len(entry["guardians"]),
                         "dispatched": False, "reason": "cooldown"}
             self._mark_alerted(user_id)
         threading.Thread(target=self._dispatch, args=(entry,), daemon=True).start()
-        return {"enabled": True, "registered": len(entry["guardians"]), "dispatched": True}
+        return {"enabled": True, "registered": len(entry["guardians"]),
+                "dispatched": True, "sending": len(deliverable)}
