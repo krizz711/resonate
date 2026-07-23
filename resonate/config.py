@@ -59,6 +59,11 @@ class EngineConfig:
     # Scripture Guide conversations: haiku keeps a voice call snappy; set empty to let
     # auto_routing pick (pastoral warmth, unknown latency/cost per turn).
     gloo_model_guide: str = field(default_factory=lambda: os.getenv("GLOO_MODEL_GUIDE", "gloo-anthropic-claude-haiku-4.5"))
+    # Semantic safety net (LiveGloo only): on top of the deterministic is_crisis() regex FLOOR,
+    # ask the LLM whether the message carries suicide/self-harm risk expressed in a novel or
+    # indirect way no pattern matches. ADDITIVE — either signal holds; any LLM error falls back
+    # to the regex result, so it can only RAISE recall, never lower the guarantee. ON by default.
+    semantic_safety: bool = field(default_factory=lambda: os.getenv("RESONATE_SEMANTIC_SAFETY", "1") == "1")
     # YouVersion: app key from platform.youversion.com (accept each Bible's license there first).
     yv_app_key: str = field(default_factory=lambda: os.getenv("YOUVERSION_APP_KEY", ""))
     yv_base_url: str = field(default_factory=lambda: os.getenv("YOUVERSION_BASE_URL", "https://api.youversion.com/v1"))

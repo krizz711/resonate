@@ -165,8 +165,58 @@ class TestSegmentationAndSafety(unittest.TestCase):
                        "I'm thinking of slitting my wrists", "I might overdose on my pills",
                        "I just want to sleep and never wake up again", "no point in being alive",
                        "everyone would be better off without me", "I want out of this life",
-                       "I've been having thoughts of not being here"]:
+                       "I've been having thoughts of not being here",
+                       # giving-up / hopelessness family (2026-07-24, surfaced by the walkthrough)
+                       "I don't think I can keep going", "No Motivation to Live AnyMore",
+                       "I can't go on", "I can't take it anymore", "giving up on life",
+                       "I have no will to live"]:
             self.assertTrue(is_crisis(phrase), "missed crisis phrase: %r" % phrase)
+
+    def test_semantic_safety_net_additive(self):
+        # The LLM net catches novel/indirect crisis the regex can't match; the regex FLOOR
+        # short-circuits (LLM only asked when the pattern is silent); any LLM error falls back
+        # to regex, so the net can only RAISE recall, never lower the deterministic guarantee.
+        from resonate.providers.gloo import LiveGloo, is_crisis
+        cfg = EngineConfig()
+        cfg.semantic_safety = True
+        g = LiveGloo(cfg)
+        calls = {"n": 0}
+        novel = ("I've written my letters and given away my things. "
+                 "After Friday none of this will matter.")
+        self.assertFalse(is_crisis(novel), "premise: the regex must miss this novel phrasing")
+
+        def yes(system, user, **kw):
+            calls["n"] += 1
+            return '{"risk": true}'
+        g._chat = yes
+        self.assertTrue(g.safety_text(novel), "semantic net must catch the hidden crisis")
+        self.assertEqual(calls["n"], 1)
+
+        def no(system, user, **kw):
+            calls["n"] += 1
+            return '{"risk": false}'
+        g._chat = no
+        self.assertFalse(g.safety_text("I'm exhausted from studying all week"),
+                         "ordinary distress must stay clear")
+
+        # regex hit -> LLM must NOT be called (short-circuit)
+        calls["n"] = 0
+        g._chat = yes
+        self.assertTrue(g.safety_text("I don't want to live anymore"))
+        self.assertEqual(calls["n"], 0, "a regex hit must short-circuit the LLM call")
+
+        # LLM error -> fall back to regex (False here), never worse than regex-only
+        def boom(system, user, **kw):
+            raise RuntimeError("gloo unreachable")
+        g._chat = boom
+        self.assertFalse(g.safety_text("just a normal tired day"))
+
+        # flag off -> regex only, no LLM call
+        calls["n"] = 0
+        cfg.semantic_safety = False
+        g._chat = yes
+        self.assertFalse(g.safety_text(novel))
+        self.assertEqual(calls["n"], 0, "semantic_safety=False must skip the LLM")
 
     def test_safety_no_false_positive(self):
         for b in self.g.segment("I'm so grateful and full of joy today."):

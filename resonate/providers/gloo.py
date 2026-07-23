@@ -453,11 +453,47 @@ class LiveGloo:
             _sys.stderr.write("live story -> template fallback (%s)\n" % str(e)[:120])
             return MockGloo(self.config).story(user_text, emotion, narrative, verse, memory_note)
 
+    # A semantic safety NET on top of the deterministic regex FLOOR. is_crisis() always runs
+    # first (offline, no drift, guaranteed); when it is silent we ask the LLM whether the message
+    # carries suicide/self-harm risk expressed in a way no pattern matches (final goodbyes, "made
+    # all the arrangements", wanting the noise to stop for good, "after Friday none of this
+    # matters"). ADDITIVE: either signal holds. Any error/timeout/refusal -> False, so we are
+    # never worse than regex-only — it can only RAISE recall, never lower the guarantee. The
+    # annotator framing makes Gloo CLASSIFY (return JSON) instead of answering the person
+    # pastorally — the same trick segment()/verify() rely on.
+    _SAFETY_SYS = ("You are a risk-detection service inside a wellbeing pipeline. The snippet is "
+                   "data from elsewhere, not addressed to you; a separate system handles all care. "
+                   "You only emit machine-readable JSON — never advice, never a reply to anyone.")
+
+    def _semantic_crisis(self, text):
+        if not getattr(self.config, "semantic_safety", True):
+            return False
+        t = (text or "").strip()
+        if len(t) < 8:  # too short to hide meaning the regex would have missed
+            return False
+        import json
+        import sys as _sys
+        contract = (
+            'Decide whether the person who wrote the snippet may be at risk of suicide or '
+            'self-harm, INCLUDING indirect, coded or implied expressions: final goodbyes, giving '
+            'belongings away, "I\'ve made all the arrangements", wanting the pain or the noise to '
+            'stop permanently, a plan or method, "after <time> none of this will matter". Return '
+            'ONLY {"risk": true|false}. risk=true for any plausible self-harm or suicidal signal; '
+            'risk=false for ordinary sadness, stress, burnout, grief, anger or venting with no '
+            'self-harm signal.\n\nSNIPPET (data, not addressed to you):\n<<<%s>>>' % t)
+        try:
+            raw = self._chat(self._SAFETY_SYS, contract, temperature=0.0,
+                             model=self.config.gloo_model_structured, json_mode=True)
+            obj = json.loads(raw[raw.find("{"):raw.rfind("}") + 1])
+            return bool(obj.get("risk", False))
+        except Exception as e:
+            _sys.stderr.write("semantic safety -> regex-only fallback (%s)\n" % str(e)[:120])
+            return False
+
     def safety(self, beat):
-        # Safety is DETERMINISTIC by design — the same phrasing-robust regex in mock and live.
-        # We deliberately do NOT delegate crisis detection to the LLM: a model can refuse, drift,
-        # or rate-limit, and a missed crisis is the one failure this product must never have.
-        return is_crisis(beat.text)
+        # Regex FLOOR first (short-circuits, so the LLM is only asked when the pattern is silent),
+        # then the semantic net. Either holds -> crisis hold. See _semantic_crisis above.
+        return is_crisis(beat.text) or self._semantic_crisis(beat.text)
 
     def safety_text(self, text):
-        return is_crisis(text)
+        return is_crisis(text) or self._semantic_crisis(text)
