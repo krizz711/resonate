@@ -118,7 +118,15 @@ _CRISIS_RE = re.compile(
     r"|(?:\bwant\s+to\s+not\s+(?:exist|be\s+here|be\s+alive|wake\s+up)\b)"
     r"|(?:\bunaliv(?:e|ed|ing)\b)"
     r"|(?:\bquiero\s+morir\b|\bno\s+quiero\s+vivir\b|\bquiero\s+matarme\b)"
-    r"|(?:\bthoughts?\s+of\s+(?:not\s+being\s+here|not\s+existing|ending\s+it|ending\s+things|dying|suicide|self[\s-]?harm)\b)",
+    r"|(?:\bthoughts?\s+of\s+(?:not\s+being\s+here|not\s+existing|ending\s+it|ending\s+things|dying|suicide|self[\s-]?harm)\b)"
+    # Giving-up / hopelessness idioms + "no <will> to live" — real crisis phrasings the website
+    # walkthrough exposed ("I don't think I can keep going", "no motivation to live anymore").
+    # "keep going"/"go on" carry a (?!\s+to\b) guard so benign "keep going to the gym" stays silent.
+    r"|(?:\bno\s+(?:motivation|will|desire|reason|point|wish|heart|hope|energy)\s+(?:left\s+)?to\s+(?:live|go\s+on|keep\s+going|carry\s+on|be\s+alive|be\s+here|exist|wake\s+up)\b)"
+    r"|(?:\b(?:can[o']?t|cannot|could\s*n[o']?t)\s+(?:keep\s+going(?!\s+to\b)|go\s+on(?!\s+to\b)|carry\s+on|keep\s+living|hold\s+on\s+any|do\s+this)(?:\s+any\s*more|\s+any\s+longer)?\b)"
+    r"|(?:\bdo\s*n[o']?t\s+think\s+i\s+can\s+(?:keep\s+going(?!\s+to\b)|go\s+on(?!\s+to\b)|do\s+this|carry\s+on|keep\s+living|make\s+it|hold\s+on|take\s+(?:it|this|much\s+more|any\s*more))\b)"
+    r"|(?:\b(?:can[o']?t|cannot|could\s*n[o']?t)\s+take\s+(?:it|this|any\s*more|any\s+longer)\b)"
+    r"|(?:\b(?:giv(?:e|ing)\s+up\s+on\s+life|done\s+with\s+life|so\s+done\s+with\s+everything)\b)",
     re.IGNORECASE,
 )
 
