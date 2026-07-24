@@ -38,7 +38,9 @@ function postResonate(text, cb) {
       path: "/resonate",
       method: "POST",
       headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) },
-      timeout: 4000,
+      // Live mode runs several Gloo calls + a YouVersion fetch per reflect (~10-15s); the old
+      // 4s ceiling aborted mid-response and showed "engine offline". Generous timeout for live.
+      timeout: 25000,
     },
     (res) => {
       let data = "";
