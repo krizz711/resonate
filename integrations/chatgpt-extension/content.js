@@ -280,6 +280,9 @@
     .backlink:hover{color:#a65b43}
     .label{margin-top:9px;font-size:8.5px;letter-spacing:.08em;color:#a89c8a;line-height:1.5}
     .foot{margin-top:11px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#a89c8a}
+    .setup{display:inline-block;margin-top:10px;font-family:inherit;font-size:10.5px;letter-spacing:.04em;
+      color:#a65b43;text-decoration:none;border-bottom:1px solid rgba(166,91,67,.45);padding-bottom:1px}
+    .setup:hover{color:#8a4a35;border-color:#8a4a35}
     .card.help .verse{font-size:16.5px}
     .card.help .ref::after{width:46px}
     /* --- the wax seal (folded state): quiet, small, glad to wait --- */
@@ -499,8 +502,14 @@
       '<button class="x" title="Dismiss" aria-label="Dismiss">×</button>' +
       '<div class="ref">A pause, not a verse</div>' +
       '<div class="verse">' + esc(hold && hold.message ? hold.message : "") + "</div>" +
-      (g.dispatched ? '<div class="mem" title="You registered your guardians and consented to this — what you wrote stays private.">' +
-        "Your guardians have been quietly notified.</div>" : "") +
+      (g.dispatched
+        ? '<div class="mem" title="You registered your guardians and consented to this — what you wrote stays private.">' +
+          "Your guardians have been quietly notified.</div>"
+        // No guardians reachable for THIS surface's id — offer to set them up, and carry this
+        // extension's own user id in the link so the registration lands under the same id the
+        // popup alerts on (otherwise the page invents a different id and the two never match).
+        : '<a class="setup" href="' + esc(ENGINE_BASE + "/guardians.html?uid=" + encodeURIComponent(USER_ID)) +
+          '" target="_blank" rel="noopener noreferrer">Set up who Resonate can quietly reach for you →</a>') +
       '<div class="foot">Resonate · your wellbeing comes first</div>';
     card.querySelector(".x").onclick = dismiss;
     clearTimeout(foldTimer); // a help card never folds itself away

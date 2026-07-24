@@ -45,3 +45,6 @@ data/voice-lab/
 
 # generated training corpora (the live one ships as a Kaggle dataset, not in-repo)
 data/corpus/
+
+# large video build assets — keep local, never in git
+demo-video/
